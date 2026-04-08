@@ -20,8 +20,6 @@ function CyberGridHero() {
       {[...Array(6)].map((_, i) => (
         <div key={i} style={{ position: 'absolute', left: `${10 + i * 16}%`, top: 0, bottom: 0, width: '1px', background: `linear-gradient(180deg, transparent, rgba(235,40,40,${0.03 + i * 0.01}) 50%, transparent)`, animation: `fadeIn ${1 + i * 0.3}s ease` }} />
       ))}
-            {toastMsg && <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 300, background: '#0a0a0a', border: '1px solid #22c55e', padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', animation: 'fadeInUp 0.3s ease' }}>✓ {toastMsg}</div>}
-      {modal === 'demo' && <DemoModal onClose={() => setModal(null)} />}
     </div>
   )
 }
@@ -58,7 +56,7 @@ function Navbar({ onLogin }) {
   )
 }
 
-function HeroSection({ onStart }) {
+function HeroSection({ onStart, setModal }) {
   const { t } = useLang()
   const [typed, setTyped] = useState('')
   const msg = '> BREACH SIMULATION READY...'
@@ -208,7 +206,7 @@ function FeaturesSection() {
   )
 }
 
-function PricingSection() {
+function PricingSection({ showToast }) {
   const { t } = useLang()
   const plans = [
     { name: t('plan1Name'), price: t('plan1Price'), period: t('plan1Period'), target: t('plan1Target'), features: [t('plan1F1'), t('plan1F2'), t('plan1F3'), t('plan1F4')], cta: t('plan1Cta'), highlight: false },
@@ -247,7 +245,7 @@ function PricingSection() {
                   </div>
                 ))}
               </div>
-              <button className={p.highlight ? 'btn-primary' : 'btn-secondary'} style={{ width: '100%', justifyContent: 'center' }}>{p.cta}</button>
+              <button className={p.highlight ? 'btn-primary' : 'btn-secondary'} style={{ width: '100%', justifyContent: 'center' }} onClick={() => showToast(`Plan "${p.name}" selected!`)}>{p.cta}</button>
             </div>
           ))}
         </div>
@@ -323,27 +321,28 @@ function DemoModal({ onClose }) {
           {line < lines.length && <span className="animate-blink" style={{ color: 'var(--red)' }}>█</span>}
         </div>
       </div>
-            {toastMsg && <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 300, background: '#0a0a0a', border: '1px solid #22c55e', padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', animation: 'fadeInUp 0.3s ease' }}>✓ {toastMsg}</div>}
-      {modal === 'demo' && <DemoModal onClose={() => setModal(null)} />}
     </div>
   )
 }
 
 export default function Landing() {
   const navigate = useNavigate()
+  const [modal, setModal] = useState(null)
+  const [toastMsg, setToastMsg] = useState(null)
+  const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(null), 2500) }
   const onLogin = () => navigate('/login')
   const onStart = () => navigate('/login')
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
       <Navbar onLogin={onLogin} />
-      <HeroSection onStart={onStart} />
+      <HeroSection onStart={onStart} setModal={setModal} />
       <ProblemSection />
       <SolutionSection />
       <FeaturesSection />
-      <PricingSection />
+      <PricingSection showToast={showToast} />
       <CTASection onStart={onStart} />
       <Footer />
-            {toastMsg && <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 300, background: '#0a0a0a', border: '1px solid #22c55e', padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', animation: 'fadeInUp 0.3s ease' }}>✓ {toastMsg}</div>}
+      {toastMsg && <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 300, background: '#0a0a0a', border: '1px solid #22c55e', padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', animation: 'fadeInUp 0.3s ease' }}>✓ {toastMsg}</div>}
       {modal === 'demo' && <DemoModal onClose={() => setModal(null)} />}
     </div>
   )
