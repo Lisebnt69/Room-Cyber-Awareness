@@ -456,13 +456,13 @@ function CTASection({ onStart }) {
       <div style={{ maxWidth: '700px', margin: '0 auto', textAlign: 'center' }}>
         <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(32px, 4vw, 48px)', marginBottom: '20px', lineHeight: 1.2 }}>
           Testez votre équipe.<br />
-          <span style={{ color: 'var(--red)' }}>Avant que quelqu\'un d\'autre le fasse.</span>
+          <span style={{ color: 'var(--red)' }}>Avant que quelqu'un d'autre le fasse.</span>
         </h2>
         <p style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.8 }}>
           Aucune carte bancaire requise. Accès complet pendant 14 jours. Prêt à découvrir vos vraies vulnérabilités ?
         </p>
         <button className="btn-primary" style={{ fontSize: '16px', padding: '16px 48px' }} onClick={onStart}>
-          Lancer l\'essai gratuit
+          Lancer l'essai gratuit
         </button>
       </div>
     </section>
