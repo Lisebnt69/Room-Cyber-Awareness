@@ -41,7 +41,7 @@ function LoginScene({ lang }) {
           <span style={{ fontSize: '13px', color: '#cc0000', flexShrink: 0 }}>⚠️</span>
           <span style={{ fontSize: '10px', color: '#cc0000', flexShrink: 0, fontWeight: 600 }}>{lang === 'en' ? 'Not secure' : 'Non sécurisé'}</span>
           <span style={{ fontSize: '11px', color: '#444', fontFamily: 'monospace', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            micr<strong style={{ color: '#cc0000' }}>0</strong>soft.com/signin/v2/lookup?client_id=4765445b&scope=openid
+            {'micr'}<span style={{ color: '#cc0000', fontWeight: 700 }}>{'0'}</span>{'soft.com/signin/v2/lookup?client_id=4765445b\u0026scope=openid'}
           </span>
         </div>
       </div>
@@ -68,9 +68,13 @@ function LoginScene({ lang }) {
         </div>
 
         <div style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <input readOnly value="utilisateur@entreprise.fr" style={{ height: '36px', padding: '0 10px', border: '1px solid #666', fontSize: '13px', boxSizing: 'border-box', width: '100%', background: '#fafafa' }} />
-          <div style={{ position: 'relative' }}>
-            <input readOnly type="password" value="••••••••" style={{ height: '36px', padding: '0 10px', border: '1px solid #666', fontSize: '13px', boxSizing: 'border-box', width: '100%', background: '#fafafa' }} />
+          {/* Fake email field */}
+          <div style={{ height: '36px', padding: '0 10px', border: '1px solid #666', fontSize: '13px', background: '#fafafa', display: 'flex', alignItems: 'center', color: '#333' }}>
+            utilisateur@entreprise.fr
+          </div>
+          {/* Fake password field */}
+          <div style={{ height: '36px', padding: '0 10px', border: '1px solid #666', fontSize: '16px', background: '#fafafa', display: 'flex', alignItems: 'center', color: '#333', letterSpacing: '4px' }}>
+            ••••••••
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
@@ -83,8 +87,8 @@ function LoginScene({ lang }) {
           </div>
 
           <div style={{ fontSize: '11px', color: '#666', display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '8px' }}>
-            <a href="#" style={{ color: '#0067b8', textDecoration: 'none' }}>{lang === 'en' ? 'Terms of use' : 'Conditions d\'utilisation'}</a>
-            <a href="#" style={{ color: '#0067b8', textDecoration: 'none' }}>{lang === 'en' ? 'Privacy & cookies' : 'Confidentialité et cookies'}</a>
+            <span style={{ color: '#0067b8', cursor: 'default', textDecoration: 'underline' }}>{lang === 'en' ? 'Terms of use' : "Conditions d'utilisation"}</span>
+            <span style={{ color: '#0067b8', cursor: 'default', textDecoration: 'underline' }}>{lang === 'en' ? 'Privacy & cookies' : 'Confidentialité et cookies'}</span>
           </div>
         </div>
 
@@ -172,14 +176,15 @@ function CEOEmailScene({ lang }) {
               ? 'N\'en parlez à personne — ni à votre supérieur, ni à vos collègues. Attendez ma confirmation par retour d\'email.'
               : 'Do not tell anyone — not your manager, not your colleagues. Wait for my confirmation by return email.'}
           </p>
-          <p>{fr ? 'Compte bénéficiaire :' : 'Beneficiary account:'}<br />
-            <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>IBAN: CY17 0020 0195 0000 3570 0660 0300</span><br />
-            <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>BIC: BCYPCY2N</span>
-          </p>
-          <p style={{ color: '#888', fontSize: '12px', borderTop: '1px solid #eee', paddingTop: '12px' }}>
-            Marc Dupont — PDG ACME Corporation<br />
-            <span style={{ fontStyle: 'italic' }}>Envoyé depuis mon iPhone</span>
-          </p>
+          <div style={{ marginBottom: '12px' }}>
+            <div>{fr ? 'Compte bénéficiaire :' : 'Beneficiary account:'}</div>
+            <div style={{ fontFamily: 'monospace', fontSize: '12px', marginTop: '4px' }}>IBAN: CY17 0020 0195 0000 3570 0660 0300</div>
+            <div style={{ fontFamily: 'monospace', fontSize: '12px' }}>BIC: BCYPCY2N</div>
+          </div>
+          <div style={{ color: '#888', fontSize: '12px', borderTop: '1px solid #eee', paddingTop: '12px' }}>
+            <div>Marc Dupont — PDG ACME Corporation</div>
+            <div style={{ fontStyle: 'italic' }}>Envoyé depuis mon iPhone</div>
+          </div>
         </div>
       </div>
     </div>
