@@ -338,8 +338,9 @@ const HIDDEN_FLAGS = [
 function FlagSpan({ flagId, children, found, onFind, activeHint, setActiveHint }) {
   const flag = HIDDEN_FLAGS.find(f => f.id === flagId)
   const isMine = activeHint === flagId
+  if (!flag) return <span>{children}</span>
   return (
-    <span style={{ position: 'relative', display: 'inline' }}>
+    <span style={{ position: 'relative' }}>
       <span
         onClick={() => { onFind(flagId); setActiveHint(flagId); setTimeout(() => setActiveHint(h => h === flagId ? null : h), 3000) }}
         title="Cliquez pour analyser"
@@ -357,15 +358,14 @@ function FlagSpan({ flagId, children, found, onFind, activeHint, setActiveHint }
       >{children}</span>
       {isMine && (
         <span style={{
-          position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)',
           background: '#1a1a1a', border: `1px solid ${flag.color}`, color: '#fff',
-          padding: '8px 12px', borderRadius: '8px', fontSize: '11px', whiteSpace: 'nowrap',
-          zIndex: 99, boxShadow: '0 4px 20px rgba(0,0,0,0.6)', pointerEvents: 'none',
-          maxWidth: '240px', whiteSpace: 'normal', textAlign: 'center', lineHeight: 1.4,
+          padding: '8px 12px', borderRadius: '8px', fontSize: '11px',
+          zIndex: 9999, boxShadow: '0 4px 20px rgba(0,0,0,0.8)', pointerEvents: 'none',
+          width: '220px', textAlign: 'center', lineHeight: 1.4, display: 'block',
         }}>
-          <div style={{ color: flag.color, fontWeight: 'bold', marginBottom: '3px' }}>{flag.icon} {flag.title}</div>
-          <div style={{ color: '#ccc', fontSize: '10px' }}>{flag.detail}</div>
-          <div style={{ position: 'absolute', bottom: '-5px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', background: '#1a1a1a', border: `1px solid ${flag.color}`, borderTop: 'none', borderLeft: 'none', transform: 'translateX(-50%) rotate(45deg)' }} />
+          <span style={{ color: flag.color, fontWeight: 'bold', marginBottom: '3px', display: 'block' }}>{flag.icon} {flag.title}</span>
+          <span style={{ color: '#ccc', fontSize: '10px', display: 'block' }}>{flag.detail}</span>
         </span>
       )}
     </span>
@@ -455,9 +455,9 @@ function DemoModal({ onClose }) {
               </div>
             </div>
 
-            {/* Body */}
-            <p>Bonjour Marie,</p>
-            <p style={{ margin: '10px 0' }}>
+            {/* Body — use div instead of p to allow absolute-positioned tooltip spans inside */}
+            <div style={{ marginBottom: '8px' }}>Bonjour Marie,</div>
+            <div style={{ margin: '10px 0' }}>
               Je suis actuellement en réunion confidentielle avec nos avocats. J'ai besoin que vous effectuiez{' '}
               <FlagSpan flagId="urgency" found={found.has('urgency')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
                 <strong>immédiatement</strong>
@@ -467,7 +467,7 @@ function DemoModal({ onClose }) {
                 <strong style={{ color: '#b00' }}>78 500 €</strong>
               </FlagSpan>
               {' '}sur le compte suivant :
-            </p>
+            </div>
 
             <div style={{ background: '#f8f8f8', padding: '10px 14px', margin: '10px 0', borderLeft: '3px solid #ccc', fontSize: '12px', fontFamily: 'monospace' }}>
               <div>IBAN : FR76 1234 5678 9012 3456 7890 123</div>
@@ -475,7 +475,7 @@ function DemoModal({ onClose }) {
               <div>Motif : Règlement prestataire confidentiel</div>
             </div>
 
-            <p style={{ margin: '10px 0' }}>
+            <div style={{ margin: '10px 0' }}>
               <FlagSpan flagId="secret" found={found.has('secret')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
                 N'en parlez à <strong>personne</strong>
               </FlagSpan>
@@ -484,7 +484,7 @@ function DemoModal({ onClose }) {
                 Ne Pas Déranger
               </FlagSpan>
               ". Confirmez uniquement par retour email.
-            </p>
+            </div>
 
             <p style={{ marginTop: '14px', color: '#555' }}>
               Cordialement,<br />
