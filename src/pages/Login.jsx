@@ -16,14 +16,30 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [shake, setShake] = useState(false)
+  const [errors, setErrors] = useState({})
   const { login, error, setError } = useAuth()
   const { t, lang } = useLang()
   const navigate = useNavigate()
 
   useEffect(() => { setError(null) }, [])
 
+  const validateForm = () => {
+    const newErrors = {}
+    if (!email) newErrors.email = 'Email required'
+    else if (!email.includes('@')) newErrors.email = 'Invalid email format'
+    if (!password) newErrors.password = 'Password required'
+    else if (password.length < 2) newErrors.password = 'Password too short'
+    return newErrors
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const formErrors = validateForm()
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors)
+      return
+    }
+    setErrors({})
     setLoading(true)
     await new Promise(r => setTimeout(r, 800))
     const result = login(email, password)
@@ -61,18 +77,44 @@ export default function Login() {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '11px', letterSpacing: '0.12em', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('loginEmailLabel')}</label>
-              <input className="input-dark" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('loginEmailPlaceholder')} required />
+              <input
+                className="input-dark"
+                type="email"
+                value={email}
+                onChange={e => { setEmail(e.target.value); if (errors.email) setErrors({...errors, email: null}) }}
+                placeholder={t('loginEmailPlaceholder')}
+                aria-label="Email address"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? 'email-error' : undefined}
+              />
+              {errors.email && <div id="email-error" style={{ fontSize: '11px', color: 'var(--red)', marginTop: '4px' }}>⚠ {errors.email}</div>}
             </div>
             <div style={{ marginBottom: '28px' }}>
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '11px', letterSpacing: '0.12em', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('loginPasswordLabel')}</label>
-              <input className="input-dark" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
+              <input
+                className="input-dark"
+                type="password"
+                value={password}
+                onChange={e => { setPassword(e.target.value); if (errors.password) setErrors({...errors, password: null}) }}
+                placeholder="••••••••"
+                aria-label="Password"
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? 'password-error' : undefined}
+              />
+              {errors.password && <div id="password-error" style={{ fontSize: '11px', color: 'var(--red)', marginTop: '4px' }}>⚠ {errors.password}</div>}
             </div>
             {error && (
-              <div style={{ background: 'rgba(235,40,40,0.1)', border: '1px solid rgba(235,40,40,0.3)', padding: '12px 16px', marginBottom: '20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)' }}>
+              <div style={{ background: 'rgba(235,40,40,0.1)', border: '1px solid rgba(235,40,40,0.3)', padding: '12px 16px', marginBottom: '20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)' }} role="alert">
                 ⚠ {error}
               </div>
             )}
-            <button className="btn-primary" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', opacity: loading ? 0.7 : 1 }}>
+            <button
+              className="btn-primary"
+              type="submit"
+              disabled={loading}
+              aria-busy={loading}
+              style={{ width: '100%', justifyContent: 'center', opacity: loading ? 0.7 : 1 }}
+            >
               {loading ? <><span className="animate-spin" style={{ display: 'inline-block' }}>◌</span> {t('loginLoading')}</> : t('loginSubmit')}
             </button>
           </form>

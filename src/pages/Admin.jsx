@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import Logo from '../components/Logo'
 import LangToggle from '../components/LangToggle'
+import Modal from '../components/Modal'
+import Toast from '../components/Toast'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell
@@ -50,21 +52,6 @@ const tooltipStyle = {
   contentStyle: { background: '#0d0d0d', border: '1px solid #333', borderRadius: 0, fontFamily: 'var(--mono)', fontSize: '11px' },
   labelStyle: { color: 'var(--text-muted)' },
   itemStyle: { color: 'var(--text-light)' },
-}
-
-function Modal({ title, onClose, children }) {
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={onClose}>
-      <div style={{ background: '#0a0a0a', border: '1px solid var(--border)', width: '100%', maxWidth: '640px', position: 'relative', animation: 'fadeInUp 0.25s ease', maxHeight: '90vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'var(--red)' }} />
-        <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '16px' }}>{title}</h2>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }}>✕</button>
-        </div>
-        <div style={{ padding: '28px' }}>{children}</div>
-      </div>
-    </div>
-  )
 }
 
 function KpiCard({ label, value, sub, trend, accent }) {
@@ -151,13 +138,13 @@ function TabEmployees({ t, onSelectEmployee }) {
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
       <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('tableEmployees')} ({filtered.length})</div>
-        <input className="input-dark" placeholder={t('searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} style={{ width: '220px', padding: '8px 12px', fontSize: '12px' }} />
+        <input className="input-dark" placeholder={t('searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} style={{ width: '220px', padding: '8px 12px', fontSize: '12px' }} aria-label="Search employees by name or department" />
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Employee performance table">
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
             {[t('colEmployee'), t('colDept'), t('colScore'), t('colScenarios'), t('colStatus'), t('colLastPlay'), ''].map((h, i) => (
-              <th key={i} style={{ padding: '12px 28px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }}>{h}</th>
+              <th key={i} style={{ padding: '12px 28px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
             ))}
           </tr>
         </thead>
@@ -178,7 +165,7 @@ function TabEmployees({ t, onSelectEmployee }) {
               </td>
               <td style={{ padding: '14px 28px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{emp.lastPlay}</td>
               <td style={{ padding: '14px 28px' }}>
-                <button onClick={() => onSelectEmployee(emp)} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--mono)' }}
+                <button onClick={() => onSelectEmployee(emp)} aria-label={`View details for ${emp.name}`} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--mono)' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                 >›</button>
@@ -214,7 +201,7 @@ function TabScenarios({ t, lang, onAssign }) {
             {launched[s.id] ? (
               <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: '#22c55e', border: '1px solid #22c55e', padding: '8px 16px' }}>✓ {lang === 'fr' ? 'Assigné' : 'Assigned'}</span>
             ) : (
-              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => { setLaunched(l => ({ ...l, [s.id]: true })); onAssign(s) }}>
+              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} aria-label={`Assign scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`} onClick={() => { setLaunched(l => ({ ...l, [s.id]: true })); onAssign(s) }}>
                 {lang === 'fr' ? '+ Assigner' : '+ Assign'}
               </button>
             )}
@@ -245,11 +232,11 @@ function TabReports({ t, lang }) {
           {lang === 'fr' ? 'RAPPORTS DISPONIBLES' : 'AVAILABLE REPORTS'}
         </div>
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Available reports">
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
             {[lang === 'fr' ? 'Rapport' : 'Report', lang === 'fr' ? 'Date' : 'Date', 'Type', lang === 'fr' ? 'Taille' : 'Size', ''].map((h, i) => (
-              <th key={i} style={{ padding: '12px 28px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }}>{h}</th>
+              <th key={i} style={{ padding: '12px 28px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
             ))}
           </tr>
         </thead>
@@ -261,7 +248,7 @@ function TabReports({ t, lang }) {
               <td style={{ padding: '14px 28px' }}><span className="tag" style={{ fontSize: '10px', padding: '2px 8px' }}>{r.type}</span></td>
               <td style={{ padding: '14px 28px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{r.size}</td>
               <td style={{ padding: '14px 28px' }}>
-                <button onClick={() => dl(r.id)} style={{ background: downloading === r.id ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${downloading === r.id ? '#22c55e' : 'var(--border-subtle)'}`, color: downloading === r.id ? '#22c55e' : 'var(--text-muted)', padding: '6px 16px', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'var(--mono)' }}>
+                <button onClick={() => dl(r.id)} aria-label={`Download ${r.name}`} style={{ background: downloading === r.id ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${downloading === r.id ? '#22c55e' : 'var(--border-subtle)'}`, color: downloading === r.id ? '#22c55e' : 'var(--text-muted)', padding: '6px 16px', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'var(--mono)' }}>
                   {downloading === r.id ? (lang === 'fr' ? '↓ Téléchargement...' : '↓ Downloading...') : (lang === 'fr' ? '↓ Télécharger' : '↓ Download')}
                 </button>
               </td>
@@ -285,14 +272,14 @@ function TabSettings({ t, lang, user }) {
         <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '24px' }}>{lbl('INFORMATIONS ENTREPRISE', 'COMPANY INFORMATION')}</div>
         <form onSubmit={save}>
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '8px' }}>{lbl('NOM ENTREPRISE', 'COMPANY NAME')}</label>
-            <input className="input-dark" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} />
+            <label htmlFor="company-name" style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '8px' }}>{lbl('NOM ENTREPRISE', 'COMPANY NAME')}</label>
+            <input id="company-name" className="input-dark" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} aria-label="Company name" />
           </div>
           <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '8px' }}>{lbl('EMAIL ADMIN', 'ADMIN EMAIL')}</label>
-            <input className="input-dark" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+            <label htmlFor="admin-email" style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '8px' }}>{lbl('EMAIL ADMIN', 'ADMIN EMAIL')}</label>
+            <input id="admin-email" className="input-dark" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} aria-label="Admin email address" />
           </div>
-          <button className="btn-primary" type="submit" style={{ padding: '10px 24px', fontSize: '12px', background: saved ? '#22c55e' : undefined, borderColor: saved ? '#22c55e' : undefined }}>
+          <button className="btn-primary" type="submit" style={{ padding: '10px 24px', fontSize: '12px', background: saved ? '#22c55e' : undefined, borderColor: saved ? '#22c55e' : undefined }} aria-label="Save settings">
             {saved ? (lbl('✓ Sauvegardé', '✓ Saved')) : lbl('Sauvegarder', 'Save')}
           </button>
         </form>
@@ -301,8 +288,8 @@ function TabSettings({ t, lang, user }) {
         <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '24px' }}>{lbl('PRÉFÉRENCES', 'PREFERENCES')}</div>
         {[['notifications', lbl('Notifications par email', 'Email notifications')], ['twoFactor', lbl('Double authentification (2FA)', 'Two-factor authentication (2FA)')], ['weeklyReport', lbl('Rapport hebdomadaire automatique', 'Automatic weekly report')]].map(([key, label]) => (
           <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{label}</span>
-            <button onClick={() => setForm(f => ({ ...f, [key]: !f[key] }))} style={{ width: '44px', height: '24px', borderRadius: '12px', border: 'none', background: form[key] ? 'var(--red)' : '#333', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
+            <label htmlFor={`toggle-${key}`} style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{label}</label>
+            <button id={`toggle-${key}`} onClick={() => setForm(f => ({ ...f, [key]: !f[key] }))} style={{ width: '44px', height: '24px', borderRadius: '12px', border: 'none', background: form[key] ? 'var(--red)' : '#333', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }} role="switch" aria-checked={form[key]} aria-label={label}>
               <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '3px', transition: 'left 0.2s', left: form[key] ? '23px' : '3px' }} />
             </button>
           </div>
@@ -340,65 +327,57 @@ export default function Admin() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#000', color: 'var(--text-light)' }}>
       {/* Toast */}
-      {toast && (
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 300, background: '#0a0a0a', border: '1px solid #22c55e', padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', animation: 'fadeInUp 0.3s ease' }}>
-          ✓ {toast}
-        </div>
-      )}
+      {toast && <Toast message={toast} type="success" />}
 
       {/* Modals */}
-      {modal?.type === 'newScenario' && (
-        <Modal title={t('adminNewScenario')} onClose={() => setModal(null)}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {scenarioLibrary.map(s => (
-              <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid var(--border-subtle)', transition: 'border-color 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
-              >
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>{typeof s.title === 'object' ? s.title[lang] : s.title}</div>
-                  <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                    <span>{s.category}</span><span>•</span><span>{s.duration}</span>
-                  </div>
+      <Modal isOpen={modal?.type === 'newScenario'} onClose={() => setModal(null)} title={t('adminNewScenario')}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {scenarioLibrary.map(s => (
+            <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid var(--border-subtle)', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
+            >
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>{typeof s.title === 'object' ? s.title[lang] : s.title}</div>
+                <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                  <span>{s.category}</span><span>•</span><span>{s.duration}</span>
                 </div>
-                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => { setModal(null); showToast(lang === 'fr' ? `Scénario assigné à toute l'équipe` : 'Scenario assigned to all employees') }}>
-                  {lang === 'fr' ? 'Assigner' : 'Assign'}
-                </button>
               </div>
-            ))}
-          </div>
-        </Modal>
-      )}
+              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} aria-label={`Assign scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? `Scénario assigné à toute l'équipe` : 'Scenario assigned to all employees') }}>
+                {lang === 'fr' ? 'Assigner' : 'Assign'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </Modal>
 
-      {modal?.type === 'employee' && modal.data && (
-        <Modal title={modal.data.name} onClose={() => setModal(null)}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-            {[
-              [lang === 'fr' ? 'Score' : 'Score', `${modal.data.score} / 1000`],
-              [lang === 'fr' ? 'Scénarios complétés' : 'Completed scenarios', modal.data.scenarios],
-              [lang === 'fr' ? 'Taux de complétion' : 'Completion rate', `${modal.data.completionRate}%`],
-              [lang === 'fr' ? 'Temps moyen' : 'Avg. time', modal.data.avgTime],
-            ].map(([label, val]) => (
-              <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', padding: '16px' }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '6px' }}>{label}</div>
-                <div style={{ fontFamily: 'var(--font-title)', fontSize: '22px', color: 'var(--red)' }}>{val}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px' }}>{lang === 'fr' ? 'DERNIER SCÉNARIO' : 'LAST SCENARIO'}</div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{modal.data.lastScenario}</div>
-          </div>
-          <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-            <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Rappel envoyé par email' : 'Reminder sent by email') }}>
-              {lang === 'fr' ? '✉ Envoyer rappel' : '✉ Send reminder'}
-            </button>
-            <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Rapport exporté' : 'Report exported') }}>
-              {lang === 'fr' ? '↓ Exporter' : '↓ Export'}
-            </button>
-          </div>
-        </Modal>
-      )}
+      <Modal isOpen={modal?.type === 'employee' && !!modal.data} onClose={() => setModal(null)} title={modal?.data?.name || ''}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }} role="grid" aria-label="Employee statistics">
+          {[
+            [lang === 'fr' ? 'Score' : 'Score', `${modal?.data?.score} / 1000`],
+            [lang === 'fr' ? 'Scénarios complétés' : 'Completed scenarios', modal?.data?.scenarios],
+            [lang === 'fr' ? 'Taux de complétion' : 'Completion rate', `${modal?.data?.completionRate}%`],
+            [lang === 'fr' ? 'Temps moyen' : 'Avg. time', modal?.data?.avgTime],
+          ].map(([label, val]) => (
+            <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', padding: '16px' }} role="gridcell">
+              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '6px' }}>{label}</div>
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '22px', color: 'var(--red)' }}>{val}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px' }}>{lang === 'fr' ? 'DERNIER SCÉNARIO' : 'LAST SCENARIO'}</div>
+          <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{modal?.data?.lastScenario}</div>
+        </div>
+        <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+          <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Send reminder to ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Rappel envoyé par email' : 'Reminder sent by email') }}>
+            {lang === 'fr' ? '✉ Envoyer rappel' : '✉ Send reminder'}
+          </button>
+          <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Export report for ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Rapport exporté' : 'Report exported') }}>
+            {lang === 'fr' ? '↓ Exporter' : '↓ Export'}
+          </button>
+        </div>
+      </Modal>
 
       {/* Sidebar */}
       <aside style={{ width: '240px', flexShrink: 0, background: '#080808', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50 }}>
@@ -409,10 +388,10 @@ export default function Admin() {
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>{user?.company}</div>
           </div>
         </div>
-        <nav style={{ flex: 1, padding: '16px 0' }}>
+        <nav style={{ flex: 1, padding: '16px 0' }} role="navigation" aria-label="Main navigation">
           {navItems.map(item => (
-            <button key={item.id} onClick={() => setActiveNav(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', background: activeNav === item.id ? 'rgba(235,40,40,0.08)' : 'transparent', borderLeft: activeNav === item.id ? '2px solid var(--red)' : '2px solid transparent', color: activeNav === item.id ? 'var(--text-light)' : 'var(--text-muted)', fontSize: '13px', fontFamily: 'var(--font-body)', transition: 'all 0.15s', cursor: 'pointer' }}>
-              <span style={{ fontSize: '16px', opacity: 0.8 }}>{item.icon}</span>
+            <button key={item.id} onClick={() => setActiveNav(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', background: activeNav === item.id ? 'rgba(235,40,40,0.08)' : 'transparent', borderLeft: activeNav === item.id ? '2px solid var(--red)' : '2px solid transparent', color: activeNav === item.id ? 'var(--text-light)' : 'var(--text-muted)', fontSize: '13px', fontFamily: 'var(--font-body)', transition: 'all 0.15s', cursor: 'pointer' }} aria-current={activeNav === item.id ? 'page' : undefined} aria-label={`Navigate to ${item.label}`}>
+              <span style={{ fontSize: '16px', opacity: 0.8 }} aria-hidden="true">{item.icon}</span>
               {item.label}
             </button>
           ))}
@@ -421,7 +400,7 @@ export default function Admin() {
           <LangToggle style={{ marginBottom: '12px', width: '100%', justifyContent: 'center' }} />
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
           <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--red)', marginBottom: '12px' }}>{t('adminRole')}</div>
-          <button onClick={() => { logout(); navigate('/login') }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '12px' }}>{t('logout')}</button>
+          <button onClick={() => { logout(); navigate('/login') }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '12px' }} aria-label="Logout">{t('logout')}</button>
         </div>
       </aside>
 
@@ -434,7 +413,7 @@ export default function Admin() {
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <div className="tag"><span className="status-dot green" style={{ background: '#22c55e' }} /> {t('adminSystemOk')}</div>
-            <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setModal({ type: 'newScenario' })}>
+            <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} aria-label="Open new scenario dialog" onClick={() => setModal({ type: 'newScenario' })}>
               {t('adminNewScenario')}
             </button>
           </div>

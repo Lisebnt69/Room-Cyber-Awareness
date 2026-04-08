@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import Logo from '../components/Logo'
 import LangToggle from '../components/LangToggle'
+import Modal from '../components/Modal'
+import Toast from '../components/Toast'
 
 const companiesData = [
   { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active' },
@@ -26,21 +28,6 @@ const licensesData = [
   { id: 2, company: 'BNP Finance', plan: 'Enterprise', seats: 1000, used: 814, price: 'custom', period: 'annual', expires: '30/06/2025' },
   { id: 3, company: 'Mairie de Lyon', plan: 'Starter', seats: 25, used: 18, price: 49, period: 'monthly', expires: '15/05/2025' },
 ]
-
-function Modal({ title, onClose, children }) {
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={onClose}>
-      <div style={{ background: '#0a0a0a', border: '1px solid var(--border)', width: '100%', maxWidth: '640px', position: 'relative', animation: 'fadeInUp 0.25s ease', maxHeight: '90vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'var(--red)' }} />
-        <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '16px' }}>{title}</h2>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '20px' }}>✕</button>
-        </div>
-        <div style={{ padding: '28px' }}>{children}</div>
-      </div>
-    </div>
-  )
-}
 
 function statusBadge(s, t) {
   const map = { active: [t('badgeActive'), '#22c55e'], expiring: [t('badgeExpiring'), '#f59e0b'], suspended: [t('badgeSuspended'), 'var(--red)'], published: [t('badgePublished'), '#22c55e'], beta: [t('badgeBeta'), '#f59e0b'], draft: [t('badgeDraft'), 'var(--text-muted)'] }
@@ -78,116 +65,104 @@ export default function SuperAdmin() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#000', color: 'var(--text-light)' }}>
       {/* Toast */}
-      {toast && (
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 300, background: '#0a0a0a', border: '1px solid #22c55e', padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', animation: 'fadeInUp 0.3s ease' }}>
-          ✓ {toast}
-        </div>
-      )}
+      {toast && <Toast message={toast} type="success" />}
 
       {/* Modals */}
-      {modal?.type === 'addCompany' && (
-        <Modal title={t('saAdd')} onClose={() => setModal(null)}>
-          <form onSubmit={(e) => { e.preventDefault(); setModal(null); showToast(lang === 'fr' ? 'Entreprise créée avec succès' : 'Company created successfully') }}>
-            {['name', 'email', 'plan'].map(field => (
-              <div key={field} style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  {lang === 'fr' ? (field === 'name' ? 'NOM' : field === 'email' ? 'EMAIL CONTACT' : 'PLAN') : (field === 'name' ? 'NAME' : field === 'email' ? 'CONTACT EMAIL' : 'PLAN')}
-                </label>
-                {field === 'plan' ? (
-                  <select style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
-                    <option>Starter</option>
-                    <option>Business</option>
-                    <option>Enterprise</option>
-                  </select>
-                ) : (
-                  <input className="input-dark" placeholder={field === 'name' ? 'ACME Corp' : 'contact@company.com'} required />
-                )}
-              </div>
-            ))}
-            <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }}>
-              {lang === 'fr' ? 'Créer entreprise' : 'Create company'}
-            </button>
-          </form>
-        </Modal>
-      )}
-
-      {modal?.type === 'manageCompany' && modal.data && (
-        <Modal title={modal.data.name} onClose={() => setModal(null)}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-            {[
-              [lang === 'fr' ? 'Plan' : 'Plan', modal.data.plan],
-              [lang === 'fr' ? 'Utilisateurs actifs' : 'Active users', `${modal.data.active}/${modal.data.users}`],
-              [lang === 'fr' ? 'Scénarios' : 'Scenarios', modal.data.scenarios],
-              [lang === 'fr' ? 'Licences' : 'Licenses', modal.data.licenses],
-            ].map(([label, val]) => (
-              <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', padding: '16px' }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{label}</div>
-                <div style={{ fontFamily: 'var(--font-title)', fontSize: '20px', color: 'var(--red)' }}>{val}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-            <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Licences augmentées' : 'Licenses increased') }}>
-              {lang === 'fr' ? '+ Ajouter licences' : '+ Add licenses'}
-            </button>
-            <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Configuration mise à jour' : 'Configuration updated') }}>
-              {lang === 'fr' ? '⚙ Configurer' : '⚙ Configure'}
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {modal?.type === 'createScenario' && (
-        <Modal title={lang === 'fr' ? 'Créer scénario' : 'Create scenario'} onClose={() => setModal(null)}>
-          <form onSubmit={(e) => { e.preventDefault(); setModal(null); showToast(lang === 'fr' ? 'Scénario créé' : 'Scenario created') }}>
-            {['title', 'category', 'difficulty'].map(field => (
-              <div key={field} style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  {lang === 'fr' ? (field === 'title' ? 'TITRE' : field === 'category' ? 'CATÉGORIE' : 'NIVEAU') : (field === 'title' ? 'TITLE' : field === 'category' ? 'CATEGORY' : 'DIFFICULTY')}
-                </label>
-                {field === 'category' ? (
-                  <select style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)' }}>
-                    <option>Phishing</option>
-                    <option>Ransomware</option>
-                    <option>Social Eng.</option>
-                  </select>
-                ) : field === 'difficulty' ? (
-                  <select style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)' }}>
-                    <option>beginner</option>
-                    <option>intermediate</option>
-                    <option>advanced</option>
-                  </select>
-                ) : (
-                  <input className="input-dark" placeholder={lang === 'fr' ? 'Ex: Bureau Compromis' : 'Ex: Compromised Desktop'} required />
-                )}
-              </div>
-            ))}
-            <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }}>
-              {lang === 'fr' ? 'Créer' : 'Create'}
-            </button>
-          </form>
-        </Modal>
-      )}
-
-      {modal?.type === 'editScenario' && modal.data && (
-        <Modal title={typeof modal.data.title === 'object' ? modal.data.title[lang] : modal.data.title} onClose={() => setModal(null)}>
-          <div style={{ marginBottom: '20px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px' }}>{lang === 'fr' ? 'STATISTIQUES' : 'STATISTICS'}</div>
-            <div style={{ display: 'flex', gap: '20px', fontSize: '13px' }}>
-              <div><span style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Parties:' : 'Plays:'}</span> <span style={{ color: 'var(--red)', fontWeight: 700 }}>{modal.data.plays}</span></div>
-              <div><span style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Score moy:' : 'Avg score:'}</span> <span style={{ color: 'var(--red)', fontWeight: 700 }}>{modal.data.score}</span></div>
+      <Modal isOpen={modal?.type === 'addCompany'} onClose={() => setModal(null)} title={t('saAdd')}>
+        <form onSubmit={(e) => { e.preventDefault(); setModal(null); showToast(lang === 'fr' ? 'Entreprise créée avec succès' : 'Company created successfully') }}>
+          {['name', 'email', 'plan'].map(field => (
+            <div key={field} style={{ marginBottom: '16px' }}>
+              <label htmlFor={`field-${field}`} style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                {lang === 'fr' ? (field === 'name' ? 'NOM' : field === 'email' ? 'EMAIL CONTACT' : 'PLAN') : (field === 'name' ? 'NAME' : field === 'email' ? 'CONTACT EMAIL' : 'PLAN')}
+              </label>
+              {field === 'plan' ? (
+                <select id={`field-${field}`} style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)', fontSize: '13px' }} aria-label={field === 'plan' ? 'Select plan' : undefined}>
+                  <option>Starter</option>
+                  <option>Business</option>
+                  <option>Enterprise</option>
+                </select>
+              ) : (
+                <input id={`field-${field}`} className="input-dark" placeholder={field === 'name' ? 'ACME Corp' : 'contact@company.com'} required aria-label={field === 'name' ? 'Company name' : 'Contact email'} />
+              )}
             </div>
+          ))}
+          <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }} aria-label="Create company">
+            {lang === 'fr' ? 'Créer entreprise' : 'Create company'}
+          </button>
+        </form>
+      </Modal>
+
+      <Modal isOpen={modal?.type === 'manageCompany' && !!modal.data} onClose={() => setModal(null)} title={modal?.data?.name || ''}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }} role="grid" aria-label="Company statistics">
+          {[
+            [lang === 'fr' ? 'Plan' : 'Plan', modal?.data?.plan],
+            [lang === 'fr' ? 'Utilisateurs actifs' : 'Active users', `${modal?.data?.active}/${modal?.data?.users}`],
+            [lang === 'fr' ? 'Scénarios' : 'Scenarios', modal?.data?.scenarios],
+            [lang === 'fr' ? 'Licences' : 'Licenses', modal?.data?.licenses],
+          ].map(([label, val]) => (
+            <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', padding: '16px' }} role="gridcell">
+              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{label}</div>
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '20px', color: 'var(--red)' }}>{val}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+          <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Add licenses to ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Licences augmentées' : 'Licenses increased') }}>
+            {lang === 'fr' ? '+ Ajouter licences' : '+ Add licenses'}
+          </button>
+          <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Configure ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Configuration mise à jour' : 'Configuration updated') }}>
+            {lang === 'fr' ? '⚙ Configurer' : '⚙ Configure'}
+          </button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={modal?.type === 'createScenario'} onClose={() => setModal(null)} title={lang === 'fr' ? 'Créer scénario' : 'Create scenario'}>
+        <form onSubmit={(e) => { e.preventDefault(); setModal(null); showToast(lang === 'fr' ? 'Scénario créé' : 'Scenario created') }}>
+          {['title', 'category', 'difficulty'].map(field => (
+            <div key={field} style={{ marginBottom: '16px' }}>
+              <label htmlFor={`scenario-${field}`} style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                {lang === 'fr' ? (field === 'title' ? 'TITRE' : field === 'category' ? 'CATÉGORIE' : 'NIVEAU') : (field === 'title' ? 'TITLE' : field === 'category' ? 'CATEGORY' : 'DIFFICULTY')}
+              </label>
+              {field === 'category' ? (
+                <select id={`scenario-${field}`} style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)' }} aria-label="Scenario category">
+                  <option>Phishing</option>
+                  <option>Ransomware</option>
+                  <option>Social Eng.</option>
+                </select>
+              ) : field === 'difficulty' ? (
+                <select id={`scenario-${field}`} style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)' }} aria-label="Scenario difficulty">
+                  <option>beginner</option>
+                  <option>intermediate</option>
+                  <option>advanced</option>
+                </select>
+              ) : (
+                <input id={`scenario-${field}`} className="input-dark" placeholder={lang === 'fr' ? 'Ex: Bureau Compromis' : 'Ex: Compromised Desktop'} required aria-label="Scenario title" />
+              )}
+            </div>
+          ))}
+          <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }} aria-label="Create scenario">
+            {lang === 'fr' ? 'Créer' : 'Create'}
+          </button>
+        </form>
+      </Modal>
+
+      <Modal isOpen={modal?.type === 'editScenario' && !!modal.data} onClose={() => setModal(null)} title={typeof modal?.data?.title === 'object' ? modal?.data?.title[lang] : modal?.data?.title || ''}>
+        <div style={{ marginBottom: '20px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px' }}>{lang === 'fr' ? 'STATISTIQUES' : 'STATISTICS'}</div>
+          <div style={{ display: 'flex', gap: '20px', fontSize: '13px' }}>
+            <div><span style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Parties:' : 'Plays:'}</span> <span style={{ color: 'var(--red)', fontWeight: 700 }}>{modal?.data?.plays}</span></div>
+            <div><span style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Score moy:' : 'Avg score:'}</span> <span style={{ color: 'var(--red)', fontWeight: 700 }}>{modal?.data?.score}</span></div>
           </div>
-          <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-            <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Scénario mis à jour' : 'Scenario updated') }}>
-              {lang === 'fr' ? '✎ Éditer' : '✎ Edit'}
-            </button>
-            <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Scénario archivé' : 'Scenario archived') }}>
-              {lang === 'fr' ? '📦 Archiver' : '📦 Archive'}
-            </button>
-          </div>
-        </Modal>
-      )}
+        </div>
+        <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+          <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Edit scenario ${typeof modal?.data?.title === 'object' ? modal?.data?.title[lang] : modal?.data?.title}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Scénario mis à jour' : 'Scenario updated') }}>
+            {lang === 'fr' ? '✎ Éditer' : '✎ Edit'}
+          </button>
+          <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Archive scenario ${typeof modal?.data?.title === 'object' ? modal?.data?.title[lang] : modal?.data?.title}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Scénario archivé' : 'Scenario archived') }}>
+            {lang === 'fr' ? '📦 Archiver' : '📦 Archive'}
+          </button>
+        </div>
+      </Modal>
 
       {/* Sidebar */}
       <aside style={{ width: '240px', flexShrink: 0, background: '#080808', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50 }}>
@@ -198,10 +173,10 @@ export default function SuperAdmin() {
             <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>{t('saAccess')}</div>
           </div>
         </div>
-        <nav style={{ flex: 1, padding: '16px 0' }}>
+        <nav style={{ flex: 1, padding: '16px 0' }} role="navigation" aria-label="Main navigation">
           {navItems.map(item => (
-            <button key={item.id} onClick={() => setActiveNav(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', background: activeNav === item.id ? 'rgba(235,40,40,0.08)' : 'transparent', borderLeft: activeNav === item.id ? '2px solid var(--red)' : '2px solid transparent', color: activeNav === item.id ? 'var(--text-light)' : 'var(--text-muted)', fontSize: '13px', fontFamily: 'var(--font-body)', transition: 'all 0.15s', cursor: 'pointer' }}>
-              <span style={{ fontSize: '16px' }}>{item.icon}</span>
+            <button key={item.id} onClick={() => setActiveNav(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', background: activeNav === item.id ? 'rgba(235,40,40,0.08)' : 'transparent', borderLeft: activeNav === item.id ? '2px solid var(--red)' : '2px solid transparent', color: activeNav === item.id ? 'var(--text-light)' : 'var(--text-muted)', fontSize: '13px', fontFamily: 'var(--font-body)', transition: 'all 0.15s', cursor: 'pointer' }} aria-current={activeNav === item.id ? 'page' : undefined} aria-label={`Navigate to ${item.label}`}>
+              <span style={{ fontSize: '16px' }} aria-hidden="true">{item.icon}</span>
               {item.label}
             </button>
           ))}
@@ -209,7 +184,7 @@ export default function SuperAdmin() {
         <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border-subtle)' }}>
           <LangToggle style={{ marginBottom: '12px', width: '100%', justifyContent: 'center' }} />
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
-          <button onClick={() => { logout(); navigate('/login') }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '12px', marginTop: '8px' }}>
+          <button onClick={() => { logout(); navigate('/login') }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '12px', marginTop: '8px' }} aria-label="Logout">
             {t('logout')}
           </button>
         </div>
@@ -244,13 +219,13 @@ export default function SuperAdmin() {
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saCompaniesTitle')} ({companiesData.length})</div>
-                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setModal({ type: 'addCompany' })}>{t('saAdd')}</button>
+                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setModal({ type: 'addCompany' })} aria-label="Add new company">{t('saAdd')}</button>
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Companies list">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     {[t('saColCompany'), t('saColPlan'), t('saColUsers'), t('saColScenarios'), t('saColLicenses'), t('saColExpires'), t('saColStatus'), ''].map((h, i) => (
-                      <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }}>{h}</th>
+                      <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -268,6 +243,7 @@ export default function SuperAdmin() {
                         <button onClick={() => setModal({ type: 'manageCompany', data: c })} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                          aria-label={`Manage company ${c.name}`}
                         >{t('saManage')}</button>
                       </td>
                     </tr>
