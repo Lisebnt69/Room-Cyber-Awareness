@@ -56,6 +56,11 @@ export default function App() {
               <Marketplace />
             </ProtectedRoute>
           } />
+          <Route path="/visual/:id" element={
+            <ProtectedRoute requiredRole={ROLES.PLAYER}>
+              <VisualChallenge />
+            </ProtectedRoute>
+          } />
 
           <Route path="/analytics" element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
