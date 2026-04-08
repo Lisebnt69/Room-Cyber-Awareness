@@ -9,6 +9,7 @@
   --bg-card-hover: #1c1c1c;
   --bg-panel: #2e2c2c;
   --text-light: #fdfdfd;
+  --text-primary: #fdfdfd;
   --text-secondary: #D9D9D9;
   --text-muted: #828080;
   --border: rgba(84, 84, 84, 0.6);
@@ -16,6 +17,20 @@
   --mono: 'Share Tech Mono', monospace;
   --font-title: 'Monda', sans-serif;
   --font-body: 'Roboto', sans-serif;
+}
+
+[data-theme="light"] {
+  --bg-black: #ffffff;
+  --bg-dark: #f5f5f5;
+  --bg-card: #fafafa;
+  --bg-card-hover: #f0f0f0;
+  --bg-panel: #e8e8e8;
+  --text-light: #1a1a1a;
+  --text-primary: #1a1a1a;
+  --text-secondary: #333333;
+  --text-muted: #666666;
+  --border: rgba(0, 0, 0, 0.15);
+  --border-subtle: rgba(0, 0, 0, 0.08);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

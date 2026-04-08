@@ -1,7 +1,7 @@
 // Stripe Integration Service
 // In production, this would use actual Stripe API keys
 
-const STRIPE_PUBLIC_KEY = process.env.REACT_APP_STRIPE_PUBLIC_KEY || 'pk_test_demo'
+const STRIPE_PUBLIC_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_STRIPE_PUBLIC_KEY) || 'pk_test_demo'
 
 export const PLANS = {
   FREE: {
