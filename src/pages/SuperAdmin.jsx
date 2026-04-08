@@ -258,13 +258,13 @@ export default function SuperAdmin() {
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saScenariosTitle')} ({scenariosData.length})</div>
-                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setModal({ type: 'createScenario' })}>{t('saCreateScenario')}</button>
+                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setModal({ type: 'createScenario' })} aria-label="Create new scenario">{t('saCreateScenario')}</button>
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Scenarios list">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     {[t('saColTitle'), t('saColCategory'), t('saColDifficulty'), t('saColDuration'), t('saColPlays'), t('saColAvgScore'), t('saColStatus'), ''].map((h, i) => (
-                      <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }}>{h}</th>
+                      <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -282,6 +282,7 @@ export default function SuperAdmin() {
                         <button onClick={() => setModal({ type: 'editScenario', data: s })} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                          aria-label={`Edit scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`}
                         >{t('saEdit')}</button>
                       </td>
                     </tr>
@@ -297,11 +298,11 @@ export default function SuperAdmin() {
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saNavLicenses')}</div>
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Licenses list">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     {[lang === 'fr' ? 'Entreprise' : 'Company', lang === 'fr' ? 'Plan' : 'Plan', lang === 'fr' ? 'Sièges' : 'Seats', lang === 'fr' ? 'Utilisés' : 'Used', lang === 'fr' ? 'Forfait' : 'Billing', lang === 'fr' ? 'Expire' : 'Expires'].map((h, i) => (
-                      <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>{h}</th>
+                      <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }} role="columnheader">{h}</th>
                     ))}
                   </tr>
                 </thead>
