@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Logo from '../img/roomca-logo.png'
+import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import { useLang } from '../context/LangContext'
 import Modal from '../components/Modal'

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import { db } from '../services/db'
-import Logo from '../img/roomca-logo.png'
+import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 
 const allBadges = [
