@@ -8,6 +8,7 @@ import Leaderboards from './pages/Leaderboards'
 import Analytics from './pages/Analytics'
 import Campaigns from './pages/Campaigns'
 import Billing from './pages/Billing'
+import Integrations from './pages/Integrations'
 import Admin from './pages/Admin'
 import SuperAdmin from './pages/SuperAdmin'
 
@@ -41,6 +42,11 @@ export default function App() {
           <Route path="/billing" element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <Billing />
+            </ProtectedRoute>
+          } />
+          <Route path="/integrations" element={
+            <ProtectedRoute requiredRole={ROLES.SUPER_ADMIN}>
+              <Integrations />
             </ProtectedRoute>
           } />
           <Route path="/admin" element={
