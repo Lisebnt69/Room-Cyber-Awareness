@@ -28,11 +28,86 @@ export default function Reports() {
   const [selected, setSelected] = useState(null)
   const [generating, setGenerating] = useState(false)
 
+  const downloadCSV = (filename, rows) => {
+    const csv = rows.map(r => r.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = filename; a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const downloadText = (filename, content) => {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = filename; a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const generate = () => {
     setGenerating(true)
     setTimeout(() => {
       setGenerating(false)
-      alert(`Rapport "${selected.name}" généré ! Téléchargement en cours...`)
+      if (!selected) return
+
+      if (selected.id === 'audit') {
+        downloadCSV(`audit_trail_${Date.now()}.csv`, [
+          ['Timestamp', 'User', 'Action', 'Resource', 'IP', 'Result'],
+          ['2026-04-08 09:12:34', 'marie.dupont@acme.com', 'LOGIN', 'Platform', '192.168.1.12', 'SUCCESS'],
+          ['2026-04-08 09:14:21', 'marie.dupont@acme.com', 'SCENARIO_COMPLETE', 'Inbox Zero', '192.168.1.12', 'SCORE:850'],
+          ['2026-04-08 10:05:11', 'pierre.martin@acme.com', 'LOGIN', 'Platform', '192.168.1.45', 'SUCCESS'],
+          ['2026-04-08 10:22:30', 'admin@acme.com', 'CAMPAIGN_CREATE', 'Phishing Campaign #48', '192.168.1.1', 'SUCCESS'],
+          ['2026-04-08 11:45:00', 'thomas.moreau@acme.com', 'CERTIFICATION_PASS', 'ROOMCA Foundation', '192.168.1.88', 'SCORE:92%']
+        ])
+      } else if (selected.id === 'campaign') {
+        downloadCSV(`campaign_results_${Date.now()}.csv`, [
+          ['Employee', 'Department', 'Email Sent', 'Opened', 'Clicked', 'Reported', 'Risk Level'],
+          ['Marie Dupont', 'Finance', 'Yes', 'Yes', 'No', 'Yes', 'LOW'],
+          ['Pierre Martin', 'IT', 'Yes', 'Yes', 'No', 'Yes', 'LOW'],
+          ['Lucas Petit', 'Sales', 'Yes', 'Yes', 'Yes', 'No', 'HIGH'],
+          ['Sophie Bernard', 'HR', 'Yes', 'Yes', 'Yes', 'No', 'MEDIUM'],
+          ['Emma Robert', 'Marketing', 'Yes', 'Yes', 'No', 'No', 'MEDIUM']
+        ])
+      } else {
+        const now = new Date().toLocaleDateString('fr-FR')
+        const content = `ROOMCA - ${selected.name}
+Généré le: ${now}
+=====================================
+
+RÉSUMÉ EXÉCUTIF
+---------------
+Organisation: ACME Corp
+Période: Mars 2026
+Score Sécurité Global: 83/100
+
+INDICATEURS CLÉS
+----------------
+• Employés formés: 147/156 (94%)
+• Taux de clic phishing: 8% (-12% vs mois dernier)
+• Scénarios complétés: 312
+• Score moyen: 78/100
+• Incidents signalés: 3
+• Certifications obtenues: 12
+
+CONFORMITÉ
+----------
+• GDPR: 87% ✅
+• ISO 27001: 81% ⚠️
+• NIS2: 73% ⚠️
+
+RECOMMANDATIONS
+---------------
+1. Renforcer formation "Social Engineering" (score dept Sales: 58%)
+2. Activer campagne phishing mensuelle
+3. Planifier audit ISO 27001 interne (score sous 85%)
+4. Former nouveaux arrivants (9 employés sans formation)
+
+=====================================
+Rapport généré par ROOMCA Cyber Awareness Platform
+`
+        downloadText(`${selected.id}_report_${Date.now()}.txt`, content)
+      }
     }, 1500)
   }
 
@@ -113,7 +188,14 @@ export default function Reports() {
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '11px' }}>👁️ Voir</button>
-                <button style={{ padding: '6px 12px', background: '#eb2828', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '11px' }}>📥 Télécharger</button>
+                <button onClick={() => {
+                  const content = `ROOMCA Report: ${r.name}\nGenerated: ${r.date}\nAuthor: ${r.author}\n\nThis is a sample report from ROOMCA Cyber Awareness Platform.\nFor full report generation, use the report templates above.`
+                  const blob = new Blob([content], { type: 'text/plain' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url; a.download = `${r.name.replace(/ /g,'_')}.txt`; a.click()
+                  URL.revokeObjectURL(url)
+                }} style={{ padding: '6px 12px', background: '#eb2828', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '11px' }}>📥 Télécharger</button>
               </div>
             </div>
           ))}

@@ -1,38 +1,35 @@
-// Fingerprint SVG recreated from the official ROOMCA brand identity
+// Fingerprint SVG matching the official ROOMCA brand identity
+// Concentric arcs forming a finger-tip pattern, bright/dark red alternating
 function FingerprintIcon({ size = 28 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Outer left arc - bright red */}
-      <path d="M15 85 C4 65, 4 45, 15 25" stroke="#eb2828" strokeWidth="7" strokeLinecap="round" fill="none"/>
-      {/* Outer right arc - bright red */}
-      <path d="M85 85 C96 65, 96 45, 85 25" stroke="#eb2828" strokeWidth="7" strokeLinecap="round" fill="none"/>
-      {/* Second left arc - dark red */}
-      <path d="M25 92 C12 70, 12 40, 25 18" stroke="#7a1010" strokeWidth="6.5" strokeLinecap="round" fill="none"/>
-      {/* Second right arc - dark red */}
-      <path d="M75 92 C88 70, 88 40, 75 18" stroke="#7a1010" strokeWidth="6.5" strokeLinecap="round" fill="none"/>
-      {/* Third left arc - bright red */}
-      <path d="M35 95 C23 74, 23 36, 35 15" stroke="#eb2828" strokeWidth="6" strokeLinecap="round" fill="none"/>
-      {/* Third right arc - bright red */}
-      <path d="M65 95 C77 74, 77 36, 65 15" stroke="#eb2828" strokeWidth="6" strokeLinecap="round" fill="none"/>
-      {/* Fourth left arc - dark red */}
-      <path d="M44 93 C34 74, 34 36, 44 17" stroke="#7a1010" strokeWidth="5.5" strokeLinecap="round" fill="none"/>
-      {/* Fourth right arc - dark red */}
-      <path d="M56 93 C66 74, 66 36, 56 17" stroke="#7a1010" strokeWidth="5.5" strokeLinecap="round" fill="none"/>
-      {/* Center spine - bright red */}
-      <path d="M50 15 L50 95" stroke="#eb2828" strokeWidth="5.5" strokeLinecap="round" fill="none"/>
-      {/* Top arch connecting all */}
-      <path d="M35 15 Q50 4, 65 15" stroke="#eb2828" strokeWidth="6" strokeLinecap="round" fill="none"/>
-      {/* Bottom arch */}
-      <path d="M35 95 Q50 106, 65 95" stroke="#7a1010" strokeWidth="5.5" strokeLinecap="round" fill="none"/>
+    <svg width={size} height={size * 1.1} viewBox="0 0 60 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Core central ridge */}
+      <path d="M30 62 C30 62, 30 38, 30 18 C30 12, 30 8, 30 6" stroke="#eb2828" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      {/* Ridge 1 - innermost */}
+      <path d="M30 62 C22 60, 16 52, 16 42 C16 32, 22 24, 30 20 C38 24, 44 32, 44 42 C44 52, 38 60, 30 62" stroke="#c0201e" strokeWidth="2.8" strokeLinecap="round" fill="none"/>
+      {/* Ridge 2 */}
+      <path d="M30 65 C18 63, 10 53, 10 42 C10 31, 18 21, 28 17 C32 15, 34 15, 32 15" stroke="#eb2828" strokeWidth="2.6" strokeLinecap="round" fill="none"/>
+      <path d="M30 65 C42 63, 50 53, 50 42 C50 31, 42 21, 32 17" stroke="#eb2828" strokeWidth="2.6" strokeLinecap="round" fill="none"/>
+      {/* Ridge 3 */}
+      <path d="M30 67 C14 65, 4 54, 4 42 C4 30, 12 19, 24 14" stroke="#c0201e" strokeWidth="2.4" strokeLinecap="round" fill="none"/>
+      <path d="M30 67 C46 65, 56 54, 56 42 C56 30, 48 19, 36 14" stroke="#c0201e" strokeWidth="2.4" strokeLinecap="round" fill="none"/>
+      {/* Ridge 4 - outermost */}
+      <path d="M20 10 C10 14, 2 22, 1 34 C0 46, 6 57, 16 63" stroke="#eb2828" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+      <path d="M40 10 C50 14, 58 22, 59 34 C60 46, 54 57, 44 63" stroke="#eb2828" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+      {/* Top arch of fingerprint */}
+      <path d="M24 14 C26 8, 34 8, 36 14" stroke="#eb2828" strokeWidth="2.6" strokeLinecap="round" fill="none"/>
+      <path d="M20 10 C22 3, 38 3, 40 10" stroke="#c0201e" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+      {/* Cut/break lines for realism */}
+      <path d="M14 55 C12 53, 11 50, 12 47" stroke="#eb2828" strokeWidth="2" strokeLinecap="round" fill="none" strokeDasharray="2 3"/>
     </svg>
   )
 }
 
 const sizes = {
-  sm: { icon: 22, text: '17px', sub: '8px', gap: 8 },
-  md: { icon: 28, text: '22px', sub: '9px', gap: 10 },
-  lg: { icon: 38, text: '30px', sub: '10px', gap: 12 },
-  xl: { icon: 52, text: '40px', sub: '12px', gap: 14 },
+  sm: { icon: 26, text: '17px', sub: '8px', gap: 8 },
+  md: { icon: 32, text: '22px', sub: '9px', gap: 10 },
+  lg: { icon: 44, text: '30px', sub: '10px', gap: 12 },
+  xl: { icon: 60, text: '40px', sub: '12px', gap: 14 },
 }
 
 export default function Logo({ size = 'md', showSub = false, style = {} }) {
@@ -46,7 +43,7 @@ export default function Logo({ size = 'md', showSub = false, style = {} }) {
           fontFamily: 'var(--font-title)',
           fontSize: s.text,
           fontWeight: 700,
-          letterSpacing: '0.06em',
+          letterSpacing: '0.10em',
           color: 'var(--text-light)',
           lineHeight: 1,
         }}>
@@ -54,14 +51,15 @@ export default function Logo({ size = 'md', showSub = false, style = {} }) {
         </span>
         {showSub && (
           <span style={{
-            fontFamily: 'var(--font-title)',
+            fontFamily: 'var(--font-body)',
             fontSize: s.sub,
-            letterSpacing: '0.18em',
+            letterSpacing: '0.16em',
             color: 'var(--text-muted)',
-            marginTop: '4px',
+            marginTop: '5px',
             textTransform: 'uppercase',
+            fontWeight: 400,
           }}>
-            Cyber Awareness Game
+            Cyber Awareness
           </span>
         )}
       </div>

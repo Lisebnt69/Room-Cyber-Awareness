@@ -5,6 +5,7 @@ import { useLang } from '../context/LangContext'
 import { emails as emailsFr, emailsEn, logLines as logLinesFr, logLinesEn } from '../data/scenarioData'
 import Logo from '../components/Logo'
 import LangToggle from '../components/LangToggle'
+import { db } from '../services/db'
 
 function useTimer(initial, running) {
   const [seconds, setSeconds] = useState(initial)
@@ -239,7 +240,7 @@ function PhaseInbox({ onComplete, score, setScore }) {
 
 // Workaround for variable reference in PhaseInbox
 
-function PhaseDebrief({ score, onRetry, onExit }) {
+function PhaseDebrief({ score, onRetry, onExit, onDashboard }) {
   const { t } = useLang()
   const maxScore = 1000
   const pct = Math.round((score / maxScore) * 100)
@@ -281,6 +282,7 @@ function PhaseDebrief({ score, onRetry, onExit }) {
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           {success && <button className="btn-primary" onClick={() => setShowCert(true)} style={{ padding: '12px 32px' }}>{t('debriefCert')}</button>}
           <button className="btn-secondary" onClick={onRetry} style={{ padding: '12px 32px' }}>{t('debriefRetry')}</button>
+          <button className="btn-secondary" onClick={onDashboard || onExit} style={{ padding: '12px 32px' }}>📊 Mon Dashboard</button>
           <button className="btn-secondary" onClick={onExit} style={{ padding: '12px 32px' }}>{t('debriefBack')}</button>
         </div>
       </div>
@@ -305,12 +307,33 @@ function PhaseDebrief({ score, onRetry, onExit }) {
 }
 
 export default function Player() {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [phase, setPhase] = useState('intro')
   const [score, setScore] = useState(0)
-  const handleExit = () => { logout(); navigate('/login') }
-  if (phase === 'intro') return <PhaseIntro onStart={() => setPhase('inbox')} />
-  if (phase === 'inbox') return <PhaseInbox onComplete={(s) => { setScore(s); setPhase('debrief') }} score={score} setScore={setScore} />
-  return <PhaseDebrief score={score} onRetry={() => { setScore(0); setPhase('intro') }} onExit={handleExit} />
+  const [startTime, setStartTime] = useState(null)
+
+  const handleExit = () => navigate('/dashboard')
+
+  const handleComplete = (s) => {
+    setScore(s)
+    setPhase('debrief')
+    // Save to DB
+    if (user) {
+      const duration = startTime ? Math.round((Date.now() - startTime) / 1000) : 600
+      db.saveScenarioResult(user.id, {
+        scenarioId: 'scenario_1',
+        scenarioName: 'Inbox Zero',
+        score: s,
+        passed: s >= 600,
+        duration
+      })
+      if (s >= 1000) db.awardBadge(user.id, { id: 'perfect_score', name: 'Perfection', icon: '💯' })
+      if (s > 0) db.awardBadge(user.id, { id: 'first_blood', name: 'Premier Sang', icon: '🩸' })
+    }
+  }
+
+  if (phase === 'intro') return <PhaseIntro onStart={() => { setPhase('inbox'); setStartTime(Date.now()) }} />
+  if (phase === 'inbox') return <PhaseInbox onComplete={handleComplete} score={score} setScore={setScore} />
+  return <PhaseDebrief score={score} onRetry={() => { setScore(0); setPhase('intro') }} onExit={handleExit} onDashboard={() => navigate('/dashboard')} />
 }
