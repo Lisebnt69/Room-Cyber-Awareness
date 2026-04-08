@@ -1,140 +1,271 @@
 import { useState, useRef, useEffect } from 'react'
+import Anthropic from '@anthropic-ai/sdk'
 
-const knowledgeBase = [
-  { keywords: ['phishing', 'hameçon', 'email suspect', 'faux email'], answer: "🎣 **Prévenir le phishing :**\n\n1. Vérifiez toujours l'expéditeur (domaine exact)\n2. Ne cliquez JAMAIS sur les liens en urgence\n3. Activez le MFA/2FA sur tous les comptes\n4. Survolez les liens avant de cliquer\n5. Signalez immédiatement à l'IT\n\n👉 Règle d'or : Urgence + lien = phishing suspect." },
-  { keywords: ['gdpr', 'rgpd', 'données personnelles', 'cnil'], answer: "🛡️ **GDPR / RGPD :**\n\n• Notification de breach : **72 heures** (CNIL)\n• Droit à l'oubli : suppression sur demande\n• DPIA obligatoire pour traitements à risque\n• DPO requis pour organismes publics ou traitements massifs\n• Consentement : explicite, libre, éclairé\n\n⚠️ Sanctions : jusqu'à **€20M ou 4% CA mondial**" },
-  { keywords: ['hipaa', 'santé', 'phi', 'patient', 'médical', 'hôpital'], answer: "🏥 **HIPAA :**\n\n• Protège les PHI (Protected Health Information)\n• Notification de breach : **60 jours** (HHS OCR)\n• BAA (Business Associate Agreement) obligatoire avec partenaires\n• Encryption requise pour PHI en transit et au repos\n• Formation annuelle obligatoire\n\n⚠️ Sanctions : $50K-$1.5M par violation" },
-  { keywords: ['pci', 'carte bancaire', 'paiement', 'cardholder'], answer: "💳 **PCI-DSS :**\n\n• 12 exigences principales\n• Req 3 : Ne jamais stocker CVV, cryptogramme\n• Req 8 : MFA pour accès admin\n• Req 10 : Logs 12 mois (3 mois accessibles)\n• Tokenisation recommandée\n\n⚠️ Sanctions : $5K-$100K/mois + perte certification" },
-  { keywords: ['ransomware', 'rançon', 'chiffrement', 'cryptolocker', 'malware'], answer: "🔒 **Ransomware - Procédure d'urgence :**\n\n1. **ISOLER** immédiatement le poste (débrancher réseau)\n2. **NE PAS PAYER** (aucune garantie + sanctionné par OFAC)\n3. **ALERTER** RSSI, IT, direction\n4. **PRÉSERVER** les preuves\n5. **RESTAURER** depuis sauvegardes propres\n6. **NOTIFIER** sous 72h (GDPR) ou 24h (NIS2)\n7. **DÉPOSER** plainte (ANSSI, police)\n\n⚠️ Sauvegardes 3-2-1 : vitales !" },
-  { keywords: ['mot de passe', 'password', 'authentification', 'mfa', '2fa'], answer: "🔑 **Bonnes pratiques mots de passe :**\n\n• Minimum **16 caractères**\n• Unique par service (gestionnaire = obligatoire)\n• MFA/2FA partout (préférer app plutôt que SMS)\n• Gestionnaires recommandés : Bitwarden (gratuit), 1Password, Dashlane\n• Vérifier vos breaches : haveibeenpwned.com\n\n❌ Jamais : date de naissance, prénom, réutilisation" },
-  { keywords: ['nis2', 'directive nis', 'opérateur essentiel'], answer: "📋 **Directive NIS2 :**\n\n• En vigueur : octobre 2024 (UE)\n• Concerne ~160 000 entités en France\n• Notification initiale : **24 heures**\n• Rapport complet : **72 heures**\n• Mesures : gestion des risques, continuité, supply chain\n\n⚠️ Sanctions : €10M ou 2% CA mondial" },
-  { keywords: ['dora', 'résilience', 'financier', 'banque', 'assurance'], answer: "🏦 **DORA (Finance) :**\n\n• En vigueur : janvier 2025\n• Secteur financier (banques, assurances, fintechs)\n• Notification incident : **4 heures** (initial)\n• TLPT (tests de pénétration) obligatoires\n• Gestion risques tiers ICT\n\n⚠️ Sanctions : €10M ou 1% CA" },
-  { keywords: ['iso 27001', 'isms', 'système management'], answer: "📊 **ISO/IEC 27001:2022 :**\n\n• 93 contrôles de sécurité\n• Certification par audit externe\n• Révision annuelle obligatoire\n• Basé sur le cycle PDCA\n• Nouveaux contrôles 2022 : threat intelligence, cloud, DevSecOps\n\n✅ Reconnu mondialement comme standard de référence" },
-  { keywords: ['soc 2', 'soc2', 'saas', 'cloud security'], answer: "☁️ **SOC 2 Type II :**\n\n• Trust Service Criteria (TSC) : sécurité, disponibilité, confidentialité\n• Audit sur 6-12 mois de période\n• Rapport remis aux clients/prospects\n• Contrôle CC6.1 : gestion des accès logiques\n\n✅ Standard attendu par tous les clients enterprise SaaS" },
-  { keywords: ['social engineering', 'ingénierie sociale', 'manipulation'], answer: "🎭 **Ingénierie sociale :**\n\nTechniques courantes :\n• **Pretexting** : fausse identité crédible\n• **Baiting** : clé USB abandonnée\n• **Vishing** : arnaque par téléphone\n• **Tailgating** : suivre quelqu'un en zone sécurisée\n\n🛡️ Protection : vérification d'identité hors-bande, procédures strictes, sensibilisation" },
-  { keywords: ['usb', 'clé usb', 'périphérique'], answer: "💾 **Risque clé USB :**\n\n⛔ Ne JAMAIS brancher une clé USB inconnue\n\nUne clé USB abandonnée peut :\n• Installer un keylogger silencieux\n• Déployer un ransomware\n• Exfiltrer des données\n• Simuler un clavier (Rubber Ducky)\n\n🛡️ Procédure : remettre à l'IT pour analyse en environnement isolé" },
-  { keywords: ['backup', 'sauvegarde', 'restauration'], answer: "💾 **Règle des sauvegardes 3-2-1 :**\n\n• **3** copies des données\n• **2** supports différents (disque + cloud)\n• **1** copie hors site (off-site)\n\nBonus :\n• Tester la restauration régulièrement\n• Sauvegardes immuables (protection ransomware)\n• RTO et RPO définis dans le PCA" },
-  { keywords: ['vpn', 'télétravail', 'remote', 'accès distant'], answer: "🔐 **Sécurité télétravail :**\n\n• VPN avec MFA obligatoire\n• Segmentation réseau (ZTNA > VPN classique)\n• Postes de travail chiffrés\n• Patch management régulier\n• Pas de WiFi public non sécurisé\n\n✅ Zero Trust : \"Never trust, always verify\"" },
-  { keywords: ['aide', 'help', 'bonjour', 'salut', 'hello', 'commencer'], answer: "👋 Bonjour ! Je suis l'assistant ROOMCA.\n\nJe peux vous aider sur :\n🎣 Phishing & emails suspects\n🔑 Mots de passe & MFA\n🛡️ GDPR, HIPAA, PCI-DSS, NIS2, DORA\n🔒 Ransomware, malware, USB\n📊 ISO 27001, SOC 2\n🎭 Social engineering\n\nPosez votre question !" }
-]
+const SYSTEM_PROMPT = `Tu es l'assistant ROOMCA, expert en cybersécurité et conformité réglementaire pour entreprises. Tu travailles pour la plateforme ROOMCA Cyber Awareness, une solution SaaS de sensibilisation à la cybersécurité via des scénarios interactifs gamifiés.
 
-function getResponse(message) {
-  const lower = message.toLowerCase().trim()
-  if (!lower) return "Posez-moi une question sur la cybersécurité ou la conformité 🛡️"
+## Ton expertise couvre :
 
-  for (const item of knowledgeBase) {
-    if (item.keywords.some(kw => lower.includes(kw))) {
-      return item.answer
-    }
-  }
+### Réglementations et conformité
+- GDPR/RGPD : droits des personnes, notification breach 72h CNIL, DPIA, DPO, sanctions €20M ou 4% CA mondial
+- HIPAA : PHI, notification breach 60 jours HHS OCR, BAA, chiffrement, formation annuelle
+- PCI-DSS v4.0 : 12 exigences, stockage CVV interdit, MFA admin (req 8), logs 12 mois (req 10), tokenisation
+- NIS2 : en vigueur octobre 2024, ~160 000 entités France, notification 24h initial/72h complet, €10M ou 2% CA
+- DORA : janvier 2025, secteur financier, notification 4h initial, TLPT obligatoires
+- ISO 27001:2022 : 93 contrôles, cycle PDCA, certification externe, révision annuelle
+- SOC 2 Type II : TSC 5 critères, audit 6-12 mois, CC6.1 accès logiques
+- CMMC 2.0 : 3 niveaux, fournisseurs DoD, 110 pratiques niveau 2
+- FERPA : données éducatives US, consentement parental, droits d'accès
+- HDS : hébergement données de santé France, agrément ANSSI
+- ISO 27701 : extension ISO 27001 pour vie privée/RGPD
 
-  return `Je n'ai pas de réponse précise pour "${message}".\n\nEssayez : phishing, GDPR, HIPAA, ransomware, mot de passe, MFA, NIS2, ISO 27001...`
-}
+### Cybermenaces et attaques
+- Phishing : vérification expéditeur, liens suspects, urgence artificielle, BEC (Business Email Compromise)
+- Ransomware : isolation immédiate, ne pas payer (OFAC), sauvegardes 3-2-1, notification 72h GDPR/24h NIS2
+- Social engineering : pretexting, baiting, vishing, tailgating, techniques de manipulation
+- Malware : types (trojans, keyloggers, spyware), vecteurs d'infection, détection
+- Attaques réseau : man-in-the-middle, DNS poisoning, ARP spoofing, WiFi rouge
+- Insider threat : exfiltration données, sabotage, erreur humaine non intentionnelle
+- Supply chain attacks : compromission fournisseurs, SolarWinds, Log4Shell
+- APT (Advanced Persistent Threats) : phases kill chain, persistance, lateral movement
+
+### Bonnes pratiques sécurité
+- Mots de passe : 16+ caractères, unique par service, gestionnaires (Bitwarden, 1Password, Dashlane)
+- MFA/2FA : apps préférées (TOTP) vs SMS (SIM swapping), clés hardware (YubiKey)
+- Chiffrement : AES-256, RSA, TLS 1.3, chiffrement au repos et en transit
+- Zero Trust : "Never trust, always verify", micro-segmentation, ZTNA vs VPN
+- Sauvegardes 3-2-1 : 3 copies, 2 supports, 1 hors site, tester la restauration, RTO/RPO
+- Patch management : fenêtres de maintenance, CVE, CVSS scoring, zero-day
+- SIEM/SOC : alertes, corrélation événements, threat intelligence, IOC
+- Pentest : black/white/grey box, OWASP Top 10, rapport de vulnérabilités
+
+### Secteurs spécialisés
+- Santé : HIPAA + HDS + RGPD, dossier patient, IoMT, systèmes legacy
+- Finance/Banque : DORA + PCI-DSS + RGPD, fraude, open banking
+- Industrie/OT : IEC 62443, NERC-CIP, systèmes SCADA, air gap
+- Administration publique : RGS, SecNumCloud, ANSSI, données régaliennes
+- Éducation : FERPA + RGPD, données mineurs, COPPA
+
+### Réponse aux incidents
+- Plan de réponse (PRIR) : préparation, identification, confinement, éradication, récupération
+- Forensique numérique : préservation preuves, chaîne de custody, analyse logs
+- Notification breaches : délais légaux par réglementation, contenu obligatoire, CNIL/ANSSI/HHS OCR
+- Communication de crise : cellule de crise, communication interne/externe, presse
+- BCP/PCA/PRA : RTO, RPO, tests de continuité, failover
+
+### ROOMCA Platform
+- Scénarios disponibles : Opération Inbox Zero (phishing), Bureau Compromis (ransomware), Ingénierie Sociale, Fuite de Données, WiFi Piégé
+- Secteurs couverts : Santé, Finance, Administration, Éducation, Industrie, Commerce, Énergie, Juridique, Tech, Transport
+- Plans : Starter (50 employés, 4 scénarios), Pro (500 employés, tous scénarios), Enterprise (illimité)
+- Fonctionnalités : Analytics, Campaigns phishing, Certifications, Compliance tracking, API, SSO
+
+## Style de réponse :
+- Réponds TOUJOURS en français sauf si on te parle en anglais
+- Sois précis, pratique et actionnable
+- Utilise des listes à puces pour les étapes et procédures
+- Cite les délais légaux exacts et les montants de sanctions quand pertinent
+- Utilise **gras** pour les termes importants et les chiffres clés
+- Si on te pose une question hors cybersécurité/conformité, recentre poliment sur ton domaine
+- Longueur : adapte — courte pour les définitions, détaillée pour les procédures`
 
 function formatMessage(text) {
   return text.split('\n').map((line, i) => {
     const bold = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    return <div key={i} style={{ marginBottom: line === '' ? '6px' : '2px' }} dangerouslySetInnerHTML={{ __html: bold }} />
+    return <div key={i} style={{ marginBottom: line === '' ? '6px' : '1px' }} dangerouslySetInnerHTML={{ __html: bold }} />
   })
 }
+
+const QUICK_QUESTIONS = [
+  'Que faire face à un phishing ?',
+  'Délais de notification GDPR ?',
+  'Comment réagir à un ransomware ?',
+  'Qu\'est-ce que le MFA ?',
+]
 
 export default function AIChatbot() {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
-    { role: 'bot', text: "Bonjour ! Je suis l'assistant ROOMCA 🤖\n\nPosez-moi vos questions sur la cybersécurité, GDPR, HIPAA, phishing, mots de passe, ou conformité !" }
+    { role: 'assistant', content: "Bonjour ! Je suis l'assistant ROOMCA 🛡️\n\nPosez-moi vos questions sur la **cybersécurité**, le **GDPR**, **HIPAA**, **NIS2**, le **phishing**, les **ransomwares** ou toute autre thématique de conformité et sécurité." }
   ])
   const [input, setInput] = useState('')
-  const [thinking, setThinking] = useState(false)
+  const [streaming, setStreaming] = useState(false)
+  const [error, setError] = useState(null)
   const endRef = useRef(null)
+  const clientRef = useRef(null)
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => {
+    const key = import.meta.env.VITE_ANTHROPIC_API_KEY
+    if (key) {
+      clientRef.current = new Anthropic({ apiKey: key, dangerouslyAllowBrowser: true })
+    }
+  }, [])
 
-  const send = () => {
-    if (!input.trim() || thinking) return
-    const userMsg = { role: 'user', text: input }
-    setMessages(m => [...m, userMsg])
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, streaming])
+
+  const send = async (text) => {
+    const msg = (text || input).trim()
+    if (!msg || streaming) return
     setInput('')
-    setThinking(true)
-    const response = getResponse(input)
-    setTimeout(() => {
-      setMessages(m => [...m, { role: 'bot', text: response }])
-      setThinking(false)
-    }, 400 + Math.random() * 400)
+    setError(null)
+
+    const userMessage = { role: 'user', content: msg }
+    const newMessages = [...messages, userMessage]
+    setMessages(newMessages)
+    setStreaming(true)
+
+    // Optimistic empty assistant message for streaming
+    setMessages(m => [...m, { role: 'assistant', content: '', streaming: true }])
+
+    try {
+      if (!clientRef.current) {
+        throw new Error('API key not configured. Add VITE_ANTHROPIC_API_KEY to .env.local')
+      }
+
+      // Build history for API (exclude initial greeting and streaming placeholder)
+      const apiMessages = newMessages
+        .filter(m => !m.streaming)
+        .map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }))
+
+      const stream = clientRef.current.messages.stream({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
+        messages: apiMessages,
+      })
+
+      let accumulated = ''
+      for await (const chunk of stream) {
+        if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
+          accumulated += chunk.delta.text
+          setMessages(m => {
+            const updated = [...m]
+            updated[updated.length - 1] = { role: 'assistant', content: accumulated, streaming: true }
+            return updated
+          })
+        }
+      }
+
+      setMessages(m => {
+        const updated = [...m]
+        updated[updated.length - 1] = { role: 'assistant', content: accumulated }
+        return updated
+      })
+    } catch (err) {
+      const errMsg = err.message?.includes('API key') || err.status === 401
+        ? '⚠ Clé API non configurée. Ajoutez VITE_ANTHROPIC_API_KEY dans .env.local'
+        : `⚠ Erreur: ${err.message || 'Impossible de contacter l\'API'}`
+      setMessages(m => {
+        const updated = [...m]
+        updated[updated.length - 1] = { role: 'assistant', content: errMsg }
+        return updated
+      })
+      setError(errMsg)
+    } finally {
+      setStreaming(false)
+    }
   }
 
-  const quickQuestions = ['Phishing ?', 'GDPR ?', 'Ransomware ?', 'MFA ?']
+  const showQuickActions = messages.length <= 1
 
   return (
     <>
-      <button onClick={() => setOpen(!open)} title="Assistant ROOMCA" aria-label="Ouvrir l'assistant" style={{
-        position: 'fixed', bottom: '24px', right: '24px', width: '56px', height: '56px',
-        borderRadius: '50%', background: '#eb2828', border: 'none', cursor: 'pointer',
-        fontSize: '26px', boxShadow: '0 4px 20px rgba(235,40,40,0.5)', zIndex: 1000,
-        transition: 'transform 0.2s, box-shadow 0.2s'
-      }}
+      <button
+        onClick={() => setOpen(!open)}
+        title="Assistant ROOMCA"
+        aria-label="Ouvrir l'assistant"
+        style={{
+          position: 'fixed', bottom: '24px', right: '24px', width: '56px', height: '56px',
+          borderRadius: '50%', background: '#eb2828', border: 'none', cursor: 'pointer',
+          fontSize: '26px', boxShadow: '0 4px 20px rgba(235,40,40,0.5)', zIndex: 1000,
+          transition: 'transform 0.2s, box-shadow 0.2s',
+        }}
         onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(235,40,40,0.7)' }}
         onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(235,40,40,0.5)' }}
-      >{open ? '✕' : '🤖'}</button>
+      >
+        {open ? '✕' : '🤖'}
+      </button>
 
       {open && (
         <div style={{
-          position: 'fixed', bottom: '88px', right: '24px', width: '360px', height: '520px',
+          position: 'fixed', bottom: '88px', right: '24px', width: '380px', height: '560px',
           background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '16px',
-          display: 'flex', flexDirection: 'column', boxShadow: '0 12px 40px rgba(0,0,0,0.6)', zIndex: 1000
+          display: 'flex', flexDirection: 'column', boxShadow: '0 12px 40px rgba(0,0,0,0.6)', zIndex: 1000,
         }}>
           {/* Header */}
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(235,40,40,0.05)', borderRadius: '16px 16px 0 0' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(235,40,40,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🤖</div>
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(235,40,40,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🛡️</div>
             <div style={{ flex: 1 }}>
-              <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px' }}>ROOMCA Assistant</div>
-              <div style={{ fontSize: '11px', color: '#22c55e' }}>● En ligne · Expert cybersécurité</div>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px' }}>ROOMCA Assistant IA</div>
+              <div style={{ fontSize: '11px', color: streaming ? '#f59e0b' : '#22c55e' }}>
+                {streaming ? '● Analyse en cours...' : '● Expert cybersécurité & conformité'}
+              </div>
             </div>
+            <button onClick={() => setMessages([messages[0]])} title="Effacer la conversation" style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>🗑</button>
           </div>
 
           {/* Messages */}
           <div style={{ flex: 1, padding: '14px', overflowY: 'auto', scrollbarWidth: 'thin' }}>
             {messages.map((m, i) => (
               <div key={i} style={{ marginBottom: '12px', display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                {m.role === 'assistant' && (
+                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(235,40,40,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}>🛡</div>
+                )}
                 <div style={{
-                  maxWidth: '86%', padding: '10px 14px', borderRadius: m.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                  maxWidth: '82%', padding: '10px 14px',
+                  borderRadius: m.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
                   background: m.role === 'user' ? '#eb2828' : 'var(--bg-black)',
-                  color: 'var(--text-primary)', fontSize: '12px', lineHeight: 1.6
+                  color: 'var(--text-primary)', fontSize: '12px', lineHeight: 1.65,
+                  border: m.role === 'assistant' ? '1px solid var(--border-subtle)' : 'none',
                 }}>
-                  {m.role === 'bot' ? formatMessage(m.text) : m.text}
+                  {m.role === 'assistant' ? formatMessage(m.content) : m.content}
+                  {m.streaming && m.content === '' && (
+                    <div style={{ display: 'flex', gap: '4px', padding: '2px 0' }}>
+                      {[0, 1, 2].map(j => (
+                        <div key={j} style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#eb2828', animation: `pulse 1s ${j * 0.2}s infinite` }} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
-            {thinking && (
-              <div style={{ display: 'flex', gap: '4px', padding: '10px 14px' }}>
-                {[0, 1, 2].map(i => (
-                  <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#eb2828', animation: `pulse 1s ${i * 0.2}s infinite` }} />
-                ))}
-              </div>
-            )}
             <div ref={endRef} />
           </div>
 
           {/* Quick questions */}
-          {messages.length === 1 && (
+          {showQuickActions && (
             <div style={{ padding: '0 14px 10px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {quickQuestions.map(q => (
-                <button key={q} onClick={() => { setInput(q); setTimeout(send, 50) }}
-                  onMouseDown={(e) => { e.preventDefault(); setInput(q) }}
-                  style={{ padding: '5px 10px', background: 'rgba(235,40,40,0.1)', border: '1px solid rgba(235,40,40,0.3)', borderRadius: '12px', color: '#eb2828', cursor: 'pointer', fontSize: '11px' }}>{q}</button>
+              {QUICK_QUESTIONS.map(q => (
+                <button key={q} onClick={() => send(q)} disabled={streaming}
+                  style={{ padding: '5px 10px', background: 'rgba(235,40,40,0.1)', border: '1px solid rgba(235,40,40,0.3)', borderRadius: '12px', color: '#eb2828', cursor: 'pointer', fontSize: '10px', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(235,40,40,0.2)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(235,40,40,0.1)' }}
+                >{q}</button>
               ))}
             </div>
           )}
 
           {/* Input */}
           <div style={{ padding: '12px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '8px' }}>
-            <input type="text" value={input} onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && send()}
-              placeholder="Posez une question..." aria-label="Message"
-              style={{ flex: 1, padding: '9px 12px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '13px' }} />
-            <button onClick={send} disabled={!input.trim() || thinking} style={{
-              padding: '9px 16px', background: input.trim() ? '#eb2828' : '#333', border: 'none',
-              borderRadius: '10px', color: '#fff', cursor: input.trim() ? 'pointer' : 'default', fontSize: '16px'
-            }}>→</button>
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+              placeholder="Posez une question..."
+              aria-label="Message"
+              disabled={streaming}
+              style={{ flex: 1, padding: '9px 12px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '13px', opacity: streaming ? 0.7 : 1 }}
+            />
+            <button
+              onClick={() => send()}
+              disabled={!input.trim() || streaming}
+              style={{
+                padding: '9px 16px', background: input.trim() && !streaming ? '#eb2828' : '#333',
+                border: 'none', borderRadius: '10px', color: '#fff',
+                cursor: input.trim() && !streaming ? 'pointer' : 'default', fontSize: '16px', transition: 'background 0.2s',
+              }}
+            >→</button>
           </div>
         </div>
       )}

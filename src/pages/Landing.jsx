@@ -355,10 +355,13 @@ function DemoModal({ onClose }) {
 
       {step === 1 && (
         <div>
+          <div style={{ background: 'rgba(235,40,40,0.06)', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '6px', padding: '8px 12px', marginBottom: '12px', fontSize: '11px', color: '#eb2828', fontFamily: 'var(--mono)' }}>
+            🎯 ROOMCA SIMULATION — Analysez cet email suspect
+          </div>
           <div style={{ background: '#ffffff', color: '#000', padding: '20px', borderRadius: '8px', fontFamily: 'Arial, sans-serif', fontSize: '13px', marginBottom: '20px' }}>
             <div style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <strong>De :</strong> <span style={{ color: '#666' }}>pdg@acme-corp.io</span>
+                <strong>De :</strong> <span style={{ color: '#c00' }}>Jean-Marc Dupont &lt;pdg@acme-corp.io&gt;</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <strong>Objet :</strong> <span style={{ color: '#c00', fontWeight: 'bold' }}>⚠️ URGENT - Virement confidentiel</span>
@@ -383,12 +386,13 @@ function DemoModal({ onClose }) {
 
       {step === 2 && (
         <div>
-          <h4 style={{ marginBottom: '16px', color: 'var(--text-primary)' }}>Que faites-vous ?</h4>
+          <h4 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Que faites-vous ?</h4>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Choisissez la meilleure réponse face à cette situation.</p>
           {[
-            { id: 'a', text: '✅ Appeler le PDG sur sa ligne directe pour confirmer', correct: true },
-            { id: 'b', text: '❌ Effectuer le virement - c\'est le PDG', correct: false },
-            { id: 'c', text: '❌ Répondre par email pour plus d\'informations', correct: false },
-            { id: 'd', text: '✅ Signaler à l\'IT et au responsable financier', correct: true }
+            { id: 'a', text: 'Appeler le PDG sur sa ligne directe pour confirmer', correct: true },
+            { id: 'b', text: 'Effectuer le virement — c\'est le PDG qui demande', correct: false },
+            { id: 'c', text: 'Répondre par email pour obtenir plus d\'informations', correct: false },
+            { id: 'd', text: 'Signaler à l\'IT et au responsable financier immédiatement', correct: true }
           ].map(opt => (
             <button key={opt.id} onClick={() => { setAnswer(opt); next() }} style={{
               display: 'block', width: '100%', padding: '14px 16px', marginBottom: '10px',

@@ -76,7 +76,7 @@ export default function HelpCenter() {
             { icon: '🚀', title: 'Démarrage rapide', link: '/onboarding' },
             { icon: '📖', title: 'Documentation API', link: '/api-docs' },
             { icon: '💬', title: 'Support live', link: '#chat' },
-            { icon: '🎓', title: 'Formations', link: '/certification' }
+            { icon: '🎓', title: 'Formations', link: '/play' }
           ].map((item, i) => (
             <div key={i} onClick={() => item.link.startsWith('/') && navigate(item.link)} style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', textAlign: 'center', cursor: 'pointer', border: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: '40px', marginBottom: '8px' }}>{item.icon}</div>
