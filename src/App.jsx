@@ -9,6 +9,7 @@ import Analytics from './pages/Analytics'
 import Campaigns from './pages/Campaigns'
 import Billing from './pages/Billing'
 import Integrations from './pages/Integrations'
+import Settings from './pages/Settings'
 import Admin from './pages/Admin'
 import SuperAdmin from './pages/SuperAdmin'
 
@@ -47,6 +48,11 @@ export default function App() {
           <Route path="/integrations" element={
             <ProtectedRoute requiredRole={ROLES.SUPER_ADMIN}>
               <Integrations />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           } />
           <Route path="/admin" element={
