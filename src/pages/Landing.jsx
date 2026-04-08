@@ -56,7 +56,7 @@ function Navbar({ onLogin }) {
   )
 }
 
-function HeroSection({ onStart }) {
+function HeroSection({ onStart, setModal }) {
   const { t } = useLang()
   const [typed, setTyped] = useState('')
   const msg = '> BREACH SIMULATION READY...'
@@ -82,7 +82,7 @@ function HeroSection({ onStart }) {
         </p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-primary" style={{ fontSize: '15px', padding: '14px 36px' }} onClick={onStart}>{t('heroCta1')}</button>
-          <button className="btn-secondary" style={{ fontSize: '15px', padding: '14px 36px' }}>{t('heroCta2')}</button>
+          <button className="btn-secondary" style={{ fontSize: '15px', padding: '14px 36px' }} onClick={() => setModal('demo')}>{t('heroCta2')}</button>
         </div>
         <div style={{ marginTop: '56px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)', letterSpacing: '0.1em', minHeight: '18px' }}>
           {typed}<span className="animate-blink">█</span>
@@ -206,7 +206,7 @@ function FeaturesSection() {
   )
 }
 
-function PricingSection() {
+function PricingSection({ showToast }) {
   const { t } = useLang()
   const plans = [
     { name: t('plan1Name'), price: t('plan1Price'), period: t('plan1Period'), target: t('plan1Target'), features: [t('plan1F1'), t('plan1F2'), t('plan1F3'), t('plan1F4')], cta: t('plan1Cta'), highlight: false },
@@ -245,7 +245,7 @@ function PricingSection() {
                   </div>
                 ))}
               </div>
-              <button className={p.highlight ? 'btn-primary' : 'btn-secondary'} style={{ width: '100%', justifyContent: 'center' }}>{p.cta}</button>
+              <button className={p.highlight ? 'btn-primary' : 'btn-secondary'} style={{ width: '100%', justifyContent: 'center' }} onClick={() => showToast(`Plan "${p.name}" selected!`)}>{p.cta}</button>
             </div>
           ))}
         </div>
@@ -307,20 +307,43 @@ function Footer() {
   )
 }
 
+
+function DemoModal({ onClose }) {
+  const [line, setLine] = useState(0)
+  const lines = ['$ roomca-cli --scenario inbox-zero', '✓ Loading ROOMCA...', '⚠ ALERT: Detected exfiltration', '→ Time limit: 15:00 seconds', '📧 Analyzing emails...', '[1] Support IT (SAFE)', '[2] Microsoft (PHISHING) ⚠', '[3] HR (SAFE)', '[4] DHL (PHISHING) ⚠', '[5] Slack (SAFE)', '✓ Complete! Score: 920/1000', '✓ Accuracy: 100%', '🏆 Certificate awarded']
+  useEffect(() => { if (line < lines.length) { const t = setTimeout(() => setLine(l => l + 1), 300); return () => clearTimeout(t) } }, [line])
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
+      <div style={{ background: '#000', border: '1px solid #333', width: '90%', maxWidth: '700px', padding: '24px', fontFamily: 'var(--mono)', fontSize: '12px', maxHeight: '70vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
+        <div style={{ marginBottom: '16px', color: 'var(--red)' }}>$ roomca-demo.sh</div>
+        <div style={{ color: 'var(--text-secondary)', lineHeight: 2 }}>
+          {lines.slice(0, line).map((l, i) => <div key={i} style={{ color: l.includes('✓') ? '#22c55e' : l.includes('⚠') ? '#f59e0b' : l.includes('PHISHING') ? 'var(--red)' : 'inherit' }}>{l}</div>)}
+          {line < lines.length && <span className="animate-blink" style={{ color: 'var(--red)' }}>█</span>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Landing() {
   const navigate = useNavigate()
+  const [modal, setModal] = useState(null)
+  const [toastMsg, setToastMsg] = useState(null)
+  const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(null), 2500) }
   const onLogin = () => navigate('/login')
   const onStart = () => navigate('/login')
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
       <Navbar onLogin={onLogin} />
-      <HeroSection onStart={onStart} />
+      <HeroSection onStart={onStart} setModal={setModal} />
       <ProblemSection />
       <SolutionSection />
       <FeaturesSection />
-      <PricingSection />
+      <PricingSection showToast={showToast} />
       <CTASection onStart={onStart} />
       <Footer />
+      {toastMsg && <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 300, background: '#0a0a0a', border: '1px solid #22c55e', padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', animation: 'fadeInUp 0.3s ease' }}>✓ {toastMsg}</div>}
+      {modal === 'demo' && <DemoModal onClose={() => setModal(null)} />}
     </div>
   )
 }
