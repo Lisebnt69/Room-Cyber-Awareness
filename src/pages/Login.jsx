@@ -63,7 +63,10 @@ export default function Login() {
       </div>
       <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '420px', padding: '24px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <Logo size="lg" showSub />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <img src={Logo} alt="ROOMCA" style={{ height: '48px', objectFit: 'contain' }} />
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--mono)', letterSpacing: '0.15em' }}>Room Cyber Awareness</span>
+          </div>
           <div style={{ marginTop: '16px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
             {t('loginPortal')}
           </div>
