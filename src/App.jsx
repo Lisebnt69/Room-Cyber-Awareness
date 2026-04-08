@@ -24,6 +24,7 @@ import ScenarioBuilder from './pages/ScenarioBuilder'
 import PartnerPortal from './pages/PartnerPortal'
 import WhiteLabel from './pages/WhiteLabel'
 import PlayerDashboard from './pages/PlayerDashboard'
+import VisualChallenge from './pages/VisualChallenge'
 
 export default function App() {
   return (

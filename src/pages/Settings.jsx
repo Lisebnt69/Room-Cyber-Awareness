@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import { whitelabelConfig, ssoIntegration, twoFactorAuth } from '../services/multitenancy'
 import { auditLog, gdprCompliance, dataExport, complianceChecklist } from '../services/audit'
-import Logo from '../components/Logo'
+import Logo from '../img/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
@@ -62,7 +62,11 @@ export default function Settings() {
     <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
       {/* Navigation */}
       <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <Logo size="sm" />
+        <img
+  src={Logo}
+  alt="ROOMCA"
+  style={{ height: '32px', width: 'auto', display: 'block' }}
+/>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <LangToggle />
           <button onClick={() => navigate('/admin')} style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>

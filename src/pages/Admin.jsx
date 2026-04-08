@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '../components/Logo'
+import Logo from '../img/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
@@ -586,7 +586,11 @@ export default function Admin() {
       {/* Sidebar */}
       <aside style={{ width: '240px', flexShrink: 0, background: '#080808', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50 }}>
         <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <Logo size="sm" />
+          <img
+  src={Logo}
+  alt="ROOMCA"
+  style={{ height: '32px', width: 'auto', display: 'block' }}
+/>
           <div style={{ marginTop: '12px', padding: '8px 10px', background: 'rgba(235,40,40,0.08)', border: '1px solid rgba(235,40,40,0.2)' }}>
             <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('adminConsoleName')}</div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>{user?.company}</div>

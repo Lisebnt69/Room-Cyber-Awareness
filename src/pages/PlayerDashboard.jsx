@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import { db } from '../services/db'
-import Logo from '../components/Logo'
+import Logo from '../img/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 
 const allBadges = [
@@ -119,7 +119,11 @@ export default function PlayerDashboard() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
       <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg-black)' }}>
-        <Logo size="sm" />
+        <img
+  src={Logo}
+  alt="ROOMCA"
+  style={{ height: '32px', width: 'auto', display: 'block' }}
+/>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <LangToggle />
           <button onClick={() => navigate('/play')} className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }}>▶ Jouer</button>
