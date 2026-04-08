@@ -327,105 +327,247 @@ function Footer() {
   )
 }
 
+const HIDDEN_FLAGS = [
+  { id: 'domain',   icon: '🌐', title: 'Faux domaine détecté',       detail: '"acme-corp.io" ≠ "acme.com" — domaine cloné pour imiter le PDG',     color: '#ef4444' },
+  { id: 'urgency',  icon: '⚡', title: 'Urgence artificielle',        detail: '"immédiatement" — pression temporelle pour court-circuiter la réflexion', color: '#f59e0b' },
+  { id: 'amount',   icon: '💸', title: 'Virement non autorisé',       detail: '78 500€ sans procédure officielle — aucun transfert sans double validation', color: '#ef4444' },
+  { id: 'secret',   icon: '🤫', title: 'Demande de silence',          detail: '"N\'en parlez à personne" — isolation de la victime, technique BEC classique', color: '#f59e0b' },
+  { id: 'dnd',      icon: '📵', title: 'PDG intentionnellement injoignable', detail: '"Ne Pas Déranger" rend toute vérification impossible — tactique délibérée', color: '#ef4444' },
+]
+
+function FlagSpan({ flagId, children, found, activeHint, onFind, setActiveHint }) {
+  const isActive = activeHint === flagId
+  return (
+    <mark
+      onClick={() => { onFind(flagId); setActiveHint(flagId) }}
+      style={{
+        cursor: 'pointer',
+        background: found ? 'rgba(235,40,40,0.18)' : isActive ? 'rgba(245,158,11,0.15)' : 'transparent',
+        color: 'inherit',
+        borderBottom: found ? '2px solid #eb2828' : '2px dashed rgba(235,40,40,0.5)',
+        borderRadius: '2px',
+        padding: '0 2px',
+        fontWeight: found ? '600' : 'inherit',
+        transition: 'all 0.2s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(235,40,40,0.12)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = found ? 'rgba(235,40,40,0.18)' : 'transparent' }}
+    >{children}</mark>
+  )
+}
+
 function DemoModal({ onClose }) {
   const [step, setStep] = useState(0)
   const [answer, setAnswer] = useState(null)
+  const [found, setFound] = useState(new Set())
+  const [activeHint, setActiveHint] = useState(null)
+  const [shake, setShake] = useState(false)
 
-  const steps = [
-    { type: 'intro' },
-    { type: 'email' },
-    { type: 'question' },
-    { type: 'result' }
-  ]
+  const total = HIDDEN_FLAGS.length
+  const foundCount = found.size
 
-  const next = () => setStep(s => Math.min(s + 1, steps.length - 1))
+  const findFlag = (id) => {
+    if (!found.has(id)) setFound(prev => new Set([...prev, id]))
+  }
+
+  const reset = () => { setStep(0); setAnswer(null); setFound(new Set()); setActiveHint(null) }
 
   return (
     <div style={{ color: 'var(--text-primary)' }}>
+
+      {/* Step 0 — Intro */}
       {step === 0 && (
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</div>
-          <h3 style={{ fontSize: '20px', marginBottom: '12px', color: 'var(--text-primary)' }}>Mini-scénario phishing</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '14px' }}>
-            Vous recevez un email urgent de votre PDG. Que faites-vous ?
+        <div style={{ textAlign: 'center', padding: '12px 0' }}>
+          <div style={{ fontSize: '52px', marginBottom: '12px' }}>🕵️</div>
+          <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>Scénario : Attaque BEC</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px', fontSize: '14px', lineHeight: 1.6 }}>
+            Un email urgent arrive dans la boîte de votre collègue.<br />
+            <strong style={{ color: '#eb2828' }}>Votre mission : trouver les {total} indices cachés</strong> avant de décider quoi faire.
           </p>
-          <button onClick={next} className="btn-primary" style={{ padding: '12px 32px' }}>Commencer ▶</button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            {HIDDEN_FLAGS.map(f => (
+              <span key={f.id} style={{ padding: '4px 10px', background: 'rgba(235,40,40,0.08)', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                {f.icon} {f.title}
+              </span>
+            ))}
+          </div>
+          <button onClick={() => setStep(1)} className="btn-primary" style={{ padding: '12px 36px' }}>
+            🔍 Lancer l'enquête
+          </button>
         </div>
       )}
 
+      {/* Step 1 — Interactive email with hidden objects */}
       {step === 1 && (
         <div>
-          <div style={{ background: 'rgba(235,40,40,0.06)', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '6px', padding: '8px 12px', marginBottom: '12px', fontSize: '11px', color: '#eb2828', fontFamily: 'var(--mono)' }}>
-            🎯 ROOMCA SIMULATION — Analysez cet email suspect
+          {/* HUD */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', padding: '8px 12px', background: 'rgba(235,40,40,0.06)', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '6px' }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: '#eb2828' }}>
+              🕵️ MODE INVESTIGATION
+            </span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '12px' }}>
+              {[...Array(total)].map((_, i) => (
+                <span key={i} style={{ marginLeft: '4px', fontSize: '14px', opacity: i < foundCount ? 1 : 0.25 }}>🔴</span>
+              ))}
+              <span style={{ marginLeft: '8px', color: foundCount === total ? '#22c55e' : 'var(--text-muted)', fontSize: '11px' }}>
+                {foundCount}/{total} indices
+              </span>
+            </span>
           </div>
-          <div style={{ background: '#ffffff', color: '#000', padding: '20px', borderRadius: '8px', fontFamily: 'Arial, sans-serif', fontSize: '13px', marginBottom: '20px' }}>
-            <div style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <strong>De :</strong> <span style={{ color: '#c00' }}>Jean-Marc Dupont &lt;pdg@acme-corp.io&gt;</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <strong>Objet :</strong> <span style={{ color: '#c00', fontWeight: 'bold' }}>⚠️ URGENT - Virement confidentiel</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <strong>Reçu :</strong> <span style={{ color: '#666' }}>Aujourd'hui 14:27</span>
+
+          {/* Active hint panel */}
+          {activeHint ? (
+            <div style={{ marginBottom: '8px', padding: '10px 14px', background: `${HIDDEN_FLAGS.find(f => f.id === activeHint)?.color}18`, border: `1px solid ${HIDDEN_FLAGS.find(f => f.id === activeHint)?.color}55`, borderRadius: '6px', fontSize: '12px', lineHeight: 1.5 }}>
+              <span style={{ color: HIDDEN_FLAGS.find(f => f.id === activeHint)?.color, fontWeight: 'bold' }}>
+                {HIDDEN_FLAGS.find(f => f.id === activeHint)?.icon} {HIDDEN_FLAGS.find(f => f.id === activeHint)?.title}
+              </span>
+              <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>
+                — {HIDDEN_FLAGS.find(f => f.id === activeHint)?.detail}
+              </span>
+            </div>
+          ) : (
+            <div style={{ marginBottom: '8px', fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+              💡 Cliquez sur les éléments soulignés pour révéler les indices cachés
+            </div>
+          )}
+
+          {/* Email */}
+          <div style={{ background: '#ffffff', color: '#111', padding: '18px', borderRadius: '8px', fontFamily: 'Arial, sans-serif', fontSize: '13px', marginBottom: '14px', lineHeight: 1.7 }}>
+            {/* Header */}
+            <div style={{ borderBottom: '1px solid #e5e5e5', paddingBottom: '12px', marginBottom: '14px', fontSize: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '4px' }}>
+                <span style={{ color: '#666' }}>De :</span>
+                <span>
+                  Jean-Marc Dupont &lt;
+                  <FlagSpan flagId="domain" found={found.has('domain')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>pdg@acme-corp.io</FlagSpan>
+                  &gt;
+                </span>
+                <span style={{ color: '#666' }}>À :</span>
+                <span>marie.dupont@acme.com</span>
+                <span style={{ color: '#666' }}>Objet :</span>
+                <span style={{ fontWeight: 'bold', color: '#b00' }}>⚠️ URGENT — Virement confidentiel</span>
+                <span style={{ color: '#666' }}>Reçu :</span>
+                <span style={{ color: '#666' }}>Aujourd'hui 14:27</span>
               </div>
             </div>
-            <p>Bonjour,</p>
-            <p style={{ margin: '8px 0' }}>Je suis en réunion confidentielle avec nos avocats. J'ai besoin que vous effectuiez <strong>immédiatement</strong> un virement de <strong style={{ color: '#c00' }}>78 500 €</strong> sur le compte suivant :</p>
-            <div style={{ background: '#f5f5f5', padding: '10px', margin: '12px 0', borderLeft: '3px solid #c00' }}>
+
+            {/* Body — use div instead of p to allow absolute-positioned tooltip spans inside */}
+            <div style={{ marginBottom: '8px' }}>Bonjour Marie,</div>
+            <div style={{ margin: '10px 0' }}>
+              Je suis actuellement en réunion confidentielle avec nos avocats. J'ai besoin que vous effectuiez{' '}
+              <FlagSpan flagId="urgency" found={found.has('urgency')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
+                <strong>immédiatement</strong>
+              </FlagSpan>
+              {' '}un virement de{' '}
+              <FlagSpan flagId="amount" found={found.has('amount')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
+                <strong style={{ color: '#b00' }}>78 500 €</strong>
+              </FlagSpan>
+              {' '}sur le compte suivant :
+            </div>
+
+            <div style={{ background: '#f8f8f8', padding: '10px 14px', margin: '10px 0', borderLeft: '3px solid #ccc', fontSize: '12px', fontFamily: 'monospace' }}>
               <div>IBAN : FR76 1234 5678 9012 3456 7890 123</div>
               <div>BIC : BNPAFRPP</div>
               <div>Motif : Règlement prestataire confidentiel</div>
             </div>
-            <p>N'en parlez à <strong>personne</strong>. Je suis en mode "Ne Pas Déranger". Confirmez par retour email.</p>
-            <p style={{ marginTop: '12px', color: '#666' }}>Cordialement,<br/><strong>Jean-Marc Dupont</strong><br/>PDG, ACME Corp</p>
+
+            <div style={{ margin: '10px 0' }}>
+              <FlagSpan flagId="secret" found={found.has('secret')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
+                N'en parlez à <strong>personne</strong>
+              </FlagSpan>
+              . Je suis en mode "{' '}
+              <FlagSpan flagId="dnd" found={found.has('dnd')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
+                Ne Pas Déranger
+              </FlagSpan>
+              ". Confirmez uniquement par retour email.
+            </div>
+
+            <p style={{ marginTop: '14px', color: '#555' }}>
+              Cordialement,<br />
+              <strong>Jean-Marc Dupont</strong><br />
+              PDG, ACME Corp
+            </p>
           </div>
-          <button onClick={next} className="btn-primary" style={{ width: '100%', padding: '12px' }}>Analyser cet email →</button>
+
+          {/* Proceed button */}
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              onClick={() => setStep(2)}
+              className={foundCount > 0 ? 'btn-primary' : 'btn-secondary'}
+              style={{ flex: 1, padding: '11px', justifyContent: 'center' }}
+            >
+              {foundCount === total ? '🏆 Tous trouvés — Décider maintenant →' : foundCount > 0 ? `Continuer avec ${foundCount} indice${foundCount > 1 ? 's' : ''} →` : 'Passer directement →'}
+            </button>
+          </div>
         </div>
       )}
 
+      {/* Step 2 — Decision */}
       {step === 2 && (
         <div>
-          <h4 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Que faites-vous ?</h4>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Choisissez la meilleure réponse face à cette situation.</p>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', padding: '10px 14px', background: foundCount >= 3 ? 'rgba(34,197,94,0.08)' : 'rgba(245,158,11,0.08)', border: `1px solid ${foundCount >= 3 ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: '6px', fontSize: '12px' }}>
+            <span>{foundCount >= 3 ? '🟢' : '🟡'}</span>
+            <span style={{ color: foundCount >= 3 ? '#22c55e' : '#f59e0b' }}>
+              {foundCount === total ? `${total}/${total} indices trouvés — Excellente analyse !` : `${foundCount}/${total} indices identifiés${foundCount < 3 ? ' — quelques-uns vous ont échappé' : ''}`}
+            </span>
+          </div>
+          <h4 style={{ marginBottom: '6px' }}>Quelle est votre décision ?</h4>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>Choisissez la meilleure réponse face à cette situation.</p>
           {[
-            { id: 'a', text: 'Appeler le PDG sur sa ligne directe pour confirmer', correct: true },
-            { id: 'b', text: 'Effectuer le virement — c\'est le PDG qui demande', correct: false },
-            { id: 'c', text: 'Répondre par email pour obtenir plus d\'informations', correct: false },
-            { id: 'd', text: 'Signaler à l\'IT et au responsable financier immédiatement', correct: true }
+            { id: 'a', text: 'Appeler le PDG sur sa ligne directe connue pour vérifier', correct: true },
+            { id: 'b', text: 'Effectuer le virement — le PDG en a besoin maintenant', correct: false },
+            { id: 'c', text: 'Répondre à l\'email pour demander plus d\'informations', correct: false },
+            { id: 'd', text: 'Alerter le responsable IT et le directeur financier', correct: true },
           ].map(opt => (
-            <button key={opt.id} onClick={() => { setAnswer(opt); next() }} style={{
-              display: 'block', width: '100%', padding: '14px 16px', marginBottom: '10px',
+            <button key={opt.id} onClick={() => { setAnswer(opt); setStep(3) }} style={{
+              display: 'block', width: '100%', padding: '13px 16px', marginBottom: '8px',
               background: 'var(--bg-black)', border: '1px solid var(--border-subtle)',
               borderRadius: '8px', color: 'var(--text-primary)', textAlign: 'left',
-              cursor: 'pointer', fontSize: '14px', transition: 'all 0.2s'
+              cursor: 'pointer', fontSize: '13px', transition: 'all 0.2s',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = '#eb2828'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#eb2828'; e.currentTarget.style.background = 'rgba(235,40,40,0.04)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--bg-black)' }}
             >{opt.text}</button>
           ))}
         </div>
       )}
 
+      {/* Step 3 — Result */}
       {step === 3 && (
-        <div style={{ textAlign: 'center', padding: '10px 0' }}>
-          <div style={{ fontSize: '60px', marginBottom: '16px' }}>{answer?.correct ? '🏆' : '😬'}</div>
-          <h3 style={{ fontSize: '22px', marginBottom: '12px', color: answer?.correct ? '#22c55e' : '#eb2828' }}>
-            {answer?.correct ? 'Excellent réflexe !' : 'C\'était un piège !'}
-          </h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '16px', fontSize: '14px', lineHeight: 1.7 }}>
-            {answer?.correct
-              ? 'Bravo ! Vous avez identifié une attaque BEC (Business Email Compromise). La clé : toujours vérifier par téléphone pour les demandes financières urgentes.'
-              : '95% des entreprises ont déjà été victimes d\'une attaque BEC. Ne jamais virer sans confirmation orale directe.'}
-          </p>
-          <div style={{ background: 'rgba(235,40,40,0.08)', border: '1px solid rgba(235,40,40,0.2)', padding: '16px', borderRadius: '8px', marginBottom: '20px', textAlign: 'left' }}>
-            <div style={{ fontSize: '12px', color: '#eb2828', fontWeight: 'bold', marginBottom: '8px' }}>🔴 Signaux d'alerte dans cet email :</div>
-            {['Domaine suspect (acme-corp.io vs acme.com)', 'Urgence artificielle + secret', 'Demande financière inhabituelle', 'PDG "indisponible" pour confirmer'].map((f, i) => (
-              <div key={i} style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>• {f}</div>
+        <div>
+          <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+            <div style={{ fontSize: '52px', marginBottom: '10px' }}>{answer?.correct ? '🏆' : '😬'}</div>
+            <h3 style={{ fontSize: '20px', marginBottom: '8px', color: answer?.correct ? '#22c55e' : '#eb2828' }}>
+              {answer?.correct ? 'Bon réflexe !' : 'C\'était un piège !'}
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: 1.7, marginBottom: '16px', maxWidth: '380px', margin: '0 auto 16px' }}>
+              {answer?.correct
+                ? 'Vous avez réagi correctement face à une attaque BEC. La règle d\'or : toujours vérifier par un canal indépendant pour toute demande financière urgente.'
+                : '95% des entreprises ont été victimes d\'une attaque BEC. Un virement sans vérification orale peut coûter des dizaines de milliers d\'euros.'}
+            </p>
+          </div>
+
+          {/* Score + flags found */}
+          <div style={{ background: 'rgba(235,40,40,0.05)', border: '1px solid rgba(235,40,40,0.2)', padding: '14px', borderRadius: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '12px' }}>
+              <span style={{ color: '#eb2828', fontWeight: 'bold' }}>🔍 Indices trouvés : {foundCount}/{total}</span>
+              <span style={{ color: answer?.correct ? '#22c55e' : '#f59e0b', fontWeight: 'bold' }}>
+                Score : {Math.round((foundCount / total * 50) + (answer?.correct ? 50 : 0))}/100
+              </span>
+            </div>
+            {HIDDEN_FLAGS.map(f => (
+              <div key={f.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '6px', opacity: found.has(f.id) ? 1 : 0.4 }}>
+                <span style={{ fontSize: '14px', flexShrink: 0 }}>{found.has(f.id) ? '✅' : '❌'}</span>
+                <div>
+                  <span style={{ fontSize: '12px', color: f.color, fontWeight: 'bold' }}>{f.icon} {f.title}</span>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{f.detail}</div>
+                </div>
+              </div>
             ))}
           </div>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button onClick={() => { setStep(0); setAnswer(null) }} className="btn-secondary" style={{ padding: '10px 20px' }}>Rejouer</button>
+
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <button onClick={reset} className="btn-secondary" style={{ padding: '10px 20px' }}>🔄 Rejouer</button>
             <button onClick={onClose} className="btn-primary" style={{ padding: '10px 24px' }}>Essai gratuit →</button>
           </div>
         </div>
