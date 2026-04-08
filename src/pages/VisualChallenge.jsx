@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '../components/Logo'
 import LangToggle from '../components/LangToggle'
 import { db } from '../services/db'
 import { visualScenarios } from '../data/visualScenarios'
@@ -557,7 +556,7 @@ function PhaseInvestigate({ scenario, onComplete, score, setScore, lang }) {
     <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', flexDirection: 'column', animation: glitch ? 'glitch 0.5s linear' : 'none' }}>
       {/* Header */}
       <div style={{ background: '#080808', borderBottom: '1px solid var(--border-subtle)', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50, flexShrink: 0 }}>
-        <Logo size="sm" />
+        <img src="/roomca-logo.png" alt="RoomCA" style={{ height: '28px' }} />
         <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
           {[
             [fr ? 'SCÉNARIO' : 'SCENARIO', scenario.title[fr ? 'fr' : 'en'].split(' ').slice(0, 3).join(' '), 'var(--text-light)'],
