@@ -47,7 +47,7 @@ export default function Login() {
     if (result.success) {
       if (result.role === ROLES.SUPER_ADMIN) navigate('/super-admin')
       else if (result.role === ROLES.ADMIN) navigate('/admin')
-      else navigate('/play')
+      else navigate('/dashboard')
     } else {
       setShake(true)
       setTimeout(() => setShake(false), 500)

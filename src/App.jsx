@@ -24,6 +24,7 @@ import EmailTemplates from './pages/EmailTemplates'
 import ScenarioBuilder from './pages/ScenarioBuilder'
 import PartnerPortal from './pages/PartnerPortal'
 import WhiteLabel from './pages/WhiteLabel'
+import PlayerDashboard from './pages/PlayerDashboard'
 
 export default function App() {
   return (
@@ -35,6 +36,11 @@ export default function App() {
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/help" element={<HelpCenter />} />
 
+          <Route path="/dashboard" element={
+            <ProtectedRoute requiredRole={ROLES.PLAYER}>
+              <PlayerDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/play" element={
             <ProtectedRoute requiredRole={ROLES.PLAYER}>
               <Player />

@@ -328,18 +328,104 @@ function Footer() {
 }
 
 function DemoModal({ onClose }) {
-  const [line, setLine] = useState(0)
-  const lines = ['$ roomca-cli --scenario phishing-simulation', '✓ ROOMCA initialized...', '⚠ ALERT: Email reçu de CEO@ourcompany.fr', '→ Demande urgente: Transfert de fonds', '📧 Analysez l\'email...', '[1] C\'est légitime (CLIQUE)', '[2] C\'est du phishing (CORRECT)', '[3] Je demande confirmation', '✓ Félicitations! Vous avez évité une attaque', '✓ Précision: 90/100', '🏆 Certificat accordé']
-  useEffect(() => { if (line < lines.length) { const t = setTimeout(() => setLine(l => l + 1), 400); return () => clearTimeout(t) } }, [line])
+  const [step, setStep] = useState(0)
+  const [answer, setAnswer] = useState(null)
+
+  const steps = [
+    { type: 'intro' },
+    { type: 'email' },
+    { type: 'question' },
+    { type: 'result' }
+  ]
+
+  const next = () => setStep(s => Math.min(s + 1, steps.length - 1))
+
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
-      <div style={{ background: '#000', border: '1px solid #333', width: '90%', maxWidth: '700px', padding: '24px', fontFamily: 'var(--mono)', fontSize: '12px', maxHeight: '70vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
-        <div style={{ marginBottom: '16px', color: 'var(--red)' }}>$ roomca-demo.sh</div>
-        <div style={{ color: 'var(--text-secondary)', lineHeight: 2 }}>
-          {lines.slice(0, line).map((l, i) => <div key={i} style={{ color: l.includes('✓') ? '#22c55e' : l.includes('⚠') ? '#f59e0b' : l.includes('CLIQUE') ? 'var(--red)' : 'inherit' }}>{l}</div>)}
-          {line < lines.length && <span className="animate-blink" style={{ color: 'var(--red)' }}>█</span>}
+    <div style={{ color: 'var(--text-primary)' }}>
+      {step === 0 && (
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</div>
+          <h3 style={{ fontSize: '20px', marginBottom: '12px', color: 'var(--text-primary)' }}>Mini-scénario phishing</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '14px' }}>
+            Vous recevez un email urgent de votre PDG. Que faites-vous ?
+          </p>
+          <button onClick={next} className="btn-primary" style={{ padding: '12px 32px' }}>Commencer ▶</button>
         </div>
-      </div>
+      )}
+
+      {step === 1 && (
+        <div>
+          <div style={{ background: '#ffffff', color: '#000', padding: '20px', borderRadius: '8px', fontFamily: 'Arial, sans-serif', fontSize: '13px', marginBottom: '20px' }}>
+            <div style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <strong>De :</strong> <span style={{ color: '#666' }}>pdg@acme-corp.io</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <strong>Objet :</strong> <span style={{ color: '#c00', fontWeight: 'bold' }}>⚠️ URGENT - Virement confidentiel</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <strong>Reçu :</strong> <span style={{ color: '#666' }}>Aujourd'hui 14:27</span>
+              </div>
+            </div>
+            <p>Bonjour,</p>
+            <p style={{ margin: '8px 0' }}>Je suis en réunion confidentielle avec nos avocats. J'ai besoin que vous effectuiez <strong>immédiatement</strong> un virement de <strong style={{ color: '#c00' }}>78 500 €</strong> sur le compte suivant :</p>
+            <div style={{ background: '#f5f5f5', padding: '10px', margin: '12px 0', borderLeft: '3px solid #c00' }}>
+              <div>IBAN : FR76 1234 5678 9012 3456 7890 123</div>
+              <div>BIC : BNPAFRPP</div>
+              <div>Motif : Règlement prestataire confidentiel</div>
+            </div>
+            <p>N'en parlez à <strong>personne</strong>. Je suis en mode "Ne Pas Déranger". Confirmez par retour email.</p>
+            <p style={{ marginTop: '12px', color: '#666' }}>Cordialement,<br/><strong>Jean-Marc Dupont</strong><br/>PDG, ACME Corp</p>
+          </div>
+          <button onClick={next} className="btn-primary" style={{ width: '100%', padding: '12px' }}>Analyser cet email →</button>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div>
+          <h4 style={{ marginBottom: '16px', color: 'var(--text-primary)' }}>Que faites-vous ?</h4>
+          {[
+            { id: 'a', text: '✅ Appeler le PDG sur sa ligne directe pour confirmer', correct: true },
+            { id: 'b', text: '❌ Effectuer le virement - c\'est le PDG', correct: false },
+            { id: 'c', text: '❌ Répondre par email pour plus d\'informations', correct: false },
+            { id: 'd', text: '✅ Signaler à l\'IT et au responsable financier', correct: true }
+          ].map(opt => (
+            <button key={opt.id} onClick={() => { setAnswer(opt); next() }} style={{
+              display: 'block', width: '100%', padding: '14px 16px', marginBottom: '10px',
+              background: 'var(--bg-black)', border: '1px solid var(--border-subtle)',
+              borderRadius: '8px', color: 'var(--text-primary)', textAlign: 'left',
+              cursor: 'pointer', fontSize: '14px', transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#eb2828'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
+            >{opt.text}</button>
+          ))}
+        </div>
+      )}
+
+      {step === 3 && (
+        <div style={{ textAlign: 'center', padding: '10px 0' }}>
+          <div style={{ fontSize: '60px', marginBottom: '16px' }}>{answer?.correct ? '🏆' : '😬'}</div>
+          <h3 style={{ fontSize: '22px', marginBottom: '12px', color: answer?.correct ? '#22c55e' : '#eb2828' }}>
+            {answer?.correct ? 'Excellent réflexe !' : 'C\'était un piège !'}
+          </h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '16px', fontSize: '14px', lineHeight: 1.7 }}>
+            {answer?.correct
+              ? 'Bravo ! Vous avez identifié une attaque BEC (Business Email Compromise). La clé : toujours vérifier par téléphone pour les demandes financières urgentes.'
+              : '95% des entreprises ont déjà été victimes d\'une attaque BEC. Ne jamais virer sans confirmation orale directe.'}
+          </p>
+          <div style={{ background: 'rgba(235,40,40,0.08)', border: '1px solid rgba(235,40,40,0.2)', padding: '16px', borderRadius: '8px', marginBottom: '20px', textAlign: 'left' }}>
+            <div style={{ fontSize: '12px', color: '#eb2828', fontWeight: 'bold', marginBottom: '8px' }}>🔴 Signaux d'alerte dans cet email :</div>
+            {['Domaine suspect (acme-corp.io vs acme.com)', 'Urgence artificielle + secret', 'Demande financière inhabituelle', 'PDG "indisponible" pour confirmer'].map((f, i) => (
+              <div key={i} style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>• {f}</div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button onClick={() => { setStep(0); setAnswer(null) }} className="btn-secondary" style={{ padding: '10px 20px' }}>Rejouer</button>
+            <button onClick={onClose} className="btn-primary" style={{ padding: '10px 24px' }}>Essai gratuit →</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
