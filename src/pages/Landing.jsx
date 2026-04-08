@@ -335,40 +335,24 @@ const HIDDEN_FLAGS = [
   { id: 'dnd',      icon: '📵', title: 'PDG intentionnellement injoignable', detail: '"Ne Pas Déranger" rend toute vérification impossible — tactique délibérée', color: '#ef4444' },
 ]
 
-function FlagSpan({ flagId, children, found, onFind, activeHint, setActiveHint }) {
-  const flag = HIDDEN_FLAGS.find(f => f.id === flagId)
-  const isMine = activeHint === flagId
-  if (!flag) return <span>{children}</span>
+function FlagSpan({ flagId, children, found, activeHint, onFind, setActiveHint }) {
+  const isActive = activeHint === flagId
   return (
-    <span style={{ position: 'relative' }}>
-      <span
-        onClick={() => { onFind(flagId); setActiveHint(flagId); setTimeout(() => setActiveHint(h => h === flagId ? null : h), 3000) }}
-        title="Cliquez pour analyser"
-        style={{
-          cursor: 'pointer',
-          background: found ? 'rgba(235,40,40,0.12)' : 'transparent',
-          borderBottom: found ? '2px solid #eb2828' : '2px dashed rgba(235,40,40,0.4)',
-          borderRadius: '2px',
-          padding: '1px 2px',
-          fontWeight: found ? 'bold' : 'inherit',
-          transition: 'all 0.2s',
-        }}
-        onMouseEnter={e => { if (!found) e.currentTarget.style.background = 'rgba(235,40,40,0.08)' }}
-        onMouseLeave={e => { if (!found) e.currentTarget.style.background = 'transparent' }}
-      >{children}</span>
-      {isMine && (
-        <span style={{
-          position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)',
-          background: '#1a1a1a', border: `1px solid ${flag.color}`, color: '#fff',
-          padding: '8px 12px', borderRadius: '8px', fontSize: '11px',
-          zIndex: 9999, boxShadow: '0 4px 20px rgba(0,0,0,0.8)', pointerEvents: 'none',
-          width: '220px', textAlign: 'center', lineHeight: 1.4, display: 'block',
-        }}>
-          <span style={{ color: flag.color, fontWeight: 'bold', marginBottom: '3px', display: 'block' }}>{flag.icon} {flag.title}</span>
-          <span style={{ color: '#ccc', fontSize: '10px', display: 'block' }}>{flag.detail}</span>
-        </span>
-      )}
-    </span>
+    <mark
+      onClick={() => { onFind(flagId); setActiveHint(flagId) }}
+      style={{
+        cursor: 'pointer',
+        background: found ? 'rgba(235,40,40,0.18)' : isActive ? 'rgba(245,158,11,0.15)' : 'transparent',
+        color: 'inherit',
+        borderBottom: found ? '2px solid #eb2828' : '2px dashed rgba(235,40,40,0.5)',
+        borderRadius: '2px',
+        padding: '0 2px',
+        fontWeight: found ? '600' : 'inherit',
+        transition: 'all 0.2s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(235,40,40,0.12)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = found ? 'rgba(235,40,40,0.18)' : 'transparent' }}
+    >{children}</mark>
   )
 }
 
@@ -431,9 +415,21 @@ function DemoModal({ onClose }) {
             </span>
           </div>
 
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px', fontStyle: 'italic' }}>
-            💡 Cliquez sur les éléments suspects dans l'email pour les révéler
-          </p>
+          {/* Active hint panel */}
+          {activeHint ? (
+            <div style={{ marginBottom: '8px', padding: '10px 14px', background: `${HIDDEN_FLAGS.find(f => f.id === activeHint)?.color}18`, border: `1px solid ${HIDDEN_FLAGS.find(f => f.id === activeHint)?.color}55`, borderRadius: '6px', fontSize: '12px', lineHeight: 1.5 }}>
+              <span style={{ color: HIDDEN_FLAGS.find(f => f.id === activeHint)?.color, fontWeight: 'bold' }}>
+                {HIDDEN_FLAGS.find(f => f.id === activeHint)?.icon} {HIDDEN_FLAGS.find(f => f.id === activeHint)?.title}
+              </span>
+              <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>
+                — {HIDDEN_FLAGS.find(f => f.id === activeHint)?.detail}
+              </span>
+            </div>
+          ) : (
+            <div style={{ marginBottom: '8px', fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+              💡 Cliquez sur les éléments soulignés pour révéler les indices cachés
+            </div>
+          )}
 
           {/* Email */}
           <div style={{ background: '#ffffff', color: '#111', padding: '18px', borderRadius: '8px', fontFamily: 'Arial, sans-serif', fontSize: '13px', marginBottom: '14px', lineHeight: 1.7 }}>
