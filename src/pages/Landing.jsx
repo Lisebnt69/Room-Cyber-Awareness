@@ -1,39 +1,24 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
+import LangToggle from '../components/LangToggle'
+import { useLang } from '../context/LangContext'
 
 function GlitchText({ children, className = '' }) {
   const [glitching, setGlitching] = useState(false)
   useEffect(() => {
-    const t = setInterval(() => {
-      setGlitching(true)
-      setTimeout(() => setGlitching(false), 600)
-    }, 5000)
+    const t = setInterval(() => { setGlitching(true); setTimeout(() => setGlitching(false), 600) }, 5000)
     return () => clearInterval(t)
   }, [])
-  return (
-    <span className={`${className} ${glitching ? 'animate-glitch-text' : ''}`}>
-      {children}
-    </span>
-  )
+  return <span className={`${className} ${glitching ? 'animate-glitch-text' : ''}`}>{children}</span>
 }
 
 function CyberGridHero() {
   return (
-    <div style={{
-      position: 'absolute', inset: 0, overflow: 'hidden',
-      background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(235,40,40,0.08) 0%, transparent 70%)',
-    }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(235,40,40,0.08) 0%, transparent 70%)' }}>
       <div className="cyber-grid" style={{ position: 'absolute', inset: 0 }} />
       {[...Array(6)].map((_, i) => (
-        <div key={i} style={{
-          position: 'absolute',
-          left: `${10 + i * 16}%`,
-          top: 0, bottom: 0,
-          width: '1px',
-          background: `linear-gradient(180deg, transparent, rgba(235,40,40,${0.03 + i * 0.01}) 50%, transparent)`,
-          animation: `fadeIn ${1 + i * 0.3}s ease`,
-        }} />
+        <div key={i} style={{ position: 'absolute', left: `${10 + i * 16}%`, top: 0, bottom: 0, width: '1px', background: `linear-gradient(180deg, transparent, rgba(235,40,40,${0.03 + i * 0.01}) 50%, transparent)`, animation: `fadeIn ${1 + i * 0.3}s ease` }} />
       ))}
     </div>
   )
@@ -41,115 +26,69 @@ function CyberGridHero() {
 
 function Navbar({ onLogin }) {
   const [scrolled, setScrolled] = useState(false)
+  const { t } = useLang()
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', h)
     return () => window.removeEventListener('scroll', h)
   }, [])
-
+  const links = [
+    [t('navPlatform'), 'platform'],
+    [t('navScenarios'), 'scenarios'],
+    [t('navPricing'), 'pricing'],
+    [t('navAbout'), 'about'],
+  ]
   return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      padding: '16px 40px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      background: scrolled ? 'rgba(0,0,0,0.92)' : 'transparent',
-      borderBottom: scrolled ? '1px solid rgba(84,84,84,0.3)' : '1px solid transparent',
-      backdropFilter: scrolled ? 'blur(12px)' : 'none',
-      transition: 'all 0.3s ease',
-    }}>
+    <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: '16px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: scrolled ? 'rgba(0,0,0,0.92)' : 'transparent', borderBottom: scrolled ? '1px solid rgba(84,84,84,0.3)' : '1px solid transparent', backdropFilter: scrolled ? 'blur(12px)' : 'none', transition: 'all 0.3s ease' }}>
       <Logo size="md" />
-      <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-        {['Platform', 'Scenarios', 'Pricing', 'About'].map(item => (
-          <a key={item} href={`#${item.toLowerCase()}`} style={{
-            fontFamily: 'var(--font-title)', fontSize: '13px', letterSpacing: '0.08em',
-            color: 'var(--text-secondary)', textTransform: 'uppercase',
-            transition: 'color 0.2s',
-          }}
+      <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
+        {links.map(([label, anchor]) => (
+          <a key={anchor} href={`#${anchor}`} style={{ fontFamily: 'var(--font-title)', fontSize: '13px', letterSpacing: '0.08em', color: 'var(--text-secondary)', textTransform: 'uppercase', transition: 'color 0.2s' }}
             onMouseEnter={e => e.target.style.color = 'var(--text-light)'}
             onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
-          >{item}</a>
+          >{label}</a>
         ))}
-        <button className="btn-secondary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={onLogin}>
-          Sign In
-        </button>
-        <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={onLogin}>
-          Get Started
-        </button>
+        <LangToggle />
+        <button className="btn-secondary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={onLogin}>{t('navSignIn')}</button>
+        <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={onLogin}>{t('navGetStarted')}</button>
       </div>
     </nav>
   )
 }
 
 function HeroSection({ onStart }) {
+  const { t } = useLang()
   const [typed, setTyped] = useState('')
   const msg = '> BREACH SIMULATION READY...'
   useEffect(() => {
     let i = 0
-    const t = setInterval(() => {
-      setTyped(msg.slice(0, i + 1))
-      i++
-      if (i >= msg.length) clearInterval(t)
-    }, 55)
-    return () => clearInterval(t)
+    const tick = setInterval(() => { setTyped(msg.slice(0, i + 1)); i++; if (i >= msg.length) clearInterval(tick) }, 55)
+    return () => clearInterval(tick)
   }, [])
-
   return (
-    <section style={{
-      position: 'relative', minHeight: '100vh',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', textAlign: 'center',
-      padding: '120px 40px 80px',
-    }}>
+    <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 40px 80px' }}>
       <CyberGridHero />
       <div style={{ position: 'relative', zIndex: 2, maxWidth: '860px' }}>
         <div className="tag" style={{ marginBottom: '28px' }}>
-          <span className="status-dot red" />
-          Live Threat Simulation Platform
+          <span className="status-dot red" /> {t('heroTag')}
         </div>
-
-        <h1 style={{
-          fontFamily: 'var(--font-title)', fontSize: 'clamp(40px, 7vw, 82px)',
-          fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.01em',
-          marginBottom: '28px', color: 'var(--text-light)',
-        }}>
-          <GlitchText>You are the</GlitchText>
-          <br />
-          <span style={{ color: 'var(--red)' }}>last line</span>
-          <br />
-          of defense.
+        <h1 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(40px, 7vw, 82px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.01em', marginBottom: '28px', color: 'var(--text-light)' }}>
+          <GlitchText>{t('heroH1a')}</GlitchText><br />
+          <span style={{ color: 'var(--red)' }}>{t('heroH1b')}</span><br />
+          {t('heroH1c')}
         </h1>
-
-        <p style={{
-          fontSize: '18px', color: 'var(--text-secondary)', lineHeight: 1.7,
-          maxWidth: '560px', margin: '0 auto 40px',
-        }}>
-          Cybersecurity awareness through immersive escape-game simulations.
-          Train your teams against real threats — before attackers do.
+        <p style={{ fontSize: '18px', color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: '560px', margin: '0 auto 40px' }}>
+          {t('heroSub')}
         </p>
-
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button className="btn-primary" style={{ fontSize: '15px', padding: '14px 36px' }} onClick={onStart}>
-            ▶ Start Free Scenario
-          </button>
-          <button className="btn-secondary" style={{ fontSize: '15px', padding: '14px 36px' }}>
-            Watch Demo
-          </button>
+          <button className="btn-primary" style={{ fontSize: '15px', padding: '14px 36px' }} onClick={onStart}>{t('heroCta1')}</button>
+          <button className="btn-secondary" style={{ fontSize: '15px', padding: '14px 36px' }}>{t('heroCta2')}</button>
         </div>
-
-        <div style={{
-          marginTop: '56px',
-          fontFamily: 'var(--mono)', fontSize: '12px',
-          color: 'var(--red)', letterSpacing: '0.1em',
-          minHeight: '18px',
-        }}>
+        <div style={{ marginTop: '56px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)', letterSpacing: '0.1em', minHeight: '18px' }}>
           {typed}<span className="animate-blink">█</span>
         </div>
-
-        <div style={{
-          display: 'flex', gap: '48px', justifyContent: 'center', marginTop: '56px',
-          padding: '24px', borderTop: '1px solid var(--border-subtle)',
-        }}>
-          {[['98%', 'Retention rate'], ['3x', 'vs traditional training'], ['< 15min', 'Per scenario']].map(([val, label]) => (
+        <div style={{ display: 'flex', gap: '48px', justifyContent: 'center', marginTop: '56px', padding: '24px', borderTop: '1px solid var(--border-subtle)' }}>
+          {[[t('heroStat1Val'), t('heroStat1Label')], [t('heroStat2Val'), t('heroStat2Label')], [t('heroStat3Val'), t('heroStat3Label')]].map(([val, label]) => (
             <div key={label} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-title)', fontSize: '28px', color: 'var(--red)', fontWeight: 700 }}>{val}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{label}</div>
@@ -162,22 +101,20 @@ function HeroSection({ onStart }) {
 }
 
 function ProblemSection() {
+  const { t } = useLang()
   const problems = [
-    { icon: '⚠', label: 'Weakest Link', desc: '90% of breaches start with a human error. Your employees are the primary attack surface.' },
-    { icon: '💤', label: 'Training is Dead', desc: 'Traditional compliance modules are ignored. Completion ≠ retention. Boredom = vulnerability.' },
-    { icon: '📈', label: 'Rising Attacks', desc: 'Phishing attacks increased 61% in 2024. Ransomware, BEC, and social engineering evolve daily.' },
+    { icon: '⚠', label: t('problem1Label'), desc: t('problem1Desc') },
+    { icon: '💤', label: t('problem2Label'), desc: t('problem2Desc') },
+    { icon: '📈', label: t('problem3Label'), desc: t('problem3Desc') },
   ]
   return (
     <section id="platform" style={{ padding: '100px 40px', background: 'var(--bg-dark)', borderTop: '1px solid var(--border-subtle)' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        <div className="tag" style={{ marginBottom: '20px' }}>The Problem</div>
+        <div className="tag" style={{ marginBottom: '20px' }}>{t('problemTag')}</div>
         <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 44px)', marginBottom: '16px' }}>
-          Your team is trained.<br />
-          <span style={{ color: 'var(--red)' }}>But are they ready?</span>
+          {t('problemH2a')}<br /><span style={{ color: 'var(--red)' }}>{t('problemH2b')}</span>
         </h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '60px', fontSize: '16px', maxWidth: '500px' }}>
-          Completing a module is not the same as being prepared. Real threats require real simulation.
-        </p>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '60px', fontSize: '16px', maxWidth: '500px' }}>{t('problemSub')}</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: 'var(--border-subtle)' }}>
           {problems.map(p => (
             <div key={p.label} className="card" style={{ margin: 0, borderRadius: 0, border: 'none', background: 'var(--bg-card)' }}>
@@ -194,26 +131,18 @@ function ProblemSection() {
 }
 
 function SolutionSection() {
+  const { t } = useLang()
   return (
     <section id="scenarios" style={{ padding: '100px 40px' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' }}>
         <div>
-          <div className="tag" style={{ marginBottom: '20px' }}>The Solution</div>
+          <div className="tag" style={{ marginBottom: '20px' }}>{t('solutionTag')}</div>
           <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '20px', lineHeight: 1.15 }}>
-            Escape rooms for<br /><span style={{ color: 'var(--red)' }}>cybersecurity.</span>
+            {t('solutionH2a')}<br /><span style={{ color: 'var(--red)' }}>{t('solutionH2b')}</span>
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: 1.8, marginBottom: '32px' }}>
-            ROOMCA drops your employees into immersive cyber incident scenarios.
-            They investigate, discover, and make decisions — under pressure.
-            Learning happens through action, not slides.
-          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: 1.8, marginBottom: '32px' }}>{t('solutionP')}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              '🔍 Investigate real-looking phishing emails',
-              '🖥 Navigate a compromised desktop environment',
-              '🧠 Solve logic puzzles to stop an intrusion',
-              '⏱ Race against a countdown timer',
-            ].map(item => (
+            {[t('solutionItem1'), t('solutionItem2'), t('solutionItem3'), t('solutionItem4')].map(item => (
               <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px', color: 'var(--text-secondary)' }}>
                 <span style={{ color: 'var(--red)' }}>›</span> {item}
               </div>
@@ -221,11 +150,7 @@ function SolutionSection() {
           </div>
         </div>
         <div style={{ position: 'relative' }}>
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border)',
-            padding: '0', overflow: 'hidden',
-            boxShadow: '0 0 60px rgba(235,40,40,0.1)',
-          }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: '0 0 60px rgba(235,40,40,0.1)' }}>
             <div style={{ background: '#0a0a0a', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)' }} />
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} />
@@ -250,24 +175,23 @@ function SolutionSection() {
 }
 
 function FeaturesSection() {
+  const { t } = useLang()
   const features = [
-    { icon: '🎮', title: 'Immersive Gameplay', desc: 'Interactive environments: inboxes, desktops, terminals. Not a slide show.' },
-    { icon: '📊', title: 'Real Analytics', desc: 'Track participation, success rates, avg score, and risk exposure per team.' },
-    { icon: '🏆', title: 'Gamification', desc: 'Scores, rankings, RoomCoins rewards, and ROOMCA certificates.' },
-    { icon: '🔐', title: 'Expert Scenarios', desc: 'Created with security experts. Updated to reflect current threat landscape.' },
-    { icon: '🌐', title: 'Multi-language', desc: 'Deploy in EN, FR, DE, ES. Localized content, global rollout.' },
-    { icon: '⚡', title: 'Quick Deploy', desc: 'Onboard your team in under 10 minutes. No installation required.' },
+    { icon: '🎮', title: t('feat1Title'), desc: t('feat1Desc') },
+    { icon: '📊', title: t('feat2Title'), desc: t('feat2Desc') },
+    { icon: '🏆', title: t('feat3Title'), desc: t('feat3Desc') },
+    { icon: '🔐', title: t('feat4Title'), desc: t('feat4Desc') },
+    { icon: '🌐', title: t('feat5Title'), desc: t('feat5Desc') },
+    { icon: '⚡', title: t('feat6Title'), desc: t('feat6Desc') },
   ]
   return (
     <section id="platform" style={{ padding: '100px 40px', background: 'var(--bg-dark)' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
-        <div className="tag" style={{ marginBottom: '20px', display: 'inline-flex' }}>Features</div>
+        <div className="tag" style={{ marginBottom: '20px', display: 'inline-flex' }}>{t('featuresTag')}</div>
         <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '16px' }}>
-          Built for security teams that<br /><span style={{ color: 'var(--red)' }}>demand results.</span>
+          {t('featuresH2a')}<br /><span style={{ color: 'var(--red)' }}>{t('featuresH2b')}</span>
         </h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '60px', maxWidth: '480px', margin: '0 auto 60px' }}>
-          Every feature is designed to maximize engagement, retention, and measurable risk reduction.
-        </p>
+        <p style={{ color: 'var(--text-secondary)', maxWidth: '480px', margin: '0 auto 60px' }}>{t('featuresSub')}</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1px', background: 'var(--border-subtle)' }}>
           {features.map(f => (
             <div key={f.title} className="card" style={{ margin: 0, borderRadius: 0, border: 'none', textAlign: 'left', background: 'var(--bg-card)' }}>
@@ -283,45 +207,30 @@ function FeaturesSection() {
 }
 
 function PricingSection() {
+  const { t } = useLang()
   const plans = [
-    {
-      name: 'STARTER', price: '€49', period: '/month', target: 'Up to 25 users',
-      features: ['3 scenarios / month', 'Basic analytics', 'Email support', 'ROOMCA certificates'],
-      cta: 'Get Started', highlight: false,
-    },
-    {
-      name: 'BUSINESS', price: '€199', period: '/month', target: 'Up to 200 users',
-      features: ['Unlimited scenarios', 'Full analytics dashboard', 'Priority support', 'Custom branding', 'RoomCoins included'],
-      cta: 'Most Popular', highlight: true,
-    },
-    {
-      name: 'ENTERPRISE', price: 'Custom', period: '', target: 'Unlimited users',
-      features: ['Custom scenarios', 'SSO / SAML', 'Dedicated CSM', 'SLA guarantee', 'API access'],
-      cta: 'Contact Sales', highlight: false,
-    },
+    { name: t('plan1Name'), price: t('plan1Price'), period: t('plan1Period'), target: t('plan1Target'), features: [t('plan1F1'), t('plan1F2'), t('plan1F3'), t('plan1F4')], cta: t('plan1Cta'), highlight: false },
+    { name: t('plan2Name'), price: t('plan2Price'), period: t('plan2Period'), target: t('plan2Target'), features: [t('plan2F1'), t('plan2F2'), t('plan2F3'), t('plan2F4'), t('plan2F5')], cta: t('plan2Cta'), highlight: true },
+    { name: t('plan3Name'), price: t('plan3Price'), period: t('plan3Period'), target: t('plan3Target'), features: [t('plan3F1'), t('plan3F2'), t('plan3F3'), t('plan3F4'), t('plan3F5')], cta: t('plan3Cta'), highlight: false },
   ]
   const coins = [
-    { amount: '500', price: '€9', desc: '~ 10 scenarios' },
-    { amount: '1,000', price: '€17', desc: '~ 20 scenarios' },
-    { amount: '2,000', price: '€29', desc: '~ 40 scenarios' },
+    { amount: '500', price: '€9', desc: t('coin1Desc') },
+    { amount: '1,000', price: '€17', desc: t('coin2Desc') },
+    { amount: '2,000', price: '€29', desc: t('coin3Desc') },
   ]
   return (
     <section id="pricing" style={{ padding: '100px 40px' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
-        <div className="tag" style={{ marginBottom: '20px', display: 'inline-flex' }}>Pricing</div>
+        <div className="tag" style={{ marginBottom: '20px', display: 'inline-flex' }}>{t('pricingTag')}</div>
         <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '16px' }}>
-          Simple, transparent<br /><span style={{ color: 'var(--red)' }}>pricing.</span>
+          {t('pricingH2a')}<br /><span style={{ color: 'var(--red)' }}>{t('pricingH2b')}</span>
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: 'var(--border-subtle)', marginTop: '60px' }}>
           {plans.map(p => (
-            <div key={p.name} style={{
-              background: p.highlight ? '#0d0d0d' : 'var(--bg-card)',
-              padding: '40px 32px', position: 'relative',
-              borderTop: p.highlight ? `2px solid var(--red)` : '2px solid transparent',
-            }}>
+            <div key={p.name} style={{ background: p.highlight ? '#0d0d0d' : 'var(--bg-card)', padding: '40px 32px', position: 'relative', borderTop: p.highlight ? '2px solid var(--red)' : '2px solid transparent' }}>
               {p.highlight && (
                 <div style={{ position: 'absolute', top: '-1px', right: '24px' }}>
-                  <span className="tag" style={{ background: 'var(--red)', color: '#fff', borderColor: 'var(--red)' }}>Popular</span>
+                  <span className="tag" style={{ background: 'var(--red)', color: '#fff', borderColor: 'var(--red)' }}>{t('pricingPopular')}</span>
                 </div>
               )}
               <div style={{ fontFamily: 'var(--mono)', fontSize: '11px', letterSpacing: '0.2em', color: 'var(--text-muted)', marginBottom: '20px' }}>{p.name}</div>
@@ -336,18 +245,15 @@ function PricingSection() {
                   </div>
                 ))}
               </div>
-              <button className={p.highlight ? 'btn-primary' : 'btn-secondary'} style={{ width: '100%', justifyContent: 'center' }}>
-                {p.cta}
-              </button>
+              <button className={p.highlight ? 'btn-primary' : 'btn-secondary'} style={{ width: '100%', justifyContent: 'center' }}>{p.cta}</button>
             </div>
           ))}
         </div>
-
         <div style={{ marginTop: '80px' }}>
           <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '22px', marginBottom: '8px' }}>
-            <span style={{ color: 'var(--red)' }}>RoomCoins</span> — Pay per play
+            <span style={{ color: 'var(--red)' }}>RoomCoins</span> — {t('coinsTitle').split('—')[1]?.trim() || 'Pay per play'}
           </h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '32px' }}>Buy credits and assign scenarios on demand. No commitment.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '32px' }}>{t('coinsSub')}</p>
           <div style={{ display: 'flex', gap: '1px', background: 'var(--border-subtle)', justifyContent: 'center', flexWrap: 'wrap' }}>
             {coins.map(c => (
               <div key={c.amount} style={{ background: 'var(--bg-card)', padding: '28px 48px', textAlign: 'center', minWidth: '200px' }}>
@@ -365,30 +271,18 @@ function PricingSection() {
 }
 
 function CTASection({ onStart }) {
+  const { t } = useLang()
   return (
     <section style={{ padding: '100px 40px', background: 'var(--bg-dark)', borderTop: '1px solid var(--border-subtle)', textAlign: 'center' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-        <div style={{
-          background: 'rgba(235,40,40,0.06)',
-          border: '1px solid rgba(235,40,40,0.2)',
-          padding: '60px 40px',
-        }}>
+        <div style={{ background: 'rgba(235,40,40,0.06)', border: '1px solid rgba(235,40,40,0.2)', padding: '60px 40px' }}>
           <div className="tag" style={{ marginBottom: '24px', display: 'inline-flex' }}>
-            <span className="status-dot red" />
-            Free to start
+            <span className="status-dot red" /> {t('ctaTag')}
           </div>
-          <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '20px' }}>
-            Ready to test your team?
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', fontSize: '16px' }}>
-            Launch your first scenario in minutes. No credit card. No setup. Just real training.
-          </p>
-          <button className="btn-primary" style={{ fontSize: '16px', padding: '16px 48px' }} onClick={onStart}>
-            ▶ Start Free Scenario
-          </button>
-          <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-muted)' }}>
-            Trusted by 200+ companies across Europe
-          </div>
+          <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 42px)', marginBottom: '20px' }}>{t('ctaH2')}</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', fontSize: '16px' }}>{t('ctaSub')}</p>
+          <button className="btn-primary" style={{ fontSize: '16px', padding: '16px 48px' }} onClick={onStart}>{t('ctaBtn')}</button>
+          <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-muted)' }}>{t('ctaTrust')}</div>
         </div>
       </div>
     </section>
@@ -396,14 +290,13 @@ function CTASection({ onStart }) {
 }
 
 function Footer() {
+  const { t } = useLang()
   return (
     <footer style={{ borderTop: '1px solid var(--border-subtle)', padding: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-      <Logo size="sm" />
-      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-        © 2025 ROOMCA. All rights reserved.
-      </div>
+      <Logo size="sm" showSub />
+      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('footerRights')}</div>
       <div style={{ display: 'flex', gap: '24px' }}>
-        {['Privacy', 'Terms', 'Security'].map(l => (
+        {[t('footerPrivacy'), t('footerTerms'), t('footerSecurity')].map(l => (
           <a key={l} href="#" style={{ fontSize: '12px', color: 'var(--text-muted)', transition: 'color 0.2s' }}
             onMouseEnter={e => e.target.style.color = 'var(--text-light)'}
             onMouseLeave={e => e.target.style.color = 'var(--text-muted)'}
@@ -418,7 +311,6 @@ export default function Landing() {
   const navigate = useNavigate()
   const onLogin = () => navigate('/login')
   const onStart = () => navigate('/login')
-
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
       <Navbar onLogin={onLogin} />
