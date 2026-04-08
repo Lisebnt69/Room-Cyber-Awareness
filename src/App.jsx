@@ -4,6 +4,10 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Player from './pages/Player'
+import Leaderboards from './pages/Leaderboards'
+import Analytics from './pages/Analytics'
+import Campaigns from './pages/Campaigns'
+import Billing from './pages/Billing'
 import Admin from './pages/Admin'
 import SuperAdmin from './pages/SuperAdmin'
 
@@ -17,6 +21,26 @@ export default function App() {
           <Route path="/play" element={
             <ProtectedRoute requiredRole={ROLES.PLAYER}>
               <Player />
+            </ProtectedRoute>
+          } />
+          <Route path="/leaderboards" element={
+            <ProtectedRoute requiredRole={ROLES.PLAYER}>
+              <Leaderboards />
+            </ProtectedRoute>
+          } />
+          <Route path="/analytics" element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <Analytics />
+            </ProtectedRoute>
+          } />
+          <Route path="/campaigns" element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <Campaigns />
+            </ProtectedRoute>
+          } />
+          <Route path="/billing" element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <Billing />
             </ProtectedRoute>
           } />
           <Route path="/admin" element={
