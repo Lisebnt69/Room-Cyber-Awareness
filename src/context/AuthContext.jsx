@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 
@@ -17,11 +17,25 @@ const MOCK_USERS = [
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [error, setError] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('roomca_user')
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored))
+      } catch (e) {
+        localStorage.removeItem('roomca_user')
+      }
+    }
+    setIsLoading(false)
+  }, [])
 
   const login = (email, password) => {
     const found = MOCK_USERS.find(u => u.email === email && u.password === password)
     if (found) {
       setUser(found)
+      localStorage.setItem('roomca_user', JSON.stringify(found))
       setError(null)
       return { success: true, role: found.role }
     }
@@ -29,10 +43,13 @@ export function AuthProvider({ children }) {
     return { success: false }
   }
 
-  const logout = () => setUser(null)
+  const logout = () => {
+    setUser(null)
+    localStorage.removeItem('roomca_user')
+  }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, error, setError }}>
+    <AuthContext.Provider value={{ user, login, logout, error, setError, isLoading }}>
       {children}
     </AuthContext.Provider>
   )
