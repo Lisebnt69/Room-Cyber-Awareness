@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
 import LangToggle from '../components/LangToggle'
@@ -236,6 +236,165 @@ function FeaturesSection() {
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{f.desc}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function VideoSection({ onOpenDemo }) {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <section style={{ padding: '100px 40px', background: '#000' }}>
+      <div style={{ maxWidth: '960px', margin: '0 auto', textAlign: 'center' }}>
+        <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 44px)', marginBottom: '16px' }}>
+          Voir ROOMCA en <span style={{ color: 'var(--red)' }}>action</span>
+        </h2>
+        <p style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '48px', maxWidth: '560px', margin: '0 auto 48px' }}>
+          Une simulation complète en 3 minutes. Regardez comment vos employés apprennent à détecter une vraie attaque.
+        </p>
+
+        {/* Video Player Mockup */}
+        <div
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onClick={() => setIsPlaying(p => !p)}
+          style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', cursor: 'pointer', background: '#0a0a0a', aspectRatio: '16/9' }}
+        >
+          {/* Fake screenshot content */}
+          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0d0d0d 0%, #1a0505 100%)', minHeight: '400px' }}>
+            {/* Fake terminal / email UI */}
+            <div style={{ width: '80%', maxWidth: '600px', background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(235,40,40,0.3)', borderRadius: '8px', padding: '20px', textAlign: 'left', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+                {['#eb2828', '#f59e0b', '#22c55e'].map((c, i) => <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: c }} />)}
+              </div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', lineHeight: 1.8 }}>
+                <div style={{ color: 'var(--text-muted)' }}>De : <span style={{ color: '#f59e0b' }}>pdg@acme-corp.net</span> <span style={{ color: 'var(--red)', fontSize: '10px' }}>⚠ domaine suspect</span></div>
+                <div style={{ color: 'var(--text-muted)' }}>À : marie.dupont@acme-corp.com</div>
+                <div style={{ color: 'var(--text-muted)' }}>Objet : <span style={{ color: 'var(--text-secondary)' }}>ACTION URGENTE — Virement 47 000€</span></div>
+                <div style={{ marginTop: '12px', color: 'var(--text-muted)', fontSize: '11px' }}>Marie,{'\n'}J'ai besoin que vous effectuiez un virement confidentiel...</div>
+              </div>
+            </div>
+
+            {/* Play overlay */}
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: hovered ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)',
+              transition: 'background 0.3s',
+            }}>
+              {!isPlaying ? (
+                <div style={{
+                  width: '72px', height: '72px', borderRadius: '50%',
+                  background: hovered ? 'var(--red)' : 'rgba(235,40,40,0.8)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '28px', transition: 'all 0.3s',
+                  transform: hovered ? 'scale(1.1)' : 'scale(1)',
+                  boxShadow: hovered ? '0 0 40px rgba(235,40,40,0.5)' : 'none',
+                }}>▶</div>
+              ) : (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '8px' }}>⏸</div>
+                  <div style={{ color: '#fff', fontSize: '14px' }}>En lecture...</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Duration badge */}
+          <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(0,0,0,0.8)', color: '#fff', fontSize: '11px', padding: '4px 8px', borderRadius: '4px', fontFamily: 'var(--mono)' }}>
+            3:24
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '32px' }}>
+          <button onClick={onOpenDemo} className="btn-primary" style={{ padding: '12px 32px', fontSize: '14px' }}>
+            🎮 Essayer la démo interactive →
+          </button>
+          <button style={{ padding: '12px 24px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '4px', fontSize: '13px' }}>
+            📅 Voir une démo live
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ROISection() {
+  const [employees, setEmployees] = useState(200)
+  const incidentCost = 4500000
+  const probReduction = 0.70
+  const planCost = employees <= 50 ? 49 : employees <= 500 ? 199 : 499
+  const annualPlan = planCost * 12
+  const riskBefore = Math.round(incidentCost * 0.12)
+  const riskAfter = Math.round(riskBefore * (1 - probReduction))
+  const saving = riskBefore - riskAfter
+  const roi = Math.round((saving - annualPlan) / annualPlan * 100)
+
+  return (
+    <section style={{ padding: '100px 40px', background: 'var(--bg-dark)', borderTop: '1px solid var(--border-subtle)' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '52px' }}>
+          <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 44px)', marginBottom: '12px' }}>
+            Calculateur de ROI
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
+            Combien coûte une cyberattaque vs. combien coûte ROOMCA ?
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'start' }}>
+          {/* Controls */}
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '32px' }}>
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>NOMBRE D'EMPLOYÉS</span>
+                <span style={{ fontFamily: 'var(--font-title)', fontSize: '22px', color: 'var(--red)' }}>{employees}</span>
+              </div>
+              <input type="range" min="10" max="2000" step="10" value={employees}
+                onChange={e => setEmployees(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#eb2828', cursor: 'pointer' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <span>10</span><span>2 000</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                { label: 'Coût moyen d\'un incident (source IBM)', value: `${incidentCost.toLocaleString('fr')} €`, color: 'var(--text-muted)' },
+                { label: 'Réduction du risque avec ROOMCA', value: '-70%', color: '#22c55e' },
+                { label: `Plan ROOMCA recommandé (${employees <= 50 ? 'Starter' : employees <= 500 ? 'Pro' : 'Enterprise'})`, value: `${planCost} €/mois`, color: '#f59e0b' },
+              ].map(r => (
+                <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '200px', lineHeight: 1.3 }}>{r.label}</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontWeight: 'bold', color: r.color }}>{r.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Results */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ background: 'rgba(235,40,40,0.05)', border: '1px solid rgba(235,40,40,0.2)', padding: '24px' }}>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', letterSpacing: '0.1em' }}>RISQUE SANS FORMATION/AN</div>
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '36px', color: 'var(--red)', fontWeight: 700 }}>{riskBefore.toLocaleString('fr')} €</div>
+            </div>
+            <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', padding: '24px' }}>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', letterSpacing: '0.1em' }}>RISQUE AVEC ROOMCA/AN</div>
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '36px', color: '#22c55e', fontWeight: 700 }}>{riskAfter.toLocaleString('fr')} €</div>
+            </div>
+            <div style={{ background: 'var(--bg-card)', border: '2px solid var(--red)', padding: '24px', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '-10px', left: '20px', background: 'var(--red)', padding: '2px 10px', fontSize: '9px', fontWeight: 700, letterSpacing: '0.15em' }}>ROI ESTIMÉ</div>
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '52px', color: 'var(--red)', fontWeight: 700, lineHeight: 1 }}>{roi}x</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>
+                Économie nette estimée : <strong style={{ color: '#22c55e' }}>{(saving - annualPlan).toLocaleString('fr')} €/an</strong>
+              </div>
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              * Estimation basée sur le rapport IBM Cost of a Data Breach 2024 (coût moyen 4,5M€) et les données sectorielles ANSSI. Non contractuel.
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -591,6 +750,8 @@ export default function Landing() {
       <ProblemsSection />
       <SolutionSection />
       <FeaturesSection />
+      <VideoSection onOpenDemo={() => setModal('demo')} />
+      <ROISection />
       <PricingSection showToast={showToast} />
       <CTASection onStart={onStart} />
       <Footer />

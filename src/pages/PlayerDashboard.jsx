@@ -33,6 +33,47 @@ const mockModules = [
   { name: 'Password Security', progress: 40, completed: false }
 ]
 
+const weeklyDefis = [
+  { id: 'd1', title: 'Détective phishing', desc: 'Identifier 3 emails suspects cette semaine', icon: '🔍', points: 150, target: 3, done: 2, expires: '2026-04-13', claimed: false },
+  { id: 'd2', title: 'Streak de 5 jours', desc: 'Se connecter 5 jours consécutifs', icon: '🔥', points: 200, target: 5, done: 3, expires: '2026-04-13', claimed: false },
+  { id: 'd3', title: 'Score parfait', desc: 'Obtenir 900+ sur n\'importe quel scénario', icon: '💯', points: 300, target: 1, done: 0, expires: '2026-04-13', claimed: false },
+  { id: 'd4', title: 'Mission sociale', desc: 'Partager votre score avec un collègue', icon: '🤝', points: 50, target: 1, done: 1, expires: '2026-04-13', claimed: true },
+]
+
+const earnedCertificates = [
+  { id: 'cert1', title: 'Phishing Fundamentals', date: '2026-03-15', score: 94, level: 'Intermédiaire', issuer: 'ROOMCA Certification Authority' },
+  { id: 'cert2', title: 'GDPR Awareness', date: '2026-03-29', score: 88, level: 'Débutant', issuer: 'ROOMCA Certification Authority' },
+]
+
+function downloadCertificate(cert, userName) {
+  const content = `
+CERTIFICAT DE COMPLÉTION
+========================
+Module : ${cert.title}
+Niveau : ${cert.level}
+Titulaire : ${userName || 'Employé ROOMCA'}
+Score obtenu : ${cert.score}/100
+Date d'émission : ${cert.date}
+Émis par : ${cert.issuer}
+
+Ce certificat atteste que le titulaire a complété avec succès
+le module de formation en cybersécurité ROOMCA.
+
+ID de vérification : ROOMCA-${cert.id.toUpperCase()}-${Date.now().toString(36).toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ROOMCA — Cybersecurity Awareness Platform
+https://roomca.io
+  `.trim()
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `Certificat_ROOMCA_${cert.title.replace(/\s+/g, '_')}.txt`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function PlayerDashboard() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
@@ -40,6 +81,13 @@ export default function PlayerDashboard() {
   const [tab, setTab] = useState('overview')
   const [stats, setStats] = useState(null)
   const [badges, setBadges] = useState([])
+  const [defis, setDefis] = useState(weeklyDefis)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifications, setNotifications] = useState([
+    { id: 1, msg: '🔥 Défi "Streak 5 jours" — plus que 2 jours !', time: 'Il y a 2h', read: false },
+    { id: 2, msg: '🏆 Nouveau classement disponible — vous êtes #3', time: 'Il y a 5h', read: false },
+    { id: 3, msg: '📧 Nouveau scénario assigné : Social Engineering Pro', time: 'Hier', read: true },
+  ])
 
   useEffect(() => {
     if (!user) return
@@ -76,6 +124,23 @@ export default function PlayerDashboard() {
           <LangToggle />
           <button onClick={() => navigate('/play')} className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }}>▶ Jouer</button>
           <button onClick={() => navigate('/leaderboards')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>🏆 Classement</button>
+          <div style={{ position: 'relative' }}>
+            <button onClick={() => { setNotifOpen(o => !o); setNotifications(n => n.map(x => ({ ...x, read: true }))) }} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', position: 'relative', padding: '4px' }}>
+              🔔
+              {notifications.some(n => !n.read) && <span style={{ position: 'absolute', top: 0, right: 0, width: '8px', height: '8px', background: 'var(--red)', borderRadius: '50%' }} />}
+            </button>
+            {notifOpen && (
+              <div style={{ position: 'absolute', right: 0, top: '36px', width: '300px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '12px', fontWeight: 600 }}>Notifications</div>
+                {notifications.map(n => (
+                  <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                    <div style={{ color: 'var(--text-primary)', marginBottom: '4px' }}>{n.msg}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{n.time}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <button onClick={() => navigate('/settings')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>⚙️</button>
           <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>Logout</button>
         </div>
@@ -135,7 +200,7 @@ export default function PlayerDashboard() {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', borderBottom: '1px solid var(--border-subtle)' }}>
-          {['overview', 'activité', 'badges', 'modules', 'classement'].map(t => (
+          {['overview', 'activité', 'badges', 'modules', 'défis', 'certificats', 'classement'].map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               padding: '10px 20px', background: 'transparent', border: 'none', borderBottom: '2px solid',
               borderColor: tab === t ? '#eb2828' : 'transparent',
@@ -258,6 +323,99 @@ export default function PlayerDashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === 'défis' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div>
+                <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', marginBottom: '4px' }}>Défis de la semaine</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Expire le dimanche 13 avril 2026</p>
+              </div>
+              <div style={{ padding: '8px 16px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', fontSize: '12px', color: '#f59e0b' }}>
+                {defis.filter(d => d.claimed).length}/{defis.length} défis complétés
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+              {defis.map(d => {
+                const pct = Math.min(100, Math.round((d.done / d.target) * 100))
+                const complete = d.done >= d.target
+                return (
+                  <div key={d.id} style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '20px', border: `1px solid ${d.claimed ? 'rgba(34,197,94,0.3)' : complete ? 'rgba(245,158,11,0.3)' : 'var(--border-subtle)'}`, position: 'relative', overflow: 'hidden' }}>
+                    {d.claimed && <div style={{ position: 'absolute', top: 0, right: 0, background: '#22c55e', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '0 0 0 8px' }}>RÉCLAMÉ</div>}
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '32px' }}>{d.icon}</span>
+                      <div>
+                        <div style={{ fontWeight: 600, marginBottom: '4px' }}>{d.title}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{d.desc}</div>
+                      </div>
+                    </div>
+                    <div style={{ height: '6px', background: 'var(--bg-black)', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: d.claimed ? '#22c55e' : complete ? '#f59e0b' : 'var(--red)', borderRadius: '3px', transition: 'width 0.8s' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{d.done}/{d.target} · {d.points} pts</span>
+                      {complete && !d.claimed && (
+                        <button onClick={() => setDefis(prev => prev.map(x => x.id === d.id ? { ...x, claimed: true } : x))} style={{ padding: '6px 14px', background: 'rgba(245,158,11,0.15)', border: '1px solid #f59e0b', color: '#f59e0b', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
+                          Réclamer +{d.points} pts
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {tab === 'certificats' && (
+          <div>
+            <div style={{ marginBottom: '20px' }}>
+              <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', marginBottom: '4px' }}>Mes certificats</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Téléchargez et partagez vos certifications ROOMCA</p>
+            </div>
+            {earnedCertificates.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎓</div>
+                <div>Terminez des modules pour obtenir des certificats</div>
+                <button onClick={() => navigate('/play')} className="btn-primary" style={{ marginTop: '16px' }}>Commencer un scénario</button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {earnedCertificates.map(cert => (
+                  <div key={cert.id} style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '24px', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                      <div style={{ width: '64px', height: '64px', borderRadius: '12px', background: 'rgba(235,40,40,0.1)', border: '2px solid rgba(235,40,40,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 }}>🎓</div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{cert.title}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>{cert.level} · Score : {cert.score}/100</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Émis le {cert.date} par {cert.issuer}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
+                      <div style={{ padding: '6px 12px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', fontSize: '11px', color: '#22c55e', fontWeight: 600 }}>
+                        ✓ Validé
+                      </div>
+                      <button onClick={() => downloadCertificate(cert, user?.name)} style={{ padding: '8px 18px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', transition: 'all 0.2s' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+                      >
+                        ↓ Télécharger
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div style={{ padding: '20px', background: 'rgba(235,40,40,0.04)', border: '1px dashed rgba(235,40,40,0.2)', borderRadius: '12px', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '12px' }}>
+                    Terminez encore 3 modules pour débloquer le certificat "Cyber Guardian"
+                  </div>
+                  <button onClick={() => navigate('/play')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '13px' }}>
+                    Continuer les formations →
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

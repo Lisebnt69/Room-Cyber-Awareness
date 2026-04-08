@@ -1,156 +1,219 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
-import LangToggle from '../components/LangToggle'
-import { sectors } from '../data/sectorScenarios'
 
-const steps = [
-  { id: 1, name: 'Bienvenue', icon: '👋' },
-  { id: 2, name: 'Secteur', icon: '🏢' },
-  { id: 3, name: 'Conformité', icon: '🛡️' },
-  { id: 4, name: 'Équipe', icon: '👥' },
-  { id: 5, name: 'Premier Scénario', icon: '🚀' }
+const STEPS = [
+  { id: 1, label: 'Bienvenue', icon: '👋' },
+  { id: 2, label: 'Votre entreprise', icon: '🏢' },
+  { id: 3, label: 'Vos employés', icon: '👥' },
+  { id: 4, label: 'Premier scénario', icon: '🎯' },
+  { id: 5, label: 'C\'est parti !', icon: '🚀' },
 ]
+
+const SECTORS = ['Finance / Banque', 'Santé', 'Administration publique', 'Éducation', 'Industrie / Manufacturing', 'Commerce / Retail', 'Tech / SaaS', 'Juridique', 'Énergie', 'Transport']
+const SIZES = ['1–10', '11–50', '51–200', '201–500', '500+']
 
 export default function Onboarding() {
   const navigate = useNavigate()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [data, setData] = useState({ sector: '', frameworks: [], teamSize: '', name: '' })
+  const [step, setStep] = useState(1)
+  const [form, setForm] = useState({ company: '', sector: '', size: '', emails: '', scenario: 'phishing' })
+  const total = STEPS.length
 
-  const next = () => currentStep < 5 ? setCurrentStep(currentStep + 1) : navigate('/admin')
-  const back = () => currentStep > 1 && setCurrentStep(currentStep - 1)
-  const toggleFramework = (fw) => {
-    setData({
-      ...data,
-      frameworks: data.frameworks.includes(fw) ? data.frameworks.filter(f => f !== fw) : [...data.frameworks, fw]
-    })
-  }
+  const next = () => setStep(s => Math.min(s + 1, total))
+  const prev = () => setStep(s => Math.max(s - 1, 1))
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const progress = ((step - 1) / (total - 1)) * 100
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
-      <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
+    <div style={{ minHeight: '100vh', background: '#000', color: 'var(--text-light)', display: 'flex', flexDirection: 'column' }}>
+      {/* Top bar */}
+      <div style={{ padding: '16px 40px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Logo size="sm" />
-        <LangToggle />
-      </nav>
+        <button onClick={() => navigate('/admin')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>
+          Passer →
+        </button>
+      </div>
 
-      <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto' }}>
-        {/* Progress */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
-          {steps.map(s => (
-            <div key={s.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-              <div style={{
-                width: '48px', height: '48px', borderRadius: '50%',
-                background: s.id <= currentStep ? '#eb2828' : 'var(--bg-card)',
-                color: s.id <= currentStep ? '#fff' : 'var(--text-muted)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
-                border: '2px solid', borderColor: s.id <= currentStep ? '#eb2828' : 'var(--border-subtle)'
-              }}>{s.icon}</div>
-              <div style={{ marginTop: '8px', fontSize: '11px', color: s.id === currentStep ? '#eb2828' : 'var(--text-muted)' }}>{s.name}</div>
+      {/* Progress bar */}
+      <div style={{ height: '3px', background: 'var(--border-subtle)' }}>
+        <div style={{ height: '100%', background: 'var(--red)', width: `${progress}%`, transition: 'width 0.4s ease' }} />
+      </div>
+
+      {/* Step indicators */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', padding: '24px 40px 0' }}>
+        {STEPS.map(s => (
+          <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px',
+              background: step > s.id ? 'var(--red)' : step === s.id ? 'rgba(235,40,40,0.2)' : 'var(--bg-card)',
+              border: step === s.id ? '2px solid var(--red)' : step > s.id ? '2px solid var(--red)' : '2px solid var(--border-subtle)',
+              transition: 'all 0.3s',
+            }}>
+              {step > s.id ? '✓' : s.icon}
             </div>
-          ))}
-        </div>
+            {s.id < total && <div style={{ width: '32px', height: '1px', background: step > s.id ? 'var(--red)' : 'var(--border-subtle)' }} />}
+          </div>
+        ))}
+      </div>
 
-        <div style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '12px' }}>
-          {currentStep === 1 && (
-            <>
-              <h2 style={{ fontSize: '32px', color: 'var(--text-primary)', marginBottom: '16px' }}>👋 Bienvenue sur ROOMCA</h2>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '16px' }}>
-                Configurons votre plateforme en 5 étapes. Cela prend 3 minutes.
+      {/* Content */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+        <div style={{ maxWidth: '560px', width: '100%' }}>
+
+          {/* Step 1 — Welcome */}
+          {step === 1 && (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '64px', marginBottom: '20px' }}>👋</div>
+              <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '36px', marginBottom: '16px' }}>
+                Bienvenue sur ROOMCA
+              </h1>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: 1.7, marginBottom: '32px' }}>
+                En 5 minutes, votre équipe sera prête à affronter de vraies cyberattaques — en simulation.<br /><br />
+                Nous allons configurer votre espace, inviter vos employés et lancer votre premier scénario.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '40px' }}>
+                {['⚡ 5 minutes de setup', '🎯 1er scénario inclus', '👥 Invitations automatiques'].map(t => (
+                  <span key={t} style={{ padding: '6px 14px', background: 'rgba(235,40,40,0.08)', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '20px', fontSize: '12px', color: 'var(--text-muted)' }}>{t}</span>
+                ))}
+              </div>
+              <button onClick={next} className="btn-primary" style={{ padding: '14px 48px', fontSize: '15px' }}>Commencer →</button>
+            </div>
+          )}
+
+          {/* Step 2 — Company info */}
+          {step === 2 && (
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '28px', marginBottom: '8px' }}>🏢 Votre entreprise</h2>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '28px' }}>Ces informations permettent d'adapter les scénarios à votre contexte.</p>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>NOM DE L'ENTREPRISE</label>
+                <input className="input-dark" placeholder="ACME Corp" value={form.company} onChange={e => set('company', e.target.value)} style={{ fontSize: '15px', padding: '12px 16px' }} />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>SECTEUR D'ACTIVITÉ</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                  {SECTORS.map(s => (
+                    <button key={s} onClick={() => set('sector', s)} style={{
+                      padding: '10px 14px', background: form.sector === s ? 'rgba(235,40,40,0.12)' : 'var(--bg-card)',
+                      border: form.sector === s ? '1px solid var(--red)' : '1px solid var(--border-subtle)',
+                      color: form.sector === s ? 'var(--text-light)' : 'var(--text-muted)', cursor: 'pointer', fontSize: '12px',
+                      borderRadius: '6px', textAlign: 'left', transition: 'all 0.15s',
+                    }}>{s}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom: '28px' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>TAILLE DE L'ÉQUIPE</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {SIZES.map(s => (
+                    <button key={s} onClick={() => set('size', s)} style={{
+                      flex: 1, padding: '10px', background: form.size === s ? 'rgba(235,40,40,0.12)' : 'var(--bg-card)',
+                      border: form.size === s ? '1px solid var(--red)' : '1px solid var(--border-subtle)',
+                      color: form.size === s ? 'var(--text-light)' : 'var(--text-muted)', cursor: 'pointer', fontSize: '12px',
+                      borderRadius: '6px', transition: 'all 0.15s',
+                    }}>{s}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 — Employees */}
+          {step === 3 && (
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '28px', marginBottom: '8px' }}>👥 Invitez vos employés</h2>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '28px' }}>Entrez les emails de vos collaborateurs. Ils recevront une invitation à rejoindre ROOMCA.</p>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>EMAILS (un par ligne ou séparés par des virgules)</label>
+                <textarea
+                  placeholder={'marie.dupont@company.com\nthomas.martin@company.com\njulie.bernard@company.com'}
+                  value={form.emails}
+                  onChange={e => set('emails', e.target.value)}
+                  rows={6}
+                  style={{ width: '100%', padding: '12px 16px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--mono)', fontSize: '12px', resize: 'vertical', borderRadius: '4px', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div style={{ padding: '14px 16px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '6px', fontSize: '12px', color: '#22c55e' }}>
+                ✓ Chaque employé reçoit un lien sécurisé — aucune installation requise
+              </div>
+              <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                💡 Vous pourrez aussi importer depuis un CSV ou ajouter manuellement depuis votre dashboard.
+              </div>
+            </div>
+          )}
+
+          {/* Step 4 — First scenario */}
+          {step === 4 && (
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '28px', marginBottom: '8px' }}>🎯 Premier scénario</h2>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Choisissez le scénario à assigner immédiatement à votre équipe.</p>
+              {[
+                { id: 'phishing', icon: '🎣', name: 'Opération Inbox Zero', desc: 'Phishing email du PDG · 15 min · Intermédiaire', recommended: true },
+                { id: 'ransomware', icon: '🔒', name: 'Bureau Compromis', desc: 'Ransomware sur poste · 20 min · Avancé', recommended: false },
+                { id: 'social', icon: '🎭', name: 'Ingénierie Sociale', desc: 'Manipulation psychologique · 10 min · Débutant', recommended: false },
+              ].map(s => (
+                <button key={s.id} onClick={() => set('scenario', s.id)} style={{
+                  display: 'flex', alignItems: 'center', gap: '16px', width: '100%', padding: '16px 20px', marginBottom: '10px',
+                  background: form.scenario === s.id ? 'rgba(235,40,40,0.08)' : 'var(--bg-card)',
+                  border: form.scenario === s.id ? '2px solid var(--red)' : '1px solid var(--border-subtle)',
+                  borderRadius: '8px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', position: 'relative',
+                }}>
+                  {s.recommended && <span style={{ position: 'absolute', top: '-8px', right: '12px', background: 'var(--red)', color: '#fff', fontSize: '9px', padding: '2px 8px', fontWeight: 700 }}>RECOMMANDÉ</span>}
+                  <span style={{ fontSize: '28px' }}>{s.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: 600, marginBottom: '4px' }}>{s.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{s.desc}</div>
+                  </div>
+                  <div style={{ marginLeft: 'auto', width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${form.scenario === s.id ? 'var(--red)' : 'var(--border)'}`, background: form.scenario === s.id ? 'var(--red)' : 'transparent', flexShrink: 0 }} />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Step 5 — Done */}
+          {step === 5 && (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '72px', marginBottom: '20px' }}>🚀</div>
+              <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '32px', marginBottom: '16px' }}>
+                {form.company || 'Votre espace'} est prêt !
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.7, marginBottom: '32px' }}>
+                Le scénario a été assigné à vos équipes. Les invitations email sont en route.<br />
+                Suivez les résultats en temps réel depuis votre dashboard.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px', textAlign: 'left' }}>
                 {[
-                  { icon: '🎯', label: 'Personnalisation par secteur' },
-                  { icon: '🛡️', label: 'Frameworks de conformité' },
-                  { icon: '👥', label: 'Import de votre équipe' },
-                  { icon: '🚀', label: 'Premier scénario en 1 clic' }
-                ].map((f, i) => (
-                  <div key={i} style={{ padding: '16px', background: 'var(--bg-black)', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '24px' }}>{f.icon}</div>
-                    <div style={{ color: 'var(--text-primary)', fontSize: '13px', marginTop: '8px' }}>{f.label}</div>
+                  { icon: '✅', text: 'Espace créé' },
+                  { icon: '✅', text: 'Scénario assigné' },
+                  { icon: '📧', text: 'Invitations envoyées' },
+                  { icon: '📊', text: 'Analytics activées' },
+                ].map(i => (
+                  <div key={i.text} style={{ display: 'flex', gap: '10px', padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '6px' }}>
+                    <span>{i.icon}</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{i.text}</span>
                   </div>
                 ))}
               </div>
-              <input type="text" placeholder="Nom de votre entreprise" value={data.name} onChange={e => setData({...data, name: e.target.value})}
-                style={{ width: '100%', padding: '12px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: 'var(--text-primary)' }} />
-            </>
-          )}
-
-          {currentStep === 2 && (
-            <>
-              <h2 style={{ fontSize: '32px', color: 'var(--text-primary)', marginBottom: '16px' }}>Quel est votre secteur ?</h2>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Nous personnaliserons les scénarios pour vous.</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                {sectors.map(s => (
-                  <button key={s.id} onClick={() => setData({...data, sector: s.id})} style={{
-                    padding: '20px', textAlign: 'left',
-                    background: data.sector === s.id ? '#eb2828' : 'var(--bg-black)',
-                    border: '1px solid', borderColor: data.sector === s.id ? '#eb2828' : 'var(--border-subtle)',
-                    borderRadius: '8px', cursor: 'pointer', color: 'var(--text-primary)'
-                  }}>
-                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>{s.icon}</div>
-                    <div style={{ fontWeight: 'bold' }}>{s.name.fr}</div>
-                    <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>{s.frameworks.join(', ')}</div>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {currentStep === 3 && (
-            <>
-              <h2 style={{ fontSize: '32px', color: 'var(--text-primary)', marginBottom: '16px' }}>Frameworks de conformité</h2>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Sélectionnez ceux qui vous concernent.</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                {['GDPR', 'HIPAA', 'PCI-DSS', 'SOC 2', 'ISO 27001', 'NIS2', 'DORA', 'CMMC', 'FERPA', 'NERC-CIP', 'IEC 62443', 'CCPA'].map(fw => (
-                  <button key={fw} onClick={() => toggleFramework(fw)} style={{
-                    padding: '12px', background: data.frameworks.includes(fw) ? '#eb2828' : 'var(--bg-black)',
-                    border: '1px solid', borderColor: data.frameworks.includes(fw) ? '#eb2828' : 'var(--border-subtle)',
-                    borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '12px'
-                  }}>{fw}</button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {currentStep === 4 && (
-            <>
-              <h2 style={{ fontSize: '32px', color: 'var(--text-primary)', marginBottom: '16px' }}>Taille de votre équipe</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>
-                {['1-10', '11-50', '51-200', '201-1000', '1000+'].map(size => (
-                  <button key={size} onClick={() => setData({...data, teamSize: size})} style={{
-                    padding: '20px', background: data.teamSize === size ? '#eb2828' : 'var(--bg-black)',
-                    border: '1px solid', borderColor: data.teamSize === size ? '#eb2828' : 'var(--border-subtle)',
-                    borderRadius: '8px', cursor: 'pointer', color: 'var(--text-primary)', fontSize: '16px'
-                  }}>{size} employés</button>
-                ))}
-              </div>
-              <button style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px dashed var(--border-subtle)', borderRadius: '8px', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                📁 Importer CSV de votre équipe
+              <button onClick={() => navigate('/admin')} className="btn-primary" style={{ padding: '14px 48px', fontSize: '15px' }}>
+                Voir mon dashboard →
               </button>
-            </>
+            </div>
           )}
 
-          {currentStep === 5 && (
-            <>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '72px', marginBottom: '16px' }}>🎉</div>
-                <h2 style={{ fontSize: '32px', color: 'var(--text-primary)', marginBottom: '16px' }}>Tout est prêt !</h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
-                  Votre plateforme est configurée pour le secteur <strong style={{ color: '#eb2828' }}>{sectors.find(s => s.id === data.sector)?.name.fr || 'sélectionné'}</strong>
-                  <br />avec {data.frameworks.length} frameworks de conformité.
-                </p>
-                <div style={{ background: 'var(--bg-black)', padding: '24px', borderRadius: '8px', marginBottom: '24px', textAlign: 'left' }}>
-                  <h4 style={{ color: 'var(--text-primary)', marginBottom: '12px' }}>Premier scénario recommandé :</h4>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>📧 "Inbox Zero" - Phishing fundamentals · 15 min</p>
-                </div>
-              </div>
-            </>
+          {/* Navigation buttons */}
+          {step < total && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
+              {step > 1 ? (
+                <button onClick={prev} className="btn-secondary" style={{ padding: '10px 24px' }}>← Retour</button>
+              ) : <div />}
+              {step > 1 && (
+                <button onClick={next} className="btn-primary" style={{ padding: '10px 32px' }}>
+                  {step === total - 1 ? 'Finaliser 🚀' : 'Continuer →'}
+                </button>
+              )}
+            </div>
           )}
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
-            <button onClick={back} disabled={currentStep === 1} className="btn-secondary" style={{ padding: '12px 24px', opacity: currentStep === 1 ? 0.3 : 1 }}>← Précédent</button>
-            <button onClick={next} className="btn-primary" style={{ padding: '12px 24px' }}>{currentStep === 5 ? 'Commencer 🚀' : 'Suivant →'}</button>
-          </div>
         </div>
       </div>
     </div>
