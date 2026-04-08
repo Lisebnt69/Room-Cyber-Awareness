@@ -98,12 +98,3 @@ par
 ✅ des expériences engageantes
 💡 Pourquoi ce projet ?
 
-Parce que :
-
-Les gens n’apprennent pas avec des slides
-Le phishing continue de fonctionner
-Les formations actuelles sont oubliées en 24h
-
-👉 Ici, on crée une expérience qui marque
-
-🧠
