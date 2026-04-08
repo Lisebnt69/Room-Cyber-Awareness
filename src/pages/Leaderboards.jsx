@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '../components/Logo'
+import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Leaderboard from '../components/Leaderboard'
 
@@ -40,7 +40,11 @@ export default function Leaderboards() {
     <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
       {/* Navigation */}
       <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <Logo size="sm" />
+        <img
+  src={Logo}
+  alt="ROOMCA"
+  style={{ height: '32px', width: 'auto', display: 'block' }}
+/>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <LangToggle />
           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>

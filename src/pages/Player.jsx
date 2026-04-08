@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import { emails as emailsFr, emailsEn, logLines as logLinesFr, logLinesEn } from '../data/scenarioData'
-import Logo from '../components/Logo'
+import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import { db } from '../services/db'
 
@@ -92,7 +92,11 @@ function PhaseInbox({ onComplete, score, setScore }) {
     <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', flexDirection: 'column', animation: glitch ? 'glitch 0.5s linear' : 'none' }}>
       {/* Header bar */}
       <div style={{ background: '#080808', borderBottom: '1px solid var(--border-subtle)', padding: '12px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
-        <Logo size="sm" />
+        <img
+  src={Logo}
+  alt="ROOMCA"
+  style={{ height: '32px', width: 'auto', display: 'block' }}
+/>
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
           {[[t('playerScenarioLabel'), 'INBOX ZERO', 'var(--text-light)'], [t('playerCluesLabel'), `${found.length}/6`, 'var(--red)'], [t('playerScoreLabel'), score, '#22c55e'], [t('playerTimeLabel'), timer.display, timer.seconds < 120 ? 'var(--red)' : 'var(--text-light)']].map(([lbl, val, col]) => (
             <div key={lbl} style={{ textAlign: 'center' }}>

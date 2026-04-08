@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import { db } from '../services/db'
-import Logo from '../components/Logo'
+import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
+import { visualScenarios } from '../data/visualScenarios'
 
 const allBadges = [
   { id: 'first_blood', name: 'Premier Sang', icon: '🩸', desc: 'Terminer votre premier scénario' },
@@ -119,7 +120,11 @@ export default function PlayerDashboard() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
       <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg-black)' }}>
-        <Logo size="sm" />
+        <img
+  src={Logo}
+  alt="ROOMCA"
+  style={{ height: '32px', width: 'auto', display: 'block' }}
+/>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <LangToggle />
           <button onClick={() => navigate('/play')} className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }}>▶ Jouer</button>
@@ -250,6 +255,42 @@ export default function PlayerDashboard() {
                 </div>
               ))}
               <button onClick={() => navigate('/play')} className="btn-primary" style={{ width: '100%', padding: '12px', marginTop: '8px' }}>🎮 Jouer maintenant</button>
+            </div>
+          </div>
+        )}
+
+        {tab === 'overview' && (
+          <div style={{ marginTop: '28px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '4px' }}>🔍 Scénarios Visuels — Cherche &amp; Trouve</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Analysez des captures d'écran réelles et identifiez les indices cachés</p>
+              </div>
+              <div className="tag"><span className="status-dot red" /> {visualScenarios.length} scénarios</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+              {visualScenarios.map(vs => {
+                const diffColor = vs.difficulty.fr === 'DÉBUTANT' ? '#22c55e' : vs.difficulty.fr === 'INTERMÉDIAIRE' ? '#f59e0b' : '#eb2828'
+                const sceneIcon = vs.scene === 'login' ? '🌐' : vs.scene === 'ceo_email' ? '📧' : vs.scene === 'desktop' ? '🖥️' : '📄'
+                return (
+                  <div key={vs.id} onClick={() => navigate(`/visual/${vs.id}`)}
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '20px', cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'; e.currentTarget.style.background = 'rgba(235,40,40,0.04)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--bg-card)' }}
+                  >
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>{sceneIcon}</div>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: diffColor, letterSpacing: '0.1em', marginBottom: '6px' }}>{vs.difficulty.fr}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-light)', marginBottom: '6px', lineHeight: 1.3 }}>{vs.title.fr}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: 1.5 }}>{vs.category.fr}</div>
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>
+                      <span>🔍 {vs.hotspots.length} indices</span>
+                      <span>⏱ {Math.round(vs.duration / 60)}min</span>
+                      <span style={{ color: '#f59e0b' }}>🪙 {vs.coins}</span>
+                    </div>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, ${diffColor}, transparent)` }} />
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

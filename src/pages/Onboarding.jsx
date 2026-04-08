@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Logo from '../components/Logo'
+import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
+import LangToggle from '../components/LangToggle'
+import { sectors } from '../data/sectorScenarios'
+
 
 const STEPS = [
   { id: 1, label: 'Bienvenue', icon: '👋' },
@@ -29,7 +32,11 @@ export default function Onboarding() {
     <div style={{ minHeight: '100vh', background: '#000', color: 'var(--text-light)', display: 'flex', flexDirection: 'column' }}>
       {/* Top bar */}
       <div style={{ padding: '16px 40px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Logo size="sm" />
+        <img
+  src={Logo}
+  alt="ROOMCA"
+  style={{ height: '32px', width: 'auto', display: 'block' }}
+/>
         <button onClick={() => navigate('/admin')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>
           Passer →
         </button>

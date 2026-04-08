@@ -24,6 +24,7 @@ import ScenarioBuilder from './pages/ScenarioBuilder'
 import PartnerPortal from './pages/PartnerPortal'
 import WhiteLabel from './pages/WhiteLabel'
 import PlayerDashboard from './pages/PlayerDashboard'
+import VisualChallenge from './pages/VisualChallenge'
 
 export default function App() {
   return (
@@ -53,6 +54,11 @@ export default function App() {
           <Route path="/marketplace" element={
             <ProtectedRoute requiredRole={ROLES.PLAYER}>
               <Marketplace />
+            </ProtectedRoute>
+          } />
+          <Route path="/visual/:id" element={
+            <ProtectedRoute requiredRole={ROLES.PLAYER}>
+              <VisualChallenge />
             </ProtectedRoute>
           } />
 
