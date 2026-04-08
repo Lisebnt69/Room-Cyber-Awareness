@@ -66,8 +66,29 @@ function KpiCard({ label, value, sub, trend, accent }) {
   )
 }
 
+const AI_RISK_EMPLOYEES = [
+  { name: 'Marc Lefebvre', dept: 'Commercial', risk: 87, factors: ['Faible taux de complétion (51%)', 'Cliqué sur 2 phishing simulés', 'Score bas : 540/1000'] },
+  { name: 'Nadia Chouaib', dept: 'Commercial', risk: 79, factors: ['1 seul scénario complété', 'Aucune connexion depuis 7 jours', 'Sans licence active'] },
+  { name: 'Pierre Rousseau', dept: 'Finance', risk: 52, factors: ['Taux de complétion moyen (68%)', 'Score en baisse ce mois'] },
+  { name: 'Amélie Durand', dept: 'RH', risk: 38, factors: ['Progression normale', 'Score en amélioration'] },
+  { name: 'Sophie Bernard', dept: 'Finance', risk: 12, factors: ['Excellent score (920/1000)', 'Top performer'] },
+]
+
+function riskColor(r) {
+  if (r >= 70) return '#eb2828'
+  if (r >= 40) return '#f59e0b'
+  return '#22c55e'
+}
+
+function riskLabel(r) {
+  if (r >= 70) return 'Critique'
+  if (r >= 40) return 'Modéré'
+  return 'Faible'
+}
+
 // ─── Tab: Dashboard ───────────────────────────────────────────────
 function TabDashboard({ t, pieData }) {
+  const [expandedRisk, setExpandedRisk] = useState(null)
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border-subtle)', marginBottom: '32px' }}>
@@ -124,6 +145,47 @@ function TabDashboard({ t, pieData }) {
             <Bar dataKey="score" fill="#eb2828" name={t('kpiScore')} />
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* AI Risk Score */}
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '28px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>SCORE DE RISQUE IA — EMPLOYÉS PRIORITAIRES</div>
+          <span style={{ fontSize: '10px', padding: '3px 10px', background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '12px', fontFamily: 'var(--mono)' }}>IA ROOMCA</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {AI_RISK_EMPLOYEES.map((emp, i) => (
+            <div key={i}>
+              <div onClick={() => setExpandedRisk(expandedRisk === i ? null : i)} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px 14px', borderRadius: '6px', cursor: 'pointer', border: '1px solid var(--border-subtle)', background: expandedRisk === i ? 'rgba(255,255,255,0.03)' : 'transparent', transition: 'all 0.15s' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: `${riskColor(emp.risk)}20`, border: `2px solid ${riskColor(emp.risk)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: riskColor(emp.risk), flexShrink: 0 }}>
+                  {emp.risk}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>{emp.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{emp.dept}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '80px', height: '4px', background: 'var(--bg-black)', borderRadius: '2px' }}>
+                    <div style={{ width: `${emp.risk}%`, height: '100%', background: riskColor(emp.risk), borderRadius: '2px', transition: 'width 0.8s' }} />
+                  </div>
+                  <span style={{ fontSize: '11px', color: riskColor(emp.risk), fontWeight: 600, width: '48px', textAlign: 'right' }}>{riskLabel(emp.risk)}</span>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{expandedRisk === i ? '▲' : '▼'}</span>
+                </div>
+              </div>
+              {expandedRisk === i && (
+                <div style={{ marginLeft: '52px', padding: '10px 14px', background: 'rgba(235,40,40,0.04)', border: '1px solid rgba(235,40,40,0.1)', borderRadius: '6px', marginTop: '4px' }}>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px' }}>FACTEURS DE RISQUE DÉTECTÉS</div>
+                  {emp.factors.map((f, fi) => (
+                    <div key={fi} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      <span style={{ color: riskColor(emp.risk), flexShrink: 0 }}>•</span>
+                      {f}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </>
   )
@@ -245,6 +307,14 @@ function TabScenarios({ t, lang, onAssign }) {
 // ─── Tab: Reports ─────────────────────────────────────────────────
 function TabReports({ t, lang }) {
   const [downloading, setDownloading] = useState(null)
+  const [sendingReport, setSendingReport] = useState(false)
+  const [reportSent, setReportSent] = useState(false)
+
+  const sendWeeklyReport = () => {
+    setSendingReport(true)
+    setTimeout(() => { setSendingReport(false); setReportSent(true); setTimeout(() => setReportSent(false), 4000) }, 1800)
+  }
+
   const reports = [
     { id: 'r1', name: lang === 'fr' ? 'Rapport mensuel — Mars 2025' : 'Monthly Report — March 2025', date: '01/04/2025', size: '1.2 MB', type: 'PDF' },
     { id: 'r2', name: lang === 'fr' ? 'Rapport mensuel — Février 2025' : 'Monthly Report — February 2025', date: '01/03/2025', size: '1.1 MB', type: 'PDF' },
@@ -256,6 +326,45 @@ function TabReports({ t, lang }) {
     setTimeout(() => setDownloading(null), 1800)
   }
   return (
+    <div>
+      {/* Weekly Report Card */}
+      <div style={{ background: 'linear-gradient(135deg, rgba(235,40,40,0.06), rgba(235,40,40,0.02))', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '8px', padding: '28px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <span style={{ fontSize: '24px' }}>📊</span>
+              <div>
+                <div style={{ fontFamily: 'var(--font-title)', fontSize: '16px' }}>{lang === 'fr' ? 'Rapport hebdomadaire automatique' : 'Automatic Weekly Report'}</div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  {lang === 'fr' ? 'Envoyé chaque lundi matin · Prochaine édition : Lundi 13 avril' : 'Sent every Monday morning · Next edition: Monday April 13'}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '16px' }}>
+              {[
+                { label: lang === 'fr' ? 'Participation' : 'Participation', value: '88%', trend: '+4%', up: true },
+                { label: lang === 'fr' ? 'Score moyen' : 'Avg Score', value: '724', trend: '+12', up: true },
+                { label: lang === 'fr' ? 'Employés à risque' : 'At-risk employees', value: '3', trend: '-1', up: false },
+              ].map((m, i) => (
+                <div key={i} style={{ padding: '12px 14px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px' }}>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{m.label}</div>
+                  <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-light)' }}>{m.value}</div>
+                  <div style={{ fontSize: '11px', color: m.up ? '#22c55e' : 'var(--red)', marginTop: '2px' }}>{m.up ? '↑' : '↓'} {m.trend} {lang === 'fr' ? 'vs semaine préc.' : 'vs prev. week'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flexShrink: 0 }}>
+            <button onClick={sendWeeklyReport} disabled={sendingReport} className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px', opacity: sendingReport ? 0.7 : 1 }}>
+              {reportSent ? '✓ Envoyé !' : sendingReport ? '⏳ Envoi...' : lang === 'fr' ? '✉ Envoyer maintenant' : '✉ Send now'}
+            </button>
+            <button style={{ padding: '8px 20px', fontSize: '12px', background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '4px' }}>
+              {lang === 'fr' ? 'Aperçu email' : 'Preview email'}
+            </button>
+          </div>
+        </div>
+      </div>
+
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
       <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)' }}>
         <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
@@ -286,6 +395,7 @@ function TabReports({ t, lang }) {
           ))}
         </tbody>
       </table>
+    </div>
     </div>
   )
 }
