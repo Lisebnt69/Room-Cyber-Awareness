@@ -76,7 +76,6 @@ export default function PlayerDashboard() {
           <LangToggle />
           <button onClick={() => navigate('/play')} className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }}>▶ Jouer</button>
           <button onClick={() => navigate('/leaderboards')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>🏆 Classement</button>
-          <button onClick={() => navigate('/certification')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>🎓 Certifs</button>
           <button onClick={() => navigate('/settings')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>⚙️</button>
           <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>Logout</button>
         </div>

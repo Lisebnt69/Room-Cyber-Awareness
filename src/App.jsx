@@ -15,7 +15,6 @@ import Admin from './pages/Admin'
 import SuperAdmin from './pages/SuperAdmin'
 import Compliance from './pages/Compliance'
 import Marketplace from './pages/Marketplace'
-import Certification from './pages/Certification'
 import Onboarding from './pages/Onboarding'
 import HelpCenter from './pages/HelpCenter'
 import Reports from './pages/Reports'
@@ -49,11 +48,6 @@ export default function App() {
           <Route path="/leaderboards" element={
             <ProtectedRoute requiredRole={ROLES.PLAYER}>
               <Leaderboards />
-            </ProtectedRoute>
-          } />
-          <Route path="/certification" element={
-            <ProtectedRoute requiredRole={ROLES.PLAYER}>
-              <Certification />
             </ProtectedRoute>
           } />
           <Route path="/marketplace" element={

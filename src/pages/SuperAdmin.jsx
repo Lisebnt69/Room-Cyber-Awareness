@@ -7,20 +7,20 @@ import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
 
-const companiesData = [
-  { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active' },
-  { id: 2, name: 'BNP Finance', plan: 'Enterprise', users: 892, active: 814, scenarios: 12, licenses: 1000, expire: '30/06/2025', status: 'active' },
-  { id: 3, name: 'Mairie de Lyon', plan: 'Starter', users: 24, active: 18, scenarios: 3, licenses: 25, expire: '15/05/2025', status: 'expiring' },
-  { id: 4, name: 'StartupTech SAS', plan: 'Starter', users: 12, active: 8, scenarios: 2, licenses: 25, expire: '01/09/2025', status: 'active' },
-  { id: 5, name: 'Groupe Renault', plan: 'Enterprise', users: 2840, active: 2100, scenarios: 18, licenses: 3000, expire: '31/03/2026', status: 'active' },
+const INITIAL_COMPANIES = [
+  { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@acme.com', sector: 'Finance' },
+  { id: 2, name: 'BNP Finance', plan: 'Enterprise', users: 892, active: 814, scenarios: 12, licenses: 1000, expire: '30/06/2025', status: 'active', email: 'security@bnp.fr', sector: 'Finance' },
+  { id: 3, name: 'Mairie de Lyon', plan: 'Starter', users: 24, active: 18, scenarios: 3, licenses: 25, expire: '15/05/2025', status: 'expiring', email: 'dsi@mairie-lyon.fr', sector: 'Administration' },
+  { id: 4, name: 'StartupTech SAS', plan: 'Starter', users: 12, active: 8, scenarios: 2, licenses: 25, expire: '01/09/2025', status: 'active', email: 'cto@startuptech.io', sector: 'Tech' },
+  { id: 5, name: 'Groupe Renault', plan: 'Enterprise', users: 2840, active: 2100, scenarios: 18, licenses: 3000, expire: '31/03/2026', status: 'active', email: 'cybersec@renault.com', sector: 'Industrie' },
 ]
 
-const scenariosData = [
-  { id: 1, title: { fr: 'Opération : Inbox Zero', en: 'Operation: Inbox Zero' }, category: 'Phishing', difficulty: 'intermediate', duration: '15 min', plays: 3241, score: 724, status: 'published' },
-  { id: 2, title: { fr: 'Bureau Compromis', en: 'Compromised Desktop' }, category: 'Ransomware', difficulty: 'advanced', duration: '20 min', plays: 1892, score: 612, status: 'published' },
-  { id: 3, title: { fr: 'Ingénierie Sociale', en: 'Social Engineering' }, category: 'Social Eng.', difficulty: 'beginner', duration: '10 min', plays: 4102, score: 831, status: 'published' },
-  { id: 4, title: { fr: 'Fuite de Données', en: 'Data Breach' }, category: 'Insider', difficulty: 'advanced', duration: '25 min', plays: 987, score: 568, status: 'beta' },
-  { id: 5, title: { fr: 'WiFi Piégé', en: 'Rogue WiFi' }, category: 'Réseau', difficulty: 'intermediate', duration: '12 min', plays: 0, score: 0, status: 'draft' },
+const INITIAL_SCENARIOS = [
+  { id: 1, title: { fr: 'Opération : Inbox Zero', en: 'Operation: Inbox Zero' }, category: 'Phishing', difficulty: 'intermediate', duration: '15', plays: 3241, score: 724, status: 'published', description: 'Simulation d\'attaque phishing avancée par email' },
+  { id: 2, title: { fr: 'Bureau Compromis', en: 'Compromised Desktop' }, category: 'Ransomware', difficulty: 'advanced', duration: '20', plays: 1892, score: 612, status: 'published', description: 'Scénario de ransomware sur poste de travail' },
+  { id: 3, title: { fr: 'Ingénierie Sociale', en: 'Social Engineering' }, category: 'Social Eng.', difficulty: 'beginner', duration: '10', plays: 4102, score: 831, status: 'published', description: 'Manipulation psychologique et pretexting' },
+  { id: 4, title: { fr: 'Fuite de Données', en: 'Data Breach' }, category: 'Insider', difficulty: 'advanced', duration: '25', plays: 987, score: 568, status: 'beta', description: 'Détection d\'une exfiltration de données sensibles' },
+  { id: 5, title: { fr: 'WiFi Piégé', en: 'Rogue WiFi' }, category: 'Réseau', difficulty: 'intermediate', duration: '12', plays: 0, score: 0, status: 'draft', description: 'Attaque par point d\'accès WiFi malveillant' },
 ]
 
 const licensesData = [
@@ -28,6 +28,12 @@ const licensesData = [
   { id: 2, company: 'BNP Finance', plan: 'Enterprise', seats: 1000, used: 814, price: 'custom', period: 'annual', expires: '30/06/2025' },
   { id: 3, company: 'Mairie de Lyon', plan: 'Starter', seats: 25, used: 18, price: 49, period: 'monthly', expires: '15/05/2025' },
 ]
+
+const SECTORS = ['Finance', 'Santé', 'Administration', 'Éducation', 'Industrie', 'Commerce', 'Énergie', 'Juridique', 'Tech', 'Transport']
+const PLANS = ['Starter', 'Business', 'Enterprise']
+const STATUS_OPTIONS = ['active', 'expiring', 'suspended']
+const SCENARIO_CATEGORIES = ['Phishing', 'Ransomware', 'Social Eng.', 'Insider', 'Réseau', 'Malware', 'OSINT']
+const SCENARIO_STATUSES = ['draft', 'beta', 'published']
 
 function statusBadge(s, t) {
   const map = { active: [t('badgeActive'), '#22c55e'], expiring: [t('badgeExpiring'), '#f59e0b'], suspended: [t('badgeSuspended'), 'var(--red)'], published: [t('badgePublished'), '#22c55e'], beta: [t('badgeBeta'), '#f59e0b'], draft: [t('badgeDraft'), 'var(--text-muted)'] }
@@ -42,8 +48,62 @@ export default function SuperAdmin() {
   const [activeNav, setActiveNav] = useState('overview')
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState(null)
+  const [companies, setCompanies] = useState(INITIAL_COMPANIES)
+  const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS)
+  const [editCompanyForm, setEditCompanyForm] = useState(null)
+  const [editScenarioForm, setEditScenarioForm] = useState(null)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
+
+  const openEditCompany = (c) => {
+    setEditCompanyForm({ ...c })
+    setModal({ type: 'editCompany', data: c })
+  }
+
+  const saveCompany = (e) => {
+    e.preventDefault()
+    setCompanies(prev => prev.map(c => c.id === editCompanyForm.id ? { ...editCompanyForm } : c))
+    setModal(null)
+    showToast(lang === 'fr' ? `${editCompanyForm.name} mis à jour` : `${editCompanyForm.name} updated`)
+  }
+
+  const deleteCompany = (id) => {
+    setCompanies(prev => prev.filter(c => c.id !== id))
+    setModal(null)
+    showToast(lang === 'fr' ? 'Entreprise supprimée' : 'Company deleted')
+  }
+
+  const openEditScenario = (s) => {
+    setEditScenarioForm({ ...s, titleFr: s.title.fr, titleEn: s.title.en })
+    setModal({ type: 'editScenario', data: s })
+  }
+
+  const saveScenario = (e) => {
+    e.preventDefault()
+    const updated = {
+      ...editScenarioForm,
+      title: { fr: editScenarioForm.titleFr, en: editScenarioForm.titleEn }
+    }
+    setScenarios(prev => prev.map(s => s.id === updated.id ? updated : s))
+    setModal(null)
+    showToast(lang === 'fr' ? 'Scénario mis à jour' : 'Scenario updated')
+  }
+
+  const createScenario = (e) => {
+    e.preventDefault()
+    const newS = {
+      id: Date.now(),
+      title: { fr: editScenarioForm.titleFr, en: editScenarioForm.titleEn || editScenarioForm.titleFr },
+      category: editScenarioForm.category || 'Phishing',
+      difficulty: editScenarioForm.difficulty || 'intermediate',
+      duration: editScenarioForm.duration || '15',
+      description: editScenarioForm.description || '',
+      plays: 0, score: 0, status: 'draft',
+    }
+    setScenarios(prev => [...prev, newS])
+    setModal(null)
+    showToast(lang === 'fr' ? 'Scénario créé' : 'Scenario created')
+  }
 
   const navItems = [
     { id: 'overview', label: t('saNavOverview'), icon: '▦' },
@@ -68,100 +128,193 @@ export default function SuperAdmin() {
       {toast && <Toast message={toast} type="success" />}
 
       {/* Modals */}
+      {/* Add Company Modal */}
       <Modal isOpen={modal?.type === 'addCompany'} onClose={() => setModal(null)} title={t('saAdd')}>
-        <form onSubmit={(e) => { e.preventDefault(); setModal(null); showToast(lang === 'fr' ? 'Entreprise créée avec succès' : 'Company created successfully') }}>
-          {['name', 'email', 'plan'].map(field => (
-            <div key={field} style={{ marginBottom: '16px' }}>
-              <label htmlFor={`field-${field}`} style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                {lang === 'fr' ? (field === 'name' ? 'NOM' : field === 'email' ? 'EMAIL CONTACT' : 'PLAN') : (field === 'name' ? 'NAME' : field === 'email' ? 'CONTACT EMAIL' : 'PLAN')}
-              </label>
-              {field === 'plan' ? (
-                <select id={`field-${field}`} style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)', fontSize: '13px' }} aria-label={field === 'plan' ? 'Select plan' : undefined}>
-                  <option>Starter</option>
-                  <option>Business</option>
-                  <option>Enterprise</option>
-                </select>
-              ) : (
-                <input id={`field-${field}`} className="input-dark" placeholder={field === 'name' ? 'ACME Corp' : 'contact@company.com'} required aria-label={field === 'name' ? 'Company name' : 'Contact email'} />
-              )}
-            </div>
-          ))}
-          <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }} aria-label="Create company">
-            {lang === 'fr' ? 'Créer entreprise' : 'Create company'}
-          </button>
-        </form>
-      </Modal>
-
-      <Modal isOpen={modal?.type === 'manageCompany' && !!modal.data} onClose={() => setModal(null)} title={modal?.data?.name || ''}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }} role="grid" aria-label="Company statistics">
+        <form onSubmit={(e) => {
+          e.preventDefault()
+          const fd = new FormData(e.currentTarget)
+          const newC = { id: Date.now(), name: fd.get('name'), email: fd.get('email'), plan: fd.get('plan'), sector: fd.get('sector'), users: 0, active: 0, scenarios: 0, licenses: fd.get('plan') === 'Starter' ? 25 : fd.get('plan') === 'Business' ? 200 : 1000, expire: '31/12/2026', status: 'active' }
+          setCompanies(prev => [...prev, newC])
+          setModal(null)
+          showToast(lang === 'fr' ? `${newC.name} créée avec succès` : `${newC.name} created successfully`)
+        }}>
           {[
-            [lang === 'fr' ? 'Plan' : 'Plan', modal?.data?.plan],
-            [lang === 'fr' ? 'Utilisateurs actifs' : 'Active users', `${modal?.data?.active}/${modal?.data?.users}`],
-            [lang === 'fr' ? 'Scénarios' : 'Scenarios', modal?.data?.scenarios],
-            [lang === 'fr' ? 'Licences' : 'Licenses', modal?.data?.licenses],
-          ].map(([label, val]) => (
-            <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', padding: '16px' }} role="gridcell">
-              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{label}</div>
-              <div style={{ fontFamily: 'var(--font-title)', fontSize: '20px', color: 'var(--red)' }}>{val}</div>
+            { name: 'name', label: lang === 'fr' ? 'NOM ENTREPRISE' : 'COMPANY NAME', type: 'text', placeholder: 'ACME Corp' },
+            { name: 'email', label: lang === 'fr' ? 'EMAIL CONTACT' : 'CONTACT EMAIL', type: 'email', placeholder: 'admin@company.com' },
+          ].map(f => (
+            <div key={f.name} style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{f.label}</label>
+              <input name={f.name} className="input-dark" type={f.type} placeholder={f.placeholder} required />
             </div>
           ))}
-        </div>
-        <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Add licenses to ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Licences augmentées' : 'Licenses increased') }}>
-            {lang === 'fr' ? '+ Ajouter licences' : '+ Add licenses'}
-          </button>
-          <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Configure ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Configuration mise à jour' : 'Configuration updated') }}>
-            {lang === 'fr' ? '⚙ Configurer' : '⚙ Configure'}
-          </button>
-        </div>
-      </Modal>
-
-      <Modal isOpen={modal?.type === 'createScenario'} onClose={() => setModal(null)} title={lang === 'fr' ? 'Créer scénario' : 'Create scenario'}>
-        <form onSubmit={(e) => { e.preventDefault(); setModal(null); showToast(lang === 'fr' ? 'Scénario créé' : 'Scenario created') }}>
-          {['title', 'category', 'difficulty'].map(field => (
-            <div key={field} style={{ marginBottom: '16px' }}>
-              <label htmlFor={`scenario-${field}`} style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                {lang === 'fr' ? (field === 'title' ? 'TITRE' : field === 'category' ? 'CATÉGORIE' : 'NIVEAU') : (field === 'title' ? 'TITLE' : field === 'category' ? 'CATEGORY' : 'DIFFICULTY')}
-              </label>
-              {field === 'category' ? (
-                <select id={`scenario-${field}`} style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)' }} aria-label="Scenario category">
-                  <option>Phishing</option>
-                  <option>Ransomware</option>
-                  <option>Social Eng.</option>
-                </select>
-              ) : field === 'difficulty' ? (
-                <select id={`scenario-${field}`} style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)' }} aria-label="Scenario difficulty">
-                  <option>beginner</option>
-                  <option>intermediate</option>
-                  <option>advanced</option>
-                </select>
-              ) : (
-                <input id={`scenario-${field}`} className="input-dark" placeholder={lang === 'fr' ? 'Ex: Bureau Compromis' : 'Ex: Compromised Desktop'} required aria-label="Scenario title" />
-              )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>PLAN</label>
+              <select name="plan" style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
+                {PLANS.map(p => <option key={p}>{p}</option>)}
+              </select>
             </div>
-          ))}
-          <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center', marginTop: '20px' }} aria-label="Create scenario">
-            {lang === 'fr' ? 'Créer' : 'Create'}
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>SECTEUR</label>
+              <select name="sector" style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
+                {SECTORS.map(s => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+          <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
+            {lang === 'fr' ? '+ Créer entreprise' : '+ Create company'}
           </button>
         </form>
       </Modal>
 
-      <Modal isOpen={modal?.type === 'editScenario' && !!modal.data} onClose={() => setModal(null)} title={typeof modal?.data?.title === 'object' ? modal?.data?.title[lang] : modal?.data?.title || ''}>
-        <div style={{ marginBottom: '20px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px' }}>{lang === 'fr' ? 'STATISTIQUES' : 'STATISTICS'}</div>
-          <div style={{ display: 'flex', gap: '20px', fontSize: '13px' }}>
-            <div><span style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Parties:' : 'Plays:'}</span> <span style={{ color: 'var(--red)', fontWeight: 700 }}>{modal?.data?.plays}</span></div>
-            <div><span style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Score moy:' : 'Avg score:'}</span> <span style={{ color: 'var(--red)', fontWeight: 700 }}>{modal?.data?.score}</span></div>
+      {/* Edit Company Modal */}
+      <Modal isOpen={modal?.type === 'editCompany' && !!editCompanyForm} onClose={() => setModal(null)} title={lang === 'fr' ? `Éditer : ${editCompanyForm?.name}` : `Edit: ${editCompanyForm?.name}`}>
+        {editCompanyForm && (
+          <form onSubmit={saveCompany}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'NOM' : 'NAME'}</label>
+                <input className="input-dark" value={editCompanyForm.name} onChange={e => setEditCompanyForm(f => ({ ...f, name: e.target.value }))} required />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>EMAIL</label>
+                <input className="input-dark" type="email" value={editCompanyForm.email} onChange={e => setEditCompanyForm(f => ({ ...f, email: e.target.value }))} />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>PLAN</label>
+                <select value={editCompanyForm.plan} onChange={e => setEditCompanyForm(f => ({ ...f, plan: e.target.value }))} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}>
+                  {PLANS.map(p => <option key={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>SECTEUR</label>
+                <select value={editCompanyForm.sector} onChange={e => setEditCompanyForm(f => ({ ...f, sector: e.target.value }))} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}>
+                  {SECTORS.map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>STATUS</label>
+                <select value={editCompanyForm.status} onChange={e => setEditCompanyForm(f => ({ ...f, status: e.target.value }))} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}>
+                  {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'LICENCES' : 'LICENSES'}</label>
+                <input className="input-dark" type="number" min="1" value={editCompanyForm.licenses} onChange={e => setEditCompanyForm(f => ({ ...f, licenses: parseInt(e.target.value) || f.licenses }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'EXPIRATION' : 'EXPIRES'}</label>
+                <input className="input-dark" value={editCompanyForm.expire} onChange={e => setEditCompanyForm(f => ({ ...f, expire: e.target.value }))} placeholder="DD/MM/YYYY" />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn-primary" type="submit" style={{ flex: 1, justifyContent: 'center' }}>
+                {lang === 'fr' ? '✓ Sauvegarder' : '✓ Save changes'}
+              </button>
+              <button type="button" onClick={() => deleteCompany(editCompanyForm.id)} style={{ padding: '10px 16px', background: 'rgba(235,40,40,0.1)', border: '1px solid rgba(235,40,40,0.3)', color: 'var(--red)', cursor: 'pointer', fontSize: '12px', borderRadius: '4px', transition: 'all 0.2s' }}>
+                🗑 {lang === 'fr' ? 'Supprimer' : 'Delete'}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Create Scenario Modal */}
+      <Modal isOpen={modal?.type === 'createScenario'} onClose={() => setModal(null)} title={lang === 'fr' ? 'Nouveau scénario' : 'New scenario'}>
+        <form onSubmit={createScenario}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'TITRE (FR)' : 'TITLE (FR)'}</label>
+              <input className="input-dark" placeholder="Bureau Compromis" required value={editScenarioForm?.titleFr || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), titleFr: e.target.value }))} />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>TITLE (EN)</label>
+              <input className="input-dark" placeholder="Compromised Desktop" value={editScenarioForm?.titleEn || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), titleEn: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'CATÉGORIE' : 'CATEGORY'}</label>
+              <select value={editScenarioForm?.category || 'Phishing'} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), category: e.target.value }))} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}>
+                {SCENARIO_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'NIVEAU' : 'DIFFICULTY'}</label>
+              <select value={editScenarioForm?.difficulty || 'intermediate'} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), difficulty: e.target.value }))} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}>
+                <option value="beginner">{lang === 'fr' ? 'Débutant' : 'Beginner'}</option>
+                <option value="intermediate">{lang === 'fr' ? 'Intermédiaire' : 'Intermediate'}</option>
+                <option value="advanced">{lang === 'fr' ? 'Avancé' : 'Advanced'}</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'DURÉE (min)' : 'DURATION (min)'}</label>
+              <input className="input-dark" type="number" min="5" max="60" placeholder="15" value={editScenarioForm?.duration || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), duration: e.target.value }))} />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>DESCRIPTION</label>
+              <input className="input-dark" placeholder={lang === 'fr' ? 'Description courte' : 'Short description'} value={editScenarioForm?.description || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), description: e.target.value }))} />
+            </div>
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Edit scenario ${typeof modal?.data?.title === 'object' ? modal?.data?.title[lang] : modal?.data?.title}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Scénario mis à jour' : 'Scenario updated') }}>
-            {lang === 'fr' ? '✎ Éditer' : '✎ Edit'}
+          <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
+            {lang === 'fr' ? '+ Créer scénario' : '+ Create scenario'}
           </button>
-          <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Archive scenario ${typeof modal?.data?.title === 'object' ? modal?.data?.title[lang] : modal?.data?.title}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Scénario archivé' : 'Scenario archived') }}>
-            {lang === 'fr' ? '📦 Archiver' : '📦 Archive'}
-          </button>
-        </div>
+        </form>
+      </Modal>
+
+      {/* Edit Scenario Modal */}
+      <Modal isOpen={modal?.type === 'editScenario' && !!editScenarioForm} onClose={() => setModal(null)} title={lang === 'fr' ? `Éditer scénario` : `Edit scenario`}>
+        {editScenarioForm && (
+          <form onSubmit={saveScenario}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', padding: '12px 16px', marginBottom: '16px', display: 'flex', gap: '24px', fontSize: '12px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Parties:' : 'Plays:'} <strong style={{ color: 'var(--red)' }}>{editScenarioForm.plays?.toLocaleString()}</strong></span>
+              <span style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Score moy:' : 'Avg score:'} <strong style={{ color: 'var(--red)' }}>{editScenarioForm.score || '—'}</strong></span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'TITRE (FR)' : 'TITLE (FR)'}</label>
+                <input className="input-dark" required value={editScenarioForm.titleFr} onChange={e => setEditScenarioForm(f => ({ ...f, titleFr: e.target.value }))} />
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>TITLE (EN)</label>
+                <input className="input-dark" value={editScenarioForm.titleEn} onChange={e => setEditScenarioForm(f => ({ ...f, titleEn: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'CATÉGORIE' : 'CATEGORY'}</label>
+                <select value={editScenarioForm.category} onChange={e => setEditScenarioForm(f => ({ ...f, category: e.target.value }))} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}>
+                  {SCENARIO_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'NIVEAU' : 'DIFFICULTY'}</label>
+                <select value={editScenarioForm.difficulty} onChange={e => setEditScenarioForm(f => ({ ...f, difficulty: e.target.value }))} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}>
+                  <option value="beginner">{lang === 'fr' ? 'Débutant' : 'Beginner'}</option>
+                  <option value="intermediate">{lang === 'fr' ? 'Intermédiaire' : 'Intermediate'}</option>
+                  <option value="advanced">{lang === 'fr' ? 'Avancé' : 'Advanced'}</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'DURÉE (min)' : 'DURATION (min)'}</label>
+                <input className="input-dark" type="number" min="5" max="60" value={editScenarioForm.duration} onChange={e => setEditScenarioForm(f => ({ ...f, duration: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>STATUS</label>
+                <select value={editScenarioForm.status} onChange={e => setEditScenarioForm(f => ({ ...f, status: e.target.value }))} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}>
+                  {SCENARIO_STATUSES.map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>DESCRIPTION</label>
+                <input className="input-dark" value={editScenarioForm.description || ''} onChange={e => setEditScenarioForm(f => ({ ...f, description: e.target.value }))} />
+              </div>
+            </div>
+            <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
+              {lang === 'fr' ? '✓ Sauvegarder les modifications' : '✓ Save changes'}
+            </button>
+          </form>
+        )}
       </Modal>
 
       {/* Sidebar */}
@@ -218,33 +371,36 @@ export default function SuperAdmin() {
           {activeNav === 'companies' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saCompaniesTitle')} ({companiesData.length})</div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saCompaniesTitle')} ({companies.length})</div>
                 <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setModal({ type: 'addCompany' })} aria-label="Add new company">{t('saAdd')}</button>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Companies list">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    {[t('saColCompany'), t('saColPlan'), t('saColUsers'), t('saColScenarios'), t('saColLicenses'), t('saColExpires'), t('saColStatus'), ''].map((h, i) => (
+                    {[t('saColCompany'), t('saColPlan'), lang === 'fr' ? 'Secteur' : 'Sector', t('saColUsers'), t('saColLicenses'), t('saColExpires'), t('saColStatus'), ''].map((h, i) => (
                       <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {companiesData.map((c, i) => (
-                    <tr key={c.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)', cursor: 'pointer' }}>
+                  {companies.map((c, i) => (
+                    <tr key={c.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(235,40,40,0.04)'}
+                      onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'}
+                    >
                       <td style={{ padding: '14px 20px', fontSize: '13px' }}>{c.name}</td>
                       <td style={{ padding: '14px 20px', fontSize: '11px', fontFamily: 'var(--mono)' }}>{c.plan}</td>
+                      <td style={{ padding: '14px 20px', fontSize: '11px', color: 'var(--text-muted)' }}>{c.sector || '—'}</td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px' }}><span style={{ color: 'var(--text-light)' }}>{c.active}</span><span style={{ color: 'var(--text-muted)' }}>/{c.users}</span></td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)' }}>{c.scenarios}</td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)' }}>{c.licenses}</td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: c.status === 'expiring' ? '#f59e0b' : 'var(--text-muted)' }}>{c.expire}</td>
                       <td style={{ padding: '14px 20px' }}>{statusBadge(c.status, t)}</td>
                       <td style={{ padding: '14px 20px' }}>
-                        <button onClick={() => setModal({ type: 'manageCompany', data: c })} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
+                        <button onClick={() => openEditCompany(c)} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-                          aria-label={`Manage company ${c.name}`}
-                        >{t('saManage')}</button>
+                          aria-label={`Edit company ${c.name}`}
+                        >✎ {t('saEdit')}</button>
                       </td>
                     </tr>
                   ))}
@@ -257,8 +413,8 @@ export default function SuperAdmin() {
           {activeNav === 'scenarios' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saScenariosTitle')} ({scenariosData.length})</div>
-                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setModal({ type: 'createScenario' })} aria-label="Create new scenario">{t('saCreateScenario')}</button>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saScenariosTitle')} ({scenarios.length})</div>
+                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => { setEditScenarioForm({}); setModal({ type: 'createScenario' }) }} aria-label="Create new scenario">{t('saCreateScenario')}</button>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Scenarios list">
                 <thead>
@@ -269,21 +425,24 @@ export default function SuperAdmin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {scenariosData.map((s, i) => (
-                    <tr key={s.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                  {scenarios.map((s, i) => (
+                    <tr key={s.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(235,40,40,0.04)'}
+                      onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'}
+                    >
                       <td style={{ padding: '14px 20px', fontSize: '13px' }}>{typeof s.title === 'object' ? s.title[lang] : s.title}</td>
                       <td style={{ padding: '14px 20px' }}><span className="tag" style={{ fontSize: '10px', padding: '2px 8px' }}>{s.category}</span></td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{diffLabel(s.difficulty)}</td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{s.duration}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{s.duration} min</td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-light)' }}>{s.plays.toLocaleString()}</td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)' }}>{s.score > 0 ? s.score : '—'}</td>
                       <td style={{ padding: '14px 20px' }}>{statusBadge(s.status, t)}</td>
                       <td style={{ padding: '14px 20px' }}>
-                        <button onClick={() => setModal({ type: 'editScenario', data: s })} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
+                        <button onClick={() => openEditScenario(s)} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                           aria-label={`Edit scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`}
-                        >{t('saEdit')}</button>
+                        >✎ {t('saEdit')}</button>
                       </td>
                     </tr>
                   ))}
