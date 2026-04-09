@@ -63,10 +63,13 @@ export default function Login() {
       </div>
       <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '420px', padding: '24px' }}>
 
+<<<<<<< HEAD
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
 =======
 
+=======
+>>>>>>> 40da1a8 (fix)
         {/* Logo entrance */}
         <motion.div
           style={{ textAlign: 'center', marginBottom: '40px' }}
@@ -79,7 +82,10 @@ export default function Login() {
             animate={{ y: [0, -4, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
+<<<<<<< HEAD
  main
+=======
+>>>>>>> 40da1a8 (fix)
             <img src={Logo} alt="ROOMCA" style={{ height: '48px', width: 'auto' }} />
             <span style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.15em', fontFamily: 'var(--mono)' }}>CYBER AWARENESS</span>
           </div>
