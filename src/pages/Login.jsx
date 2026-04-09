@@ -62,8 +62,24 @@ export default function Login() {
         <LangToggle />
       </div>
       <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '420px', padding: '24px' }}>
+
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+=======
+
+        {/* Logo entrance */}
+        <motion.div
+          style={{ textAlign: 'center', marginBottom: '40px' }}
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <motion.div
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}
+            animate={{ y: [0, -4, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          >
+ main
             <img src={Logo} alt="ROOMCA" style={{ height: '48px', width: 'auto' }} />
             <span style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.15em', fontFamily: 'var(--mono)' }}>CYBER AWARENESS</span>
           </div>
