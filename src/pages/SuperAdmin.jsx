@@ -34,6 +34,37 @@ const PLANS = ['Starter', 'Business', 'Enterprise']
 const STATUS_OPTIONS = ['active', 'expiring', 'suspended']
 const SCENARIO_CATEGORIES = ['Phishing', 'Ransomware', 'Social Eng.', 'Insider', 'Réseau', 'Malware', 'OSINT']
 const SCENARIO_STATUSES = ['draft', 'beta', 'published']
+const SCENARIO_MODULES = ['photo', 'mapping', 'fakeLink', 'fakeEmail', 'video', 'quiz', 'miniPuzzle']
+
+
+
+const DEFAULT_SCENARIO_FIELDS = {
+  coverImage: '',
+  mappingContext: '',
+  fakeLinkLabel: '',
+  fakeLinkUrl: '',
+  fakeLinkHover: '',
+  fakeEmailSender: '',
+  fakeEmailSubject: '',
+  videoUrl: '',
+  modules: [],
+}
+
+const withScenarioDefaults = (scenario) => ({
+  ...DEFAULT_SCENARIO_FIELDS,
+  ...scenario,
+  modules: Array.isArray(scenario.modules) ? scenario.modules : [],
+})
+
+const moduleLabels = {
+  photo: { fr: 'Photo', en: 'Photo' },
+  mapping: { fr: 'Mapping', en: 'Mapping' },
+  fakeLink: { fr: 'Faux lien', en: 'Fake link' },
+  fakeEmail: { fr: 'Faux email', en: 'Fake email' },
+  video: { fr: 'Vidéo', en: 'Video' },
+  quiz: { fr: 'Quizz', en: 'Quiz' },
+  miniPuzzle: { fr: 'Mini puzzle', en: 'Mini puzzle' },
+}
 
 function statusBadge(s, t) {
   const map = { active: [t('badgeActive'), '#22c55e'], expiring: [t('badgeExpiring'), '#f59e0b'], suspended: [t('badgeSuspended'), 'var(--red)'], published: [t('badgePublished'), '#22c55e'], beta: [t('badgeBeta'), '#f59e0b'], draft: [t('badgeDraft'), 'var(--text-muted)'] }
@@ -49,7 +80,7 @@ export default function SuperAdmin() {
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState(null)
   const [companies, setCompanies] = useState(INITIAL_COMPANIES)
-  const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS)
+  const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS.map(withScenarioDefaults))
   const [editCompanyForm, setEditCompanyForm] = useState(null)
   const [editScenarioForm, setEditScenarioForm] = useState(null)
 
@@ -74,15 +105,17 @@ export default function SuperAdmin() {
   }
 
   const openEditScenario = (s) => {
-    setEditScenarioForm({ ...s, titleFr: s.title.fr, titleEn: s.title.en })
+    setEditScenarioForm(withScenarioDefaults({ ...s, titleFr: s.title.fr, titleEn: s.title.en }))
     setModal({ type: 'editScenario', data: s })
   }
 
   const saveScenario = (e) => {
     e.preventDefault()
     const updated = {
+      ...DEFAULT_SCENARIO_FIELDS,
       ...editScenarioForm,
-      title: { fr: editScenarioForm.titleFr, en: editScenarioForm.titleEn }
+      title: { fr: editScenarioForm.titleFr, en: editScenarioForm.titleEn },
+      modules: Array.isArray(editScenarioForm.modules) ? editScenarioForm.modules : []
     }
     setScenarios(prev => prev.map(s => s.id === updated.id ? updated : s))
     setModal(null)
@@ -98,6 +131,15 @@ export default function SuperAdmin() {
       difficulty: editScenarioForm.difficulty || 'intermediate',
       duration: editScenarioForm.duration || '15',
       description: editScenarioForm.description || '',
+      coverImage: editScenarioForm.coverImage || '',
+      mappingContext: editScenarioForm.mappingContext || '',
+      fakeLinkLabel: editScenarioForm.fakeLinkLabel || '',
+      fakeLinkUrl: editScenarioForm.fakeLinkUrl || '',
+      fakeLinkHover: editScenarioForm.fakeLinkHover || '',
+      fakeEmailSender: editScenarioForm.fakeEmailSender || '',
+      fakeEmailSubject: editScenarioForm.fakeEmailSubject || '',
+      videoUrl: editScenarioForm.videoUrl || '',
+      modules: Array.isArray(editScenarioForm.modules) ? editScenarioForm.modules : [],
       plays: 0, score: 0, status: 'draft',
     }
     setScenarios(prev => [...prev, newS])
@@ -121,6 +163,23 @@ export default function SuperAdmin() {
   ]
 
   const diffLabel = (d) => ({ intermediate: t('diffIntermediate'), advanced: t('diffAdvanced'), beginner: t('diffBeginner') })[d] || d
+
+  const toggleScenarioModule = (moduleKey) => {
+    setEditScenarioForm(prev => {
+      const current = prev || {}
+      const currentModules = Array.isArray(current.modules) ? current.modules : []
+      const modules = currentModules.includes(moduleKey)
+        ? currentModules.filter(m => m !== moduleKey)
+        : [...currentModules, moduleKey]
+      return { ...current, modules }
+    })
+  }
+
+  const getScenarioModulesLabel = (scenario) => {
+    const modules = Array.isArray(scenario.modules) ? scenario.modules : []
+    if (!modules.length) return lang === 'fr' ? 'Aucun module' : 'No modules'
+    return modules.map(m => moduleLabels[m]?.[lang] || m).join(' · ')
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#000', color: 'var(--text-light)' }}>
@@ -257,6 +316,64 @@ export default function SuperAdmin() {
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>DESCRIPTION</label>
               <input className="input-dark" placeholder={lang === 'fr' ? 'Description courte' : 'Short description'} value={editScenarioForm?.description || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), description: e.target.value }))} />
             </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'PHOTO (URL)' : 'PHOTO (URL)'}</label>
+              <input className="input-dark" placeholder="https://..." value={editScenarioForm?.coverImage || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), coverImage: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>VIDEO (URL)</label>
+              <input className="input-dark" placeholder="https://..." value={editScenarioForm?.videoUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), videoUrl: e.target.value }))} />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'MAPPING / CONTEXTE' : 'MAPPING / CONTEXT'}</label>
+              <textarea className="input-dark" rows={3} placeholder={lang === 'fr' ? 'Ex: Bureau, Open-space, Salle serveur...' : 'Ex: Office, Open-space, Server room...'} value={editScenarioForm?.mappingContext || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), mappingContext: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (LABEL)' : 'FAKE LINK (LABEL)'}</label>
+              <input className="input-dark" placeholder={lang === 'fr' ? 'Voir la facture' : 'View invoice'} value={editScenarioForm?.fakeLinkLabel || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkLabel: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (URL)' : 'FAKE LINK (URL)'}</label>
+              <input className="input-dark" placeholder="https://fake.example" value={editScenarioForm?.fakeLinkUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkUrl: e.target.value }))} />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'TEXTE AU SURVOL DU FAUX LIEN' : 'HOVER TEXT FOR FAKE LINK'}</label>
+              <input className="input-dark" placeholder={lang === 'fr' ? 'Lien externe suspect' : 'Suspicious external link'} value={editScenarioForm?.fakeLinkHover || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkHover: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'EXPÉDITEUR FAUX MAIL' : 'FAKE EMAIL SENDER'}</label>
+              <input className="input-dark" placeholder="finance-secure@internal-alert.com" value={editScenarioForm?.fakeEmailSender || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeEmailSender: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'OBJET FAUX MAIL' : 'FAKE EMAIL SUBJECT'}</label>
+              <input className="input-dark" placeholder={lang === 'fr' ? 'Action requise sous 24h' : 'Action required within 24h'} value={editScenarioForm?.fakeEmailSubject || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeEmailSubject: e.target.value }))} />
+            </div>
+            <div style={{ gridColumn: '1 / -1', padding: '12px', border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>{lang === 'fr' ? 'MODULES NATIFS DU SCÉNARIO' : 'NATIVE SCENARIO MODULES'}</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {SCENARIO_MODULES.map((moduleKey) => {
+                  const isActive = (editScenarioForm?.modules || []).includes(moduleKey)
+                  return (
+                    <button
+                      key={moduleKey}
+                      type="button"
+                      onClick={() => toggleScenarioModule(moduleKey)}
+                      style={{
+                        padding: '6px 10px',
+                        border: `1px solid ${isActive ? 'var(--red)' : 'var(--border-subtle)'}`,
+                        background: isActive ? 'rgba(235,40,40,0.12)' : 'transparent',
+                        color: isActive ? 'var(--text-light)' : 'var(--text-muted)',
+                        fontFamily: 'var(--mono)',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {moduleLabels[moduleKey]?.[lang] || moduleKey}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
           <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
             {lang === 'fr' ? '+ Créer scénario' : '+ Create scenario'}
@@ -308,6 +425,64 @@ export default function SuperAdmin() {
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>DESCRIPTION</label>
                 <input className="input-dark" value={editScenarioForm.description || ''} onChange={e => setEditScenarioForm(f => ({ ...f, description: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'PHOTO (URL)' : 'PHOTO (URL)'}</label>
+                <input className="input-dark" value={editScenarioForm.coverImage || ''} onChange={e => setEditScenarioForm(f => ({ ...f, coverImage: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>VIDEO (URL)</label>
+                <input className="input-dark" value={editScenarioForm.videoUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...f, videoUrl: e.target.value }))} />
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'MAPPING / CONTEXTE' : 'MAPPING / CONTEXT'}</label>
+                <textarea className="input-dark" rows={3} value={editScenarioForm.mappingContext || ''} onChange={e => setEditScenarioForm(f => ({ ...f, mappingContext: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (LABEL)' : 'FAKE LINK (LABEL)'}</label>
+                <input className="input-dark" value={editScenarioForm.fakeLinkLabel || ''} onChange={e => setEditScenarioForm(f => ({ ...f, fakeLinkLabel: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (URL)' : 'FAKE LINK (URL)'}</label>
+                <input className="input-dark" value={editScenarioForm.fakeLinkUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...f, fakeLinkUrl: e.target.value }))} />
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'TEXTE AU SURVOL DU FAUX LIEN' : 'HOVER TEXT FOR FAKE LINK'}</label>
+                <input className="input-dark" value={editScenarioForm.fakeLinkHover || ''} onChange={e => setEditScenarioForm(f => ({ ...f, fakeLinkHover: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'EXPÉDITEUR FAUX MAIL' : 'FAKE EMAIL SENDER'}</label>
+                <input className="input-dark" value={editScenarioForm.fakeEmailSender || ''} onChange={e => setEditScenarioForm(f => ({ ...f, fakeEmailSender: e.target.value }))} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'OBJET FAUX MAIL' : 'FAKE EMAIL SUBJECT'}</label>
+                <input className="input-dark" value={editScenarioForm.fakeEmailSubject || ''} onChange={e => setEditScenarioForm(f => ({ ...f, fakeEmailSubject: e.target.value }))} />
+              </div>
+              <div style={{ gridColumn: '1 / -1', padding: '12px', border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>{lang === 'fr' ? 'MODULES NATIFS DU SCÉNARIO' : 'NATIVE SCENARIO MODULES'}</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {SCENARIO_MODULES.map((moduleKey) => {
+                    const isActive = (editScenarioForm.modules || []).includes(moduleKey)
+                    return (
+                      <button
+                        key={moduleKey}
+                        type="button"
+                        onClick={() => toggleScenarioModule(moduleKey)}
+                        style={{
+                          padding: '6px 10px',
+                          border: `1px solid ${isActive ? 'var(--red)' : 'var(--border-subtle)'}`,
+                          background: isActive ? 'rgba(235,40,40,0.12)' : 'transparent',
+                          color: isActive ? 'var(--text-light)' : 'var(--text-muted)',
+                          fontFamily: 'var(--mono)',
+                          fontSize: '11px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {moduleLabels[moduleKey]?.[lang] || moduleKey}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
             <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
@@ -418,12 +593,12 @@ export default function SuperAdmin() {
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saScenariosTitle')} ({scenarios.length})</div>
-                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => { setEditScenarioForm({}); setModal({ type: 'createScenario' }) }} aria-label="Create new scenario">{t('saCreateScenario')}</button>
+                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => { setEditScenarioForm({ ...DEFAULT_SCENARIO_FIELDS }); setModal({ type: 'createScenario' }) }} aria-label="Create new scenario">{t('saCreateScenario')}</button>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Scenarios list">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    {[t('saColTitle'), t('saColCategory'), t('saColDifficulty'), t('saColDuration'), t('saColPlays'), t('saColAvgScore'), t('saColStatus'), ''].map((h, i) => (
+                    {[t('saColTitle'), t('saColCategory'), t('saColDifficulty'), t('saColDuration'), lang === 'fr' ? 'Modules' : 'Modules', t('saColPlays'), t('saColAvgScore'), t('saColStatus'), ''].map((h, i) => (
                       <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
                     ))}
                   </tr>
@@ -438,6 +613,7 @@ export default function SuperAdmin() {
                       <td style={{ padding: '14px 20px' }}><span className="tag" style={{ fontSize: '10px', padding: '2px 8px' }}>{s.category}</span></td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{diffLabel(s.difficulty)}</td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{s.duration} min</td>
+                      <td style={{ padding: '14px 20px', fontSize: '11px', color: 'var(--text-muted)', maxWidth: '240px' }}>{getScenarioModulesLabel(s)}</td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-light)' }}>{s.plays.toLocaleString()}</td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)' }}>{s.score > 0 ? s.score : '—'}</td>
                       <td style={{ padding: '14px 20px' }}>{statusBadge(s.status, t)}</td>
