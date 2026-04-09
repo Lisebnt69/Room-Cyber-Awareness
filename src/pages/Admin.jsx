@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
+import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
+import { generateReportPDF } from '../services/pdfGenerator'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell
@@ -321,9 +322,25 @@ function TabReports({ t, lang }) {
     { id: 'r3', name: lang === 'fr' ? 'Export employés — Q1 2025' : 'Employee Export — Q1 2025', date: '31/03/2025', size: '0.3 MB', type: 'CSV' },
     { id: 'r4', name: lang === 'fr' ? 'Analyse des risques — T1 2025' : 'Risk Analysis — Q1 2025', date: '31/03/2025', size: '2.4 MB', type: 'PDF' },
   ]
-  const dl = (id) => {
+  const dl = async (id) => {
     setDownloading(id)
-    setTimeout(() => setDownloading(null), 1800)
+    const report = reports.find(r => r.id === id)
+    if (report?.type === 'PDF') {
+      const tplId = id === 'r4' ? 'risk' : id === 'r3' ? 'audit' : 'exec'
+      await generateReportPDF(
+        { id: tplId, name: report.name },
+        { period: report.date, org: 'ACME Corp' }
+      )
+    } else {
+      // CSV export
+      const csv = 'Prénom,Nom,Département,Score,Dernière formation\nMarie,Dupont,Finance,82,2026-03-15\nPierre,Martin,IT,91,2026-04-01\nLucas,Petit,Ventes,58,2026-02-10\nSophie,Bernard,RH,74,2026-03-20'
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = `${report.name.replace(/ /g,'_')}.csv`; a.click()
+      URL.revokeObjectURL(url)
+    }
+    setDownloading(null)
   }
   return (
     <div>

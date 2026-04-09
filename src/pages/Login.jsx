@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, ROLES } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
+import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 
 const HINTS = [
@@ -64,8 +64,9 @@ export default function Login() {
       <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '420px', padding: '24px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-            <img src={Logo} alt="ROOMCA" style={{ height: '48px', objectFit: 'contain' }} />
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--mono)', letterSpacing: '0.15em' }}>Room Cyber Awareness</span>
+claude/pdf-reports-calculator-WB4d2
+            <img src={Logo} alt="ROOMCA" style={{ height: '48px', width: 'auto' }} />
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.15em', fontFamily: 'var(--mono)' }}>CYBER AWARENESS</span>
           </div>
           <div style={{ marginTop: '16px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
             {t('loginPortal')}

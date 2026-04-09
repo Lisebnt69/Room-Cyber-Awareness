@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
+import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import { useLang } from '../context/LangContext'
 import Modal from '../components/Modal'
@@ -40,7 +40,9 @@ function Navbar({ onLogin }) {
   ]
   return (
     <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: '16px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: scrolled ? 'rgba(0,0,0,0.92)' : 'transparent', borderBottom: scrolled ? '1px solid rgba(84,84,84,0.3)' : '1px solid transparent', backdropFilter: scrolled ? 'blur(12px)' : 'none', transition: 'all 0.3s ease' }}>
-      <img src={Logo} alt="ROOMCA" style={{ height: '32px', objectFit: 'contain' }} />
+
+      <img src={Logo} alt="ROOMCA" style={{ height: '32px', width: 'auto' }} />
+
       <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
         {links.map(([label, anchor]) => (
           <a key={anchor} href={`#${anchor}`} style={{ fontFamily: 'var(--font-title)', fontSize: '13px', letterSpacing: '0.08em', color: 'var(--text-secondary)', textTransform: 'uppercase', transition: 'color 0.2s' }}
@@ -470,8 +472,10 @@ function Footer() {
   return (
     <footer style={{ borderTop: '1px solid var(--border-subtle)', padding: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <img src={Logo} alt="ROOMCA" style={{ height: '24px', objectFit: 'contain' }} />
-        <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--mono)', letterSpacing: '0.1em' }}>Room Cyber Awareness</span>
+
+        <img src={Logo} alt="ROOMCA" style={{ height: '24px', width: 'auto' }} />
+        <span style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Cyber Awareness</span>
+
       </div>
       <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>© 2026 ROOMCA. Tous droits réservés.</div>
       <div style={{ display: 'flex', gap: '24px' }}>

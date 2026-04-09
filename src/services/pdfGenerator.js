@@ -1,8 +1,5 @@
 // PDF Generator Service — ROOMCA
-// Uses jsPDF v2 + jspdf-autotable v3
-
-import { jsPDF } from 'jspdf'
-import autoTable from 'jspdf-autotable'
+// jsPDF + jspdf-autotable chargés en import dynamique (évite le DOMException au boot)
 
 const RED    = [235, 40, 40]
 const DARK   = [18, 18, 18]
@@ -10,6 +7,19 @@ const GRAY   = [120, 120, 120]
 const WHITE  = [255, 255, 255]
 const GREEN  = [34, 197, 94]
 const AMBER  = [245, 158, 11]
+
+// Lazy-load jsPDF + autoTable (évite l'initialisation DOM au boot)
+let _jsPDFModule = null
+async function loadJsPDF() {
+  if (!_jsPDFModule) {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ])
+    _jsPDFModule = { jsPDF, autoTable }
+  }
+  return _jsPDFModule
+}
 
 // Load logo as base64 via fetch (avoids canvas taint issues)
 async function getLogoBase64() {
@@ -69,6 +79,7 @@ function drawFooter(doc, page, total) {
 // CERTIFICATE PDF  (A4 landscape)
 // ─────────────────────────────────────────────
 export async function generateCertificatePDF({ title, level, userName, score, date, issuer, certId }) {
+  const { jsPDF } = await loadJsPDF()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
   const W = doc.internal.pageSize.getWidth()
   const H = doc.internal.pageSize.getHeight()
@@ -171,6 +182,7 @@ export async function generateCertificatePDF({ title, level, userName, score, da
 // REPORT PDF  (A4 portrait)
 // ─────────────────────────────────────────────
 export async function generateReportPDF(template, data = {}) {
+  const { jsPDF, autoTable } = await loadJsPDF()
   const logo = await getLogoBase64()
   const dateStr = new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
