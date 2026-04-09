@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion, useInView } from 'framer-motion'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import { useLang } from '../context/LangContext'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
+import CountUp from '../components/CountUp'
 
 function GlitchText({ children, className = '' }) {
   const [glitching, setGlitching] = useState(false)
@@ -71,50 +73,105 @@ function HeroSection({ onStart, setModal }) {
     <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 40px 80px' }}>
       <CyberGridHero />
       <div style={{ position: 'relative', zIndex: 2, maxWidth: '920px' }}>
-        <div className="tag" style={{ marginBottom: '28px', display: 'inline-flex' }}>
+        <motion.div
+          className="tag"
+          style={{ marginBottom: '28px', display: 'inline-flex' }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <span className="status-dot red" /> Simulation de cyberattaque
-        </div>
+        </motion.div>
 
-        <h1 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(48px, 7vw, 88px)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '24px', color: 'var(--text-light)' }}>
+        <motion.h1
+          style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(48px, 7vw, 88px)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '24px', color: 'var(--text-light)' }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
           Vous pensez être prêts.<br />
-          <span style={{ color: 'var(--red)' }}>Les attaquants espèrent que non.</span>
-        </h1>
+          <motion.span
+            style={{ color: 'var(--red)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >Les attaquants espèrent que non.</motion.span>
+        </motion.h1>
 
-        <p style={{ fontSize: '20px', color: 'var(--text-secondary)', lineHeight: 1.8, maxWidth: '700px', margin: '0 auto 20px' }}>
+        <motion.p
+          style={{ fontSize: '20px', color: 'var(--text-secondary)', lineHeight: 1.8, maxWidth: '700px', margin: '0 auto 20px' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           <strong>ROOMCA plonge vos équipes dans des cyberattaques réalistes.</strong>
-        </p>
+        </motion.p>
 
-        <p style={{ fontSize: '16px', color: 'var(--text-muted)', lineHeight: 1.8, maxWidth: '700px', margin: '0 auto 48px', fontStyle: 'italic' }}>
+        <motion.p
+          style={{ fontSize: '16px', color: 'var(--text-muted)', lineHeight: 1.8, maxWidth: '700px', margin: '0 auto 48px', fontStyle: 'italic' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
           Ils cliquent. Ils doutent. Ils font des erreurs. Puis ils apprennent — pour de vrai.
-        </p>
+        </motion.p>
 
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '56px' }}>
-          <button className="btn-primary" style={{ fontSize: '15px', padding: '16px 40px' }} onClick={onStart}>
+        <motion.div
+          style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '56px' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+        >
+          <motion.button
+            className="btn-primary"
+            style={{ fontSize: '15px', padding: '16px 40px' }}
+            onClick={onStart}
+            whileHover={{ scale: 1.04, boxShadow: '0 0 40px rgba(0,212,255,0.3)' }}
+            whileTap={{ scale: 0.96 }}
+          >
             Essai gratuit
-          </button>
-          <button className="btn-secondary" style={{ fontSize: '15px', padding: '16px 40px' }} onClick={() => setModal('demo')}>
+          </motion.button>
+          <motion.button
+            className="btn-secondary"
+            style={{ fontSize: '15px', padding: '16px 40px' }}
+            onClick={() => setModal('demo')}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+          >
             Voir la démo
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
         <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)', letterSpacing: '0.1em', minHeight: '18px', marginBottom: '56px' }}>
           {typed}<span className="animate-blink">█</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '48px', justifyContent: 'center', flexWrap: 'wrap', padding: '24px', borderTop: '1px solid var(--border-subtle)' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--red)', fontWeight: 700 }}>90%</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>erreurs humaines</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--red)', fontWeight: 700 }}>4x</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>mieux retenu</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--red)', fontWeight: 700 }}>100%</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>sans risque réel</div>
-          </div>
-        </div>
+        <motion.div
+          style={{ display: 'flex', gap: '48px', justifyContent: 'center', flexWrap: 'wrap', padding: '24px', borderTop: '1px solid var(--border-subtle)' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+        >
+          {[
+            { value: 90, suffix: '%', label: 'erreurs humaines' },
+            { prefix: '', value: 4, suffix: 'x', label: 'mieux retenu' },
+            { value: 100, suffix: '%', label: 'sans risque réel' },
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              style={{ textAlign: 'center' }}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 1 + i * 0.1, duration: 0.4 }}
+              whileHover={{ scale: 1.08 }}
+            >
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--red)', fontWeight: 700 }}>
+                {stat.prefix || ''}<CountUp end={stat.value} duration={1.5} delay={1.1 + i * 0.1} suffix={stat.suffix} />
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{stat.label}</div>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   )
@@ -140,12 +197,24 @@ function ProblemsSection() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
           {problems.map((p, idx) => (
-            <div key={idx} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '32px 28px', borderRadius: '4px', position: 'relative' }}>
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -6, boxShadow: '0 12px 32px rgba(235,40,40,0.12)', borderColor: 'rgba(235,40,40,0.4)' }}
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '32px 28px', borderRadius: '4px', position: 'relative', cursor: 'default' }}
+            >
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'var(--red)' }} />
-              <div style={{ fontSize: '40px', marginBottom: '16px' }}>{p.icon}</div>
+              <motion.div
+                style={{ fontSize: '40px', marginBottom: '16px' }}
+                animate={{ rotate: [0, -5, 5, 0] }}
+                transition={{ duration: 4, repeat: Infinity, delay: idx * 0.5 }}
+              >{p.icon}</motion.div>
               <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '18px', marginBottom: '12px' }}>{p.title}</h3>
               <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>{p.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
