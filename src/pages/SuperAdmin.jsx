@@ -6,6 +6,7 @@ import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
+import ScenarioBuilder from './ScenarioBuilder'
 
 const INITIAL_COMPANIES = [
   { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@acme.com', sector: 'Finance' },
@@ -52,6 +53,7 @@ export default function SuperAdmin() {
   const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS)
   const [editCompanyForm, setEditCompanyForm] = useState(null)
   const [editScenarioForm, setEditScenarioForm] = useState(null)
+  const [builderMode, setBuilderMode] = useState(false)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
@@ -105,6 +107,22 @@ export default function SuperAdmin() {
     showToast(lang === 'fr' ? 'Scénario créé' : 'Scenario created')
   }
 
+  const handleBuilderSave = (scenarioData) => {
+    const newS = {
+      id: scenarioData.id,
+      title: { fr: scenarioData.titleFr, en: scenarioData.titleEn || scenarioData.titleFr },
+      category: scenarioData.category,
+      difficulty: scenarioData.difficulty,
+      duration: scenarioData.duration,
+      description: scenarioData.description,
+      blocks: scenarioData.blocks,
+      plays: 0, score: 0, status: scenarioData.status,
+    }
+    setScenarios(prev => [...prev, newS])
+    setBuilderMode(false)
+    showToast(lang === 'fr' ? `Scénario "${newS.title.fr}" ${scenarioData.status === 'published' ? 'publié' : 'en brouillon'}` : `Scenario "${newS.title.fr}" ${scenarioData.status === 'published' ? 'published' : 'saved as draft'}`)
+  }
+
   const navItems = [
     { id: 'overview', label: t('saNavOverview'), icon: '▦' },
     { id: 'companies', label: t('saNavCompanies'), icon: '◉' },
@@ -121,6 +139,10 @@ export default function SuperAdmin() {
   ]
 
   const diffLabel = (d) => ({ intermediate: t('diffIntermediate'), advanced: t('diffAdvanced'), beginner: t('diffBeginner') })[d] || d
+
+  if (builderMode) {
+    return <ScenarioBuilder onSave={handleBuilderSave} onBack={() => setBuilderMode(false)} />
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#000', color: 'var(--text-light)' }}>
@@ -418,7 +440,7 @@ export default function SuperAdmin() {
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saScenariosTitle')} ({scenarios.length})</div>
-                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => { setEditScenarioForm({}); setModal({ type: 'createScenario' }) }} aria-label="Create new scenario">{t('saCreateScenario')}</button>
+                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setBuilderMode(true)} aria-label="Create new scenario">{t('saCreateScenario')}</button>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Scenarios list">
                 <thead>
