@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
+import { generateCertificatePDF } from '../services/pdfGenerator'
 
 const certifications = [
   { id: 'cca', name: 'ROOMCA Certified Awareness', level: 'Foundation', duration: '4h', price: 99, badge: '🥉', topics: ['Phishing', 'Passwords', 'Social Eng.'], passRate: 78 },
@@ -80,6 +81,7 @@ function ExamInterface({ cert, onExit }) {
   const [currentQ, setCurrentQ] = useState(0)
   const [answers, setAnswers] = useState([])
   const [finished, setFinished] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   const questions = [
     { q: 'Que faire si vous recevez un email demandant un virement urgent du PDG ?', options: ['Virer immédiatement', 'Appeler le PDG sur sa ligne directe', 'Demander confirmation par email', 'Ignorer'], correct: 1 },
@@ -109,8 +111,32 @@ function ExamInterface({ cert, onExit }) {
           <div style={{ fontSize: '72px', marginBottom: '16px' }}>{passed ? '🏆' : '❌'}</div>
           <h2 style={{ color: passed ? '#22c55e' : '#eb2828', marginBottom: '12px' }}>{passed ? 'Certifié !' : 'Échec'}</h2>
           <p style={{ color: 'var(--text-primary)', fontSize: '18px', marginBottom: '24px' }}>Score : {score}/{questions.length} ({Math.round(score/questions.length*100)}%)</p>
-          {passed && <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Votre certificat {cert.name} sera envoyé par email.</p>}
-          <button onClick={onExit} className="btn-primary">Retour</button>
+          {passed && (
+            <>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '16px' }}>Votre certificat {cert.name} est prêt.</p>
+              <button
+                onClick={async () => {
+                  setDownloading(true)
+                  await generateCertificatePDF({
+                    title: cert.name,
+                    level: cert.level,
+                    userName: 'Employé ROOMCA',
+                    score: Math.round(score / questions.length * 100),
+                    date: new Date().toLocaleDateString('fr-FR'),
+                    issuer: 'ROOMCA Certification Authority',
+                    certId: cert.id,
+                  })
+                  setDownloading(false)
+                }}
+                className="btn-primary"
+                style={{ marginBottom: '12px', width: '100%' }}
+                disabled={downloading}
+              >
+                {downloading ? '⏳ Génération...' : '📥 Télécharger le Certificat PDF'}
+              </button>
+            </>
+          )}
+          <button onClick={onExit} className="btn-secondary">Retour</button>
         </div>
       </div>
     )
