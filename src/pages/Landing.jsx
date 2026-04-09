@@ -40,7 +40,9 @@ function Navbar({ onLogin }) {
   ]
   return (
     <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: '16px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: scrolled ? 'rgba(0,0,0,0.92)' : 'transparent', borderBottom: scrolled ? '1px solid rgba(84,84,84,0.3)' : '1px solid transparent', backdropFilter: scrolled ? 'blur(12px)' : 'none', transition: 'all 0.3s ease' }}>
+
       <img src={Logo} alt="ROOMCA" style={{ height: '32px', width: 'auto' }} />
+
       <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
         {links.map(([label, anchor]) => (
           <a key={anchor} href={`#${anchor}`} style={{ fontFamily: 'var(--font-title)', fontSize: '13px', letterSpacing: '0.08em', color: 'var(--text-secondary)', textTransform: 'uppercase', transition: 'color 0.2s' }}
@@ -312,9 +314,6 @@ function VideoSection({ onOpenDemo }) {
           <button onClick={onOpenDemo} className="btn-primary" style={{ padding: '12px 32px', fontSize: '14px' }}>
             🎮 Essayer la démo interactive →
           </button>
-          <button style={{ padding: '12px 24px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '4px', fontSize: '13px' }}>
-            📅 Voir une démo live
-          </button>
         </div>
       </div>
     </section>
@@ -456,13 +455,13 @@ function CTASection({ onStart }) {
       <div style={{ maxWidth: '700px', margin: '0 auto', textAlign: 'center' }}>
         <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(32px, 4vw, 48px)', marginBottom: '20px', lineHeight: 1.2 }}>
           Testez votre équipe.<br />
-          <span style={{ color: 'var(--red)' }}>Avant que quelqu\'un d\'autre le fasse.</span>
+          <span style={{ color: 'var(--red)' }}>Avant que quelqu'un d'autre le fasse.</span>
         </h2>
         <p style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.8 }}>
           Aucune carte bancaire requise. Accès complet pendant 14 jours. Prêt à découvrir vos vraies vulnérabilités ?
         </p>
         <button className="btn-primary" style={{ fontSize: '16px', padding: '16px 48px' }} onClick={onStart}>
-          Lancer l\'essai gratuit
+          Lancer l'essai gratuit
         </button>
       </div>
     </section>
@@ -473,8 +472,10 @@ function Footer() {
   return (
     <footer style={{ borderTop: '1px solid var(--border-subtle)', padding: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+
         <img src={Logo} alt="ROOMCA" style={{ height: '24px', width: 'auto' }} />
         <span style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Cyber Awareness</span>
+
       </div>
       <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>© 2026 ROOMCA. Tous droits réservés.</div>
       <div style={{ display: 'flex', gap: '24px' }}>
