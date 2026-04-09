@@ -312,9 +312,6 @@ function VideoSection({ onOpenDemo }) {
           <button onClick={onOpenDemo} className="btn-primary" style={{ padding: '12px 32px', fontSize: '14px' }}>
             🎮 Essayer la démo interactive →
           </button>
-          <button style={{ padding: '12px 24px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '4px', fontSize: '13px' }}>
-            📅 Voir une démo live
-          </button>
         </div>
       </div>
     </section>
