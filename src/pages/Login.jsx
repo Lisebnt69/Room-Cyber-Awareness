@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, ROLES } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
+import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 
 const HINTS = [
