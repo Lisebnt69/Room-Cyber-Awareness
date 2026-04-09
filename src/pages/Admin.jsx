@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import { motion, AnimatePresence } from 'framer-motion'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
@@ -58,24 +57,13 @@ const tooltipStyle = {
   itemStyle: { color: 'var(--text-light)' },
 }
 
-function KpiCard({ label, value, sub, trend, accent, delay = 0 }) {
+function KpiCard({ label, value, sub, trend, accent }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -3, boxShadow: accent ? '0 8px 24px rgba(235,40,40,0.15)' : '0 8px 24px rgba(0,0,0,0.3)' }}
-      style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderTop: accent ? '2px solid var(--red)' : '2px solid transparent', padding: '24px 28px', cursor: 'default' }}
-    >
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderTop: accent ? '2px solid var(--red)' : '2px solid transparent', padding: '24px 28px' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '12px' }}>{label}</div>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, delay: delay + 0.15 }}
-        style={{ fontFamily: 'var(--font-title)', fontSize: '36px', fontWeight: 700, color: accent ? 'var(--red)' : 'var(--text-light)', lineHeight: 1 }}
-      >{value}</motion.div>
+      <div style={{ fontFamily: 'var(--font-title)', fontSize: '36px', fontWeight: 700, color: accent ? 'var(--red)' : 'var(--text-light)', lineHeight: 1 }}>{value}</div>
       {sub && <div style={{ fontSize: '12px', color: trend === 'up' ? '#22c55e' : trend === 'down' ? 'var(--red)' : 'var(--text-muted)', marginTop: '8px' }}>{trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''} {sub}</div>}
-    </motion.div>
+    </div>
   )
 }
 
@@ -105,17 +93,12 @@ function TabDashboard({ t, pieData }) {
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border-subtle)', marginBottom: '32px' }}>
-        <KpiCard label={t('kpiParticipation')} value="88%" sub={t('kpiParticipationSub')} trend="up" accent delay={0} />
-        <KpiCard label={t('kpiSuccess')} value="76%" sub={t('kpiSuccessSub')} trend="up" delay={0.08} />
-        <KpiCard label={t('kpiScore')} value="724" sub={t('kpiScoreSub')} delay={0.16} />
-        <KpiCard label={t('kpiTrained')} value="142/161" sub={t('kpiTrainedSub')} trend="up" delay={0.24} />
+        <KpiCard label={t('kpiParticipation')} value="88%" sub={t('kpiParticipationSub')} trend="up" accent />
+        <KpiCard label={t('kpiSuccess')} value="76%" sub={t('kpiSuccessSub')} trend="up" />
+        <KpiCard label={t('kpiScore')} value="724" sub={t('kpiScoreSub')} />
+        <KpiCard label={t('kpiTrained')} value="142/161" sub={t('kpiTrainedSub')} trend="up" />
       </div>
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1px', background: 'var(--border-subtle)', marginBottom: '32px' }}
-      >
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1px', background: 'var(--border-subtle)', marginBottom: '32px' }}>
         <div style={{ background: 'var(--bg-card)', padding: '28px' }}>
           <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '20px' }}>{t('chartProgress')}</div>
           <ResponsiveContainer width="100%" height={200}>
@@ -152,13 +135,8 @@ function TabDashboard({ t, pieData }) {
             ))}
           </div>
         </div>
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '28px' }}
-      >
+      </div>
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '28px' }}>
         <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '20px' }}>{t('chartDept')}</div>
         <ResponsiveContainer width="100%" height={160}>
           <BarChart data={deptData} barSize={32}>
@@ -169,7 +147,7 @@ function TabDashboard({ t, pieData }) {
             <Bar dataKey="score" fill="#eb2828" name={t('kpiScore')} />
           </BarChart>
         </ResponsiveContainer>
-      </motion.div>
+      </div>
 
       {/* AI Risk Score */}
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '28px' }}>
@@ -637,32 +615,11 @@ export default function Admin() {
           </div>
         </div>
         <nav style={{ flex: 1, padding: '16px 0' }} role="navigation" aria-label="Main navigation">
-          {navItems.map((item, i) => (
-            <motion.button
-              key={item.id}
-              onClick={() => setActiveNav(item.id)}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + i * 0.06, duration: 0.35 }}
-              whileHover={{ x: 4, background: 'rgba(235,40,40,0.06)' }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', background: activeNav === item.id ? 'rgba(235,40,40,0.08)' : 'transparent', borderLeft: activeNav === item.id ? '2px solid var(--red)' : '2px solid transparent', color: activeNav === item.id ? 'var(--text-light)' : 'var(--text-muted)', fontSize: '13px', fontFamily: 'var(--font-body)', transition: 'color 0.15s, border-color 0.15s', cursor: 'pointer' }}
-              aria-current={activeNav === item.id ? 'page' : undefined}
-              aria-label={`Navigate to ${item.label}`}
-            >
-              <motion.span
-                style={{ fontSize: '16px', opacity: 0.8 }}
-                animate={activeNav === item.id ? { rotate: [0, -10, 10, 0] } : {}}
-                transition={{ duration: 0.4 }}
-                aria-hidden="true"
-              >{item.icon}</motion.span>
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => setActiveNav(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', background: activeNav === item.id ? 'rgba(235,40,40,0.08)' : 'transparent', borderLeft: activeNav === item.id ? '2px solid var(--red)' : '2px solid transparent', color: activeNav === item.id ? 'var(--text-light)' : 'var(--text-muted)', fontSize: '13px', fontFamily: 'var(--font-body)', transition: 'all 0.15s', cursor: 'pointer' }} aria-current={activeNav === item.id ? 'page' : undefined} aria-label={`Navigate to ${item.label}`}>
+              <span style={{ fontSize: '16px', opacity: 0.8 }} aria-hidden="true">{item.icon}</span>
               {item.label}
-              {activeNav === item.id && (
-                <motion.div
-                  layoutId="nav-indicator"
-                  style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }}
-                />
-              )}
-            </motion.button>
+            </button>
           ))}
         </nav>
         <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border-subtle)' }}>
@@ -689,21 +646,11 @@ export default function Admin() {
         </div>
 
         <div style={{ padding: '40px' }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeNav}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {activeNav === 'dashboard' && <TabDashboard t={t} pieData={pieData} />}
-              {activeNav === 'employees' && <TabEmployees t={t} lang={lang} employees={employees} onSelectEmployee={(emp) => setModal({ type: 'employee', data: emp })} onCreateEmployee={() => setModal({ type: 'createEmployee' })} onToggleLicense={handleToggleLicense} />}
-              {activeNav === 'scenarios' && <TabScenarios t={t} lang={lang} onAssign={(s) => showToast(lang === 'fr' ? `"${s.title[lang]}" assigné avec succès` : `"${s.title[lang]}" successfully assigned`)} />}
-              {activeNav === 'reports' && <TabReports t={t} lang={lang} />}
-              {activeNav === 'settings' && <TabSettings t={t} lang={lang} user={user} />}
-            </motion.div>
-          </AnimatePresence>
+          {activeNav === 'dashboard' && <TabDashboard t={t} pieData={pieData} />}
+          {activeNav === 'employees' && <TabEmployees t={t} lang={lang} employees={employees} onSelectEmployee={(emp) => setModal({ type: 'employee', data: emp })} onCreateEmployee={() => setModal({ type: 'createEmployee' })} onToggleLicense={handleToggleLicense} />}
+          {activeNav === 'scenarios' && <TabScenarios t={t} lang={lang} onAssign={(s) => showToast(lang === 'fr' ? `"${s.title[lang]}" assigné avec succès` : `"${s.title[lang]}" successfully assigned`)} />}
+          {activeNav === 'reports' && <TabReports t={t} lang={lang} />}
+          {activeNav === 'settings' && <TabSettings t={t} lang={lang} user={user} />}
         </div>
       </main>
     </div>
