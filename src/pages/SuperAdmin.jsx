@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
@@ -40,19 +40,25 @@ const SCENARIO_MODULES = ['photo', 'mapping', 'fakeLink', 'fakeEmail', 'video', 
 
 const DEFAULT_SCENARIO_FIELDS = {
   coverImage: '',
+  coverImageName: '',
   mappingContext: '',
   fakeLinkLabel: '',
   fakeLinkUrl: '',
   fakeLinkHover: '',
   fakeEmailSender: '',
   fakeEmailSubject: '',
+  fakeEmailBody: '',
   videoUrl: '',
+  photoHotspots: [],
+  quizQuestions: [],
   modules: [],
 }
 
 const withScenarioDefaults = (scenario) => ({
   ...DEFAULT_SCENARIO_FIELDS,
   ...scenario,
+  photoHotspots: Array.isArray(scenario.photoHotspots) ? scenario.photoHotspots : [],
+  quizQuestions: Array.isArray(scenario.quizQuestions) ? scenario.quizQuestions : [],
   modules: Array.isArray(scenario.modules) ? scenario.modules : [],
 })
 
@@ -65,6 +71,7 @@ const moduleLabels = {
   quiz: { fr: 'Quizz', en: 'Quiz' },
   miniPuzzle: { fr: 'Mini puzzle', en: 'Mini puzzle' },
 }
+const createId = () => Math.floor(Math.random() * 10_000_000)
 
 function statusBadge(s, t) {
   const map = { active: [t('badgeActive'), '#22c55e'], expiring: [t('badgeExpiring'), '#f59e0b'], suspended: [t('badgeSuspended'), 'var(--red)'], published: [t('badgePublished'), '#22c55e'], beta: [t('badgeBeta'), '#f59e0b'], draft: [t('badgeDraft'), 'var(--text-muted)'] }
@@ -122,23 +129,30 @@ export default function SuperAdmin() {
     showToast(lang === 'fr' ? 'Scénario mis à jour' : 'Scenario updated')
   }
 
-  const createScenario = (e) => {
-    e.preventDefault()
-    const newS = {
-      id: Date.now(),
-      title: { fr: editScenarioForm.titleFr, en: editScenarioForm.titleEn || editScenarioForm.titleFr },
-      category: editScenarioForm.category || 'Phishing',
-      difficulty: editScenarioForm.difficulty || 'intermediate',
-      duration: editScenarioForm.duration || '15',
-      description: editScenarioForm.description || '',
-      coverImage: editScenarioForm.coverImage || '',
-      mappingContext: editScenarioForm.mappingContext || '',
-      fakeLinkLabel: editScenarioForm.fakeLinkLabel || '',
-      fakeLinkUrl: editScenarioForm.fakeLinkUrl || '',
-      fakeLinkHover: editScenarioForm.fakeLinkHover || '',
-      fakeEmailSender: editScenarioForm.fakeEmailSender || '',
-      fakeEmailSubject: editScenarioForm.fakeEmailSubject || '',
-      videoUrl: editScenarioForm.videoUrl || '',
+  const newS = {
+  id: Date.now(),
+  title: { fr: editScenarioForm.titleFr, en: editScenarioForm.titleEn || editScenarioForm.titleFr },
+  category: editScenarioForm.category || 'Phishing',
+  difficulty: editScenarioForm.difficulty || 'intermediate',
+  duration: editScenarioForm.duration || '15',
+  description: editScenarioForm.description || '',
+  coverImage: editScenarioForm.coverImage || '',
+  mappingContext: editScenarioForm.mappingContext || '',
+  fakeLinkLabel: editScenarioForm.fakeLinkLabel || '',
+  fakeLinkUrl: editScenarioForm.fakeLinkUrl || '',
+  fakeLinkHover: editScenarioForm.fakeLinkHover || '',
+  fakeEmailSender: editScenarioForm.fakeEmailSender || '',
+  fakeEmailSubject: editScenarioForm.fakeEmailSubject || '',
+  fakeEmailBody: editScenarioForm.fakeEmailBody || '',
+  videoUrl: editScenarioForm.videoUrl || '',
+  coverImageName: editScenarioForm.coverImageName || '',
+  photoHotspots: Array.isArray(editScenarioForm.photoHotspots) ? editScenarioForm.photoHotspots : [],
+  quizQuestions: Array.isArray(editScenarioForm.quizQuestions) ? editScenarioForm.quizQuestions : [],
+  modules: Array.isArray(editScenarioForm.modules) ? editScenarioForm.modules : [],
+  plays: 0,
+  score: 0,
+  status: 'draft',
+}
       modules: Array.isArray(editScenarioForm.modules) ? editScenarioForm.modules : [],
       plays: 0, score: 0, status: 'draft',
     }
@@ -175,6 +189,97 @@ export default function SuperAdmin() {
     })
   }
 
+const onScenarioPhotoUpload = (file) => {
+  if (!file) return
+  const localUrl = URL.createObjectURL(file)
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    coverImage: localUrl,
+    coverImageName: file.name,
+  }))
+  if (!((editScenarioForm?.modules || []).includes('photo'))) toggleScenarioModule('photo')
+}
+
+const addHotspotFromImageClick = (e) => {
+  if (!editScenarioForm?.coverImage) return
+  const rect = e.currentTarget.getBoundingClientRect()
+  const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100))
+  const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100))
+  setEditScenarioForm(prev => {
+    const current = prev || {}
+    const photoHotspots = Array.isArray(current.photoHotspots) ? current.photoHotspots : []
+    return {
+      ...current,
+      modules: Array.from(new Set([...(current.modules || []), 'mapping'])),
+      photoHotspots: [
+        ...photoHotspots,
+        {
+          id: createId(),
+          x: Math.round(x),
+          y: Math.round(y),
+          label: lang === 'fr' ? 'Indice' : 'Clue',
+          action: 'clue',
+        },
+      ],
+    }
+  })
+}
+
+const updateHotspot = (id, patch) => {
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    photoHotspots: (prev?.photoHotspots || []).map(h => (h.id === id ? { ...h, ...patch } : h)),
+  }))
+}
+
+const removeHotspot = (id) => {
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    photoHotspots: (prev?.photoHotspots || []).filter(h => h.id !== id),
+  }))
+}
+
+const addQuizQuestion = () => {
+  setEditScenarioForm(prev => {
+    const current = prev || {}
+    const quizQuestions = Array.isArray(current.quizQuestions) ? current.quizQuestions : []
+    const newQuestion = {
+      id: createId(),
+      prompt: '',
+      design: 'cards',
+      options: [
+        { id: createId(), text: '', isCorrect: true },
+        { id: createId(), text: '', isCorrect: false },
+      ],
+    }
+    return {
+      ...current,
+      modules: Array.from(new Set([...(current.modules || []), 'quiz'])),
+      quizQuestions: [...quizQuestions, newQuestion],
+    }
+  })
+}
+
+const updateQuizQuestion = (questionId, patch) => {
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    quizQuestions: (prev?.quizQuestions || []).map(q => (q.id === questionId ? { ...q, ...patch } : q)),
+  }))
+}
+
+const updateQuizOption = (questionId, optionId, patch) => {
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    quizQuestions: (prev?.quizQuestions || []).map(q =>
+      q.id === questionId
+        ? {
+            ...q,
+            options: (q.options || []).map(o => (o.id === optionId ? { ...o, ...patch } : o)),
+          }
+        : q
+    ),
+  }))
+}
   const getScenarioModulesLabel = (scenario) => {
     const modules = Array.isArray(scenario.modules) ? scenario.modules : []
     if (!modules.length) return lang === 'fr' ? 'Aucun module' : 'No modules'
@@ -321,6 +426,12 @@ export default function SuperAdmin() {
               <input className="input-dark" placeholder="https://..." value={editScenarioForm?.coverImage || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), coverImage: e.target.value }))} />
             </div>
             <div>
+<div>
+  <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+    {lang === 'fr' ? 'OU IMPORTER UNE PHOTO' : 'OR UPLOAD PHOTO'}
+  </label>
+  <input className="input-dark" type="file" accept="image/*" onChange={e => onScenarioPhotoUpload(e.target.files?.[0])} />
+</div>
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>VIDEO (URL)</label>
               <input className="input-dark" placeholder="https://..." value={editScenarioForm?.videoUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), videoUrl: e.target.value }))} />
             </div>
@@ -328,6 +439,63 @@ export default function SuperAdmin() {
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'MAPPING / CONTEXTE' : 'MAPPING / CONTEXT'}</label>
               <textarea className="input-dark" rows={3} placeholder={lang === 'fr' ? 'Ex: Bureau, Open-space, Salle serveur...' : 'Ex: Office, Open-space, Server room...'} value={editScenarioForm?.mappingContext || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), mappingContext: e.target.value }))} />
             </div>
+<div style={{ gridColumn: '1 / -1', border: '1px solid var(--border-subtle)', padding: '12px', background: 'rgba(255,255,255,0.02)' }}>
+  <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>
+    {lang === 'fr' ? 'MAPPING EXACT SUR LA PHOTO (CLIQUE POUR POSER UN POINT)' : 'EXACT PHOTO MAPPING (CLICK TO ADD HOTSPOT)'}
+  </label>
+  <div
+    onClick={addHotspotFromImageClick}
+    style={{
+      position: 'relative',
+      border: '1px dashed var(--border-subtle)',
+      minHeight: '180px',
+      cursor: editScenarioForm?.coverImage ? 'crosshair' : 'not-allowed',
+      background: '#0a0a0a',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+    }}
+  >
+    {editScenarioForm?.coverImage ? (
+      <>
+        <img src={editScenarioForm.coverImage} alt="Scenario mapping" style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', opacity: 0.7 }} />
+        {(editScenarioForm?.photoHotspots || []).map((hotspot) => (
+          <button
+            key={hotspot.id}
+            type="button"
+            title={`${hotspot.label} (${hotspot.x}%, ${hotspot.y}%)`}
+            style={{
+              position: 'absolute',
+              left: `${hotspot.x}%`,
+              top: `${hotspot.y}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              border: '1px solid #fff',
+              background: 'var(--red)',
+              cursor: 'pointer',
+            }}
+          />
+        ))}
+      </>
+    ) : (
+      <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+        {lang === 'fr' ? 'Ajoute une photo puis clique pour placer des zones.' : 'Add a photo then click to place hotspots.'}
+      </div>
+    )}
+  </div>
+
+  {(editScenarioForm?.photoHotspots || []).map((hotspot) => (
+    <div key={hotspot.id} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px auto', gap: '8px', marginTop: '8px' }}>
+      <input className="input-dark" value={hotspot.label} onChange={e => updateHotspot(hotspot.id, { label: e.target.value })} placeholder={lang === 'fr' ? 'Label du point' : 'Hotspot label'} />
+      <input className="input-dark" value={hotspot.x} onChange={e => updateHotspot(hotspot.id, { x: Number(e.target.value) || 0 })} />
+      <input className="input-dark" value={hotspot.y} onChange={e => updateHotspot(hotspot.id, { y: Number(e.target.value) || 0 })} />
+      <button type="button" className="btn-secondary" onClick={() => removeHotspot(hotspot.id)}>✕</button>
+    </div>
+  ))}
+</div>
             <div>
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (LABEL)' : 'FAKE LINK (LABEL)'}</label>
               <input className="input-dark" placeholder={lang === 'fr' ? 'Voir la facture' : 'View invoice'} value={editScenarioForm?.fakeLinkLabel || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkLabel: e.target.value }))} />
@@ -348,6 +516,17 @@ export default function SuperAdmin() {
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'OBJET FAUX MAIL' : 'FAKE EMAIL SUBJECT'}</label>
               <input className="input-dark" placeholder={lang === 'fr' ? 'Action requise sous 24h' : 'Action required within 24h'} value={editScenarioForm?.fakeEmailSubject || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeEmailSubject: e.target.value }))} />
             </div>
+<div style={{ gridColumn: '1 / -1' }}>
+  <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+    {lang === 'fr' ? 'CORPS DU FAUX MAIL' : 'FAKE EMAIL BODY'}
+  </label>
+  <textarea className="input-dark" rows={3} value={editScenarioForm?.fakeEmailBody || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeEmailBody: e.target.value }))} />
+  <div style={{ marginTop: '8px', border: '1px solid var(--border-subtle)', padding: '10px', background: '#0b0b0b' }}>
+    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+      {editScenarioForm?.fakeEmailSender || 'sender@example.com'} → {editScenarioForm?.fakeEmailSubject || (lang === 'fr' ? 'Objet' : 'Subject')}
+    </div>
+    <div style={{ fontSize: '12px', marginTop: '6px', color: 'var(--text-light)' }}>
+      {editScenarioForm?.fakeEmailBody || (lang === 'fr' ? 'Aperçu du faux mail.'
             <div style={{ gridColumn: '1 / -1', padding: '12px', border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>{lang === 'fr' ? 'MODULES NATIFS DU SCÉNARIO' : 'NATIVE SCENARIO MODULES'}</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -431,13 +610,38 @@ export default function SuperAdmin() {
                 <input className="input-dark" value={editScenarioForm.coverImage || ''} onChange={e => setEditScenarioForm(f => ({ ...f, coverImage: e.target.value }))} />
               </div>
               <div>
-                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>VIDEO (URL)</label>
-                <input className="input-dark" value={editScenarioForm.videoUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...f, videoUrl: e.target.value }))} />
+
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'OU IMPORTER UNE PHOTO' : 'OR UPLOAD PHOTO'}</label>
+                <input className="input-dark" type="file" accept="image/*" onChange={e => onScenarioPhotoUpload(e.target.files?.[0])} />
               </div>
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'MAPPING / CONTEXTE' : 'MAPPING / CONTEXT'}</label>
-                <textarea className="input-dark" rows={3} value={editScenarioForm.mappingContext || ''} onChange={e => setEditScenarioForm(f => ({ ...f, mappingContext: e.target.value }))} />
+              <div>
+
+
+
+              <div style={{ gridColumn: '1 / -1', border: '1px solid var(--border-subtle)', padding: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>{lang === 'fr' ? 'MAPPING EXACT SUR LA PHOTO (CLIQUE POUR POSER UN POINT)' : 'EXACT PHOTO MAPPING (CLICK TO ADD HOTSPOT)'}</label>
+                <div onClick={addHotspotFromImageClick} style={{ position: 'relative', border: '1px dashed var(--border-subtle)', minHeight: '180px', cursor: editScenarioForm?.coverImage ? 'crosshair' : 'not-allowed', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {editScenarioForm?.coverImage ? (
+                    <>
+                      <img src={editScenarioForm.coverImage} alt="Scenario mapping" style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', opacity: 0.7 }} />
+                      {(editScenarioForm.photoHotspots || []).map((hotspot) => (
+                        <button key={hotspot.id} type="button" title={`${hotspot.label} (${hotspot.x}%, ${hotspot.y}%)`} style={{ position: 'absolute', left: `${hotspot.x}%`, top: `${hotspot.y}%`, transform: 'translate(-50%, -50%)', width: '16px', height: '16px', borderRadius: '50%', border: '1px solid #fff', background: 'var(--red)', cursor: 'pointer' }} />
+                      ))}
+                    </>
+                  ) : (
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{lang === 'fr' ? 'Ajoute une photo puis clique pour placer des zones.' : 'Add a photo then click to place hotspots.'}</div>
+                  )}
+                </div>
+                {(editScenarioForm.photoHotspots || []).map((hotspot) => (
+                  <div key={hotspot.id} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px auto', gap: '8px', marginTop: '8px' }}>
+                    <input className="input-dark" value={hotspot.label} onChange={e => updateHotspot(hotspot.id, { label: e.target.value })} placeholder={lang === 'fr' ? 'Label du point' : 'Hotspot label'} />
+                    <input className="input-dark" value={hotspot.x} onChange={e => updateHotspot(hotspot.id, { x: Number(e.target.value) || 0 })} />
+                    <input className="input-dark" value={hotspot.y} onChange={e => updateHotspot(hotspot.id, { y: Number(e.target.value) || 0 })} />
+                    <button type="button" className="btn-secondary" onClick={() => removeHotspot(hotspot.id)}>✕</button>
+                  </div>
+                ))}
               </div>
+
               <div>
                 <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (LABEL)' : 'FAKE LINK (LABEL)'}</label>
                 <input className="input-dark" value={editScenarioForm.fakeLinkLabel || ''} onChange={e => setEditScenarioForm(f => ({ ...f, fakeLinkLabel: e.target.value }))} />
@@ -458,6 +662,49 @@ export default function SuperAdmin() {
                 <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'OBJET FAUX MAIL' : 'FAKE EMAIL SUBJECT'}</label>
                 <input className="input-dark" value={editScenarioForm.fakeEmailSubject || ''} onChange={e => setEditScenarioForm(f => ({ ...f, fakeEmailSubject: e.target.value }))} />
               </div>
+
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'CORPS DU FAUX MAIL' : 'FAKE EMAIL BODY'}</label>
+                <textarea className="input-dark" rows={3} value={editScenarioForm.fakeEmailBody || ''} onChange={e => setEditScenarioForm(f => ({ ...f, fakeEmailBody: e.target.value }))} />
+                <div style={{ marginTop: '8px', border: '1px solid var(--border-subtle)', padding: '10px', background: '#0b0b0b' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{editScenarioForm.fakeEmailSender || 'sender@example.com'} → {editScenarioForm.fakeEmailSubject || (lang === 'fr' ? 'Objet' : 'Subject')}</div>
+                  <div style={{ fontSize: '12px', marginTop: '6px', color: 'var(--text-light)' }}>{editScenarioForm.fakeEmailBody || (lang === 'fr' ? 'Aperçu du faux mail.' : 'Fake email preview.')}</div>
+                  {(editScenarioForm.fakeLinkLabel || editScenarioForm.fakeLinkUrl) && (
+                    <a href={editScenarioForm.fakeLinkUrl || '#'} title={editScenarioForm.fakeLinkHover || ''} style={{ display: 'inline-block', marginTop: '8px', color: '#4ea1ff', textDecoration: 'underline' }}>
+                      {editScenarioForm.fakeLinkLabel || (lang === 'fr' ? 'Lien cliquable' : 'Clickable link')}
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div style={{ gridColumn: '1 / -1', border: '1px solid var(--border-subtle)', padding: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <label style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'DESIGN DES QUESTIONS (QUIZZ)' : 'QUESTION DESIGN (QUIZ)'}</label>
+                  <button type="button" className="btn-secondary" onClick={addQuizQuestion}>+ {lang === 'fr' ? 'Ajouter question' : 'Add question'}</button>
+                </div>
+                {(editScenarioForm.quizQuestions || []).map((question, index) => (
+                  <div key={question.id} style={{ border: '1px solid var(--border-subtle)', padding: '10px', marginBottom: '8px', background: 'rgba(255,255,255,0.02)' }}>
+                    <input className="input-dark" placeholder={`${lang === 'fr' ? 'Question' : 'Question'} ${index + 1}`} value={question.prompt} onChange={e => updateQuizQuestion(question.id, { prompt: e.target.value })} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '8px', marginTop: '8px' }}>
+                      <select value={question.design || 'cards'} onChange={e => updateQuizQuestion(question.id, { design: e.target.value })} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '12px' }}>
+                        <option value="cards">{lang === 'fr' ? 'Cartes' : 'Cards'}</option>
+                        <option value="list">{lang === 'fr' ? 'Liste' : 'List'}</option>
+                        <option value="terminal">{lang === 'fr' ? 'Terminal' : 'Terminal'}</option>
+                      </select>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', alignSelf: 'center' }}>{lang === 'fr' ? 'Style visuel de cette question' : 'Visual style for this question'}</div>
+                    </div>
+                    {(question.options || []).map((option) => (
+                      <div key={option.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', marginTop: '8px' }}>
+                        <input className="input-dark" placeholder={lang === 'fr' ? 'Réponse' : 'Answer'} value={option.text} onChange={e => updateQuizOption(question.id, option.id, { text: e.target.value })} />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                          <input type="checkbox" checked={!!option.isCorrect} onChange={e => updateQuizOption(question.id, option.id, { isCorrect: e.target.checked })} />
+                          {lang === 'fr' ? 'Correcte' : 'Correct'}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+
               <div style={{ gridColumn: '1 / -1', padding: '12px', border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
                 <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>{lang === 'fr' ? 'MODULES NATIFS DU SCÉNARIO' : 'NATIVE SCENARIO MODULES'}</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
