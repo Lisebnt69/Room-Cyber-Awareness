@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
+import { motion, AnimatePresence } from 'framer-motion'
 import { db } from '../services/db'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import { visualScenarios } from '../data/visualScenarios'
 import { generateCertificatePDF } from '../services/pdfGenerator'
+import CountUp from '../components/CountUp'
 
 const allBadges = [
   { id: 'first_blood', name: 'Premier Sang', icon: '🩸', desc: 'Terminer votre premier scénario' },
@@ -137,53 +139,95 @@ export default function PlayerDashboard() {
 
       <div style={{ padding: '32px 40px', maxWidth: '1400px', margin: '0 auto' }}>
         {/* Welcome header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+        <motion.div
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <div>
             <h1 style={{ fontSize: '28px', color: 'var(--text-primary)', marginBottom: '4px' }}>
               Bonjour, <span style={{ color: '#eb2828' }}>{user?.name?.split(' ')[0] || 'Joueur'}</span> 👋
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{user?.company || 'ACME Corp'} · Niveau Defender</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <motion.div
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            animate={{ y: [0, -3, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          >
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(235,40,40,0.15)', border: '2px solid #eb2828', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#eb2828', fontWeight: 'bold' }}>
               {user?.name?.[0] || 'U'}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Score hero */}
-        <div style={{ background: 'linear-gradient(135deg, rgba(235,40,40,0.1), rgba(235,40,40,0.03))', border: '1px solid rgba(235,40,40,0.2)', padding: '32px', borderRadius: '16px', marginBottom: '28px', display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', alignItems: 'center' }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          style={{ background: 'linear-gradient(135deg, rgba(235,40,40,0.1), rgba(235,40,40,0.03))', border: '1px solid rgba(235,40,40,0.2)', padding: '32px', borderRadius: '16px', marginBottom: '28px', display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', alignItems: 'center' }}
+        >
           <div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>VOTRE SCORE DE SÉCURITÉ</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-              <span style={{ fontSize: '72px', fontWeight: 'bold', color: scoreColor, lineHeight: 1 }}>{globalScore}</span>
+              <span style={{ fontSize: '72px', fontWeight: 'bold', color: scoreColor, lineHeight: 1 }}>
+                <CountUp end={globalScore} duration={1.5} />
+              </span>
               <span style={{ fontSize: '24px', color: 'var(--text-muted)' }}>/100</span>
             </div>
             <div style={{ fontSize: '13px', color: scoreColor, marginTop: '8px' }}>
               {globalScore >= 80 ? '✅ Excellent - Vous êtes un asset pour la sécurité' : globalScore >= 60 ? '⚠️ Bien - Continuez à pratiquer' : '🔴 En progression - Entraînement recommandé'}
             </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ width: '100px', height: '100px', borderRadius: '50%', border: `6px solid ${scoreColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-              <div style={{ fontSize: '28px', fontWeight: 'bold', color: scoreColor }}>{globalScore}</div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Niveau</div>
+            {/* Score progress bar */}
+            <div style={{ marginTop: '16px', height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${globalScore}%` }}
+                transition={{ duration: 1.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                style={{ height: '100%', background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}80)`, borderRadius: '3px' }}
+              />
             </div>
           </div>
-        </div>
+          <motion.div
+            style={{ textAlign: 'right' }}
+            animate={{ rotate: [0, 3, -3, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <div style={{ width: '100px', height: '100px', borderRadius: '50%', border: `6px solid ${scoreColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', boxShadow: `0 0 24px ${scoreColor}40` }}>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: scoreColor }}><CountUp end={globalScore} duration={1.5} /></div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Niveau</div>
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
           {[
-            { label: 'Scénarios', value: stats?.scenariosCompleted || mockActivity.length, icon: '🎮', color: '#3b82f6' },
-            { label: 'Score total', value: stats?.totalScore || 3660, icon: '⭐', color: '#f59e0b' },
-            { label: 'Badges', value: badges.length || 1, icon: '🏅', color: '#22c55e' },
-            { label: 'Streak', value: `${stats?.streak || 3}j`, icon: '🔥', color: '#eb2828' }
+            { label: 'Scénarios', value: stats?.scenariosCompleted || mockActivity.length, icon: '🎮', color: '#3b82f6', num: true },
+            { label: 'Score total', value: stats?.totalScore || 3660, icon: '⭐', color: '#f59e0b', num: true },
+            { label: 'Badges', value: badges.length || 1, icon: '🏅', color: '#22c55e', num: true },
+            { label: 'Streak', value: stats?.streak || 3, suffix: 'j', icon: '🔥', color: '#eb2828', num: true }
           ].map((k, i) => (
-            <div key={i} style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ fontSize: '28px', marginBottom: '8px' }}>{k.icon}</div>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', color: k.color }}>{k.value}</div>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.2 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -4, boxShadow: `0 8px 24px ${k.color}22` }}
+              style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)', cursor: 'default' }}
+            >
+              <motion.div
+                style={{ fontSize: '28px', marginBottom: '8px' }}
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 3, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }}
+              >{k.icon}</motion.div>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: k.color }}>
+                {k.num ? <CountUp end={k.value} duration={1.2} delay={0.3 + i * 0.1} suffix={k.suffix || ''} /> : k.value}
+              </div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{k.label}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
@@ -280,7 +324,11 @@ export default function PlayerDashboard() {
         )}
 
         {tab === 'activité' && (
-          <div style={{ background: 'var(--bg-card)', borderRadius: '12px', overflow: 'hidden' }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{ background: 'var(--bg-card)', borderRadius: '12px', overflow: 'hidden' }}
+          >
             <table style={{ width: '100%' }}>
               <thead>
                 <tr style={{ background: 'var(--bg-black)' }}>
@@ -292,13 +340,24 @@ export default function PlayerDashboard() {
               </thead>
               <tbody>
                 {mockActivity.map((a, i) => (
-                  <tr key={i} style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                  <motion.tr
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08, duration: 0.35 }}
+                    style={{ borderTop: '1px solid var(--border-subtle)' }}
+                  >
                     <td style={{ padding: '14px 20px', color: 'var(--text-muted)', fontSize: '12px' }}>{a.date}</td>
                     <td style={{ padding: '14px 20px', color: 'var(--text-primary)', fontSize: '13px' }}>{a.scenario}</td>
                     <td style={{ padding: '14px 20px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '50px', height: '4px', background: 'var(--bg-black)', borderRadius: '2px' }}>
-                          <div style={{ width: `${a.score / 10}%`, height: '100%', background: a.passed ? '#22c55e' : '#eb2828', borderRadius: '2px' }} />
+                        <div style={{ width: '50px', height: '4px', background: 'var(--bg-black)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${a.score / 10}%` }}
+                            transition={{ duration: 0.8, delay: i * 0.08 + 0.2 }}
+                            style={{ height: '100%', background: a.passed ? '#22c55e' : '#eb2828', borderRadius: '2px' }}
+                          />
                         </div>
                         <span style={{ color: 'var(--text-primary)', fontSize: '13px' }}>{a.score}</span>
                       </div>
@@ -308,24 +367,35 @@ export default function PlayerDashboard() {
                         {a.passed ? '✅ Réussi' : '❌ Échoué'}
                       </span>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </motion.div>
         )}
 
         {tab === 'badges' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
-            {allBadges.map(b => {
+            {allBadges.map((b, i) => {
               const earned = badges.some(ub => ub.id === b.id)
               return (
-                <div key={b.id} style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', textAlign: 'center', border: '1px solid', borderColor: earned ? 'rgba(235,40,40,0.4)' : 'var(--border-subtle)', opacity: earned ? 1 : 0.45 }}>
-                  <div style={{ fontSize: '48px', marginBottom: '12px', filter: earned ? 'none' : 'grayscale(100%)' }}>{b.icon}</div>
+                <motion.div
+                  key={b.id}
+                  initial={{ opacity: 0, scale: 0.7, rotateY: -90 }}
+                  animate={{ opacity: earned ? 1 : 0.45, scale: 1, rotateY: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={earned ? { y: -6, boxShadow: '0 12px 32px rgba(235,40,40,0.2)', scale: 1.03 } : { scale: 1.02 }}
+                  style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', textAlign: 'center', border: '1px solid', borderColor: earned ? 'rgba(235,40,40,0.4)' : 'var(--border-subtle)', cursor: 'default' }}
+                >
+                  <motion.div
+                    style={{ fontSize: '48px', marginBottom: '12px', filter: earned ? 'none' : 'grayscale(100%)' }}
+                    animate={earned ? { scale: [1, 1.1, 1] } : {}}
+                    transition={{ duration: 3, repeat: Infinity, delay: i * 0.3 }}
+                  >{b.icon}</motion.div>
                   <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', marginBottom: '6px', fontSize: '14px' }}>{b.name}</div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{b.desc}</div>
-                  {earned && <div style={{ marginTop: '8px', fontSize: '10px', color: '#22c55e' }}>✅ Obtenu</div>}
-                </div>
+                  {earned && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.07 + 0.3 }} style={{ marginTop: '8px', fontSize: '10px', color: '#22c55e' }}>✅ Obtenu</motion.div>}
+                </motion.div>
               )
             })}
           </div>
@@ -334,19 +404,31 @@ export default function PlayerDashboard() {
         {tab === 'modules' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
             {mockModules.map((m, i) => (
-              <div key={i} style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -3 }}
+                style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-subtle)', cursor: 'default' }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <h3 style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{m.name}</h3>
-                  {m.completed && <span style={{ color: '#22c55e', fontSize: '18px' }}>✅</span>}
+                  {m.completed && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, delay: i * 0.08 + 0.2 }} style={{ color: '#22c55e', fontSize: '18px' }}>✅</motion.span>}
                 </div>
                 <div style={{ height: '8px', background: 'var(--bg-black)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
-                  <div style={{ height: '100%', width: `${m.progress}%`, background: m.completed ? '#22c55e' : '#eb2828', borderRadius: '4px', transition: 'width 1s' }} />
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${m.progress}%` }}
+                    transition={{ duration: 1.2, delay: i * 0.1 + 0.2, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ height: '100%', background: m.completed ? '#22c55e' : 'linear-gradient(90deg, #eb2828, #ff6b6b)', borderRadius: '4px' }}
+                  />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
                   <span>{m.progress}% complété</span>
-                  {!m.completed && <button onClick={() => navigate('/play')} style={{ background: 'transparent', border: 'none', color: '#eb2828', cursor: 'pointer', fontSize: '11px' }}>Continuer →</button>}
+                  {!m.completed && <motion.button whileHover={{ x: 3 }} onClick={() => navigate('/play')} style={{ background: 'transparent', border: 'none', color: '#eb2828', cursor: 'pointer', fontSize: '11px' }}>Continuer →</motion.button>}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
