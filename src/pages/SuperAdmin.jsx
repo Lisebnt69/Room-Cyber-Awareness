@@ -9,11 +9,11 @@ import Toast from '../components/Toast'
 import ScenarioBuilder from './ScenarioBuilder'
 
 const INITIAL_COMPANIES = [
-  { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@acme.com', sector: 'Finance' },
-  { id: 2, name: 'BNP Finance', plan: 'Enterprise', users: 892, active: 814, scenarios: 12, licenses: 1000, expire: '30/06/2025', status: 'active', email: 'security@bnp.fr', sector: 'Finance' },
-  { id: 3, name: 'Mairie de Lyon', plan: 'Starter', users: 24, active: 18, scenarios: 3, licenses: 25, expire: '15/05/2025', status: 'expiring', email: 'dsi@mairie-lyon.fr', sector: 'Administration' },
-  { id: 4, name: 'StartupTech SAS', plan: 'Starter', users: 12, active: 8, scenarios: 2, licenses: 25, expire: '01/09/2025', status: 'active', email: 'cto@startuptech.io', sector: 'Tech' },
-  { id: 5, name: 'Groupe Renault', plan: 'Enterprise', users: 2840, active: 2100, scenarios: 18, licenses: 3000, expire: '31/03/2026', status: 'active', email: 'cybersec@renault.com', sector: 'Industrie' },
+  { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@acme.com', sector: 'Finance' },
+  { id: 2, name: 'BNP Finance', plan: 'Enterprise', users: 892, active: 814, scenarios: 12, licenses: 1000, expire: '30/06/2025', status: 'active', email: 'security@bnp.fr', sector: 'Finance' },
+  { id: 3, name: 'Mairie de Lyon', plan: 'Starter', users: 24, active: 18, scenarios: 3, licenses: 25, expire: '15/05/2025', status: 'expiring', email: 'dsi@mairie-lyon.fr', sector: 'Administration' },
+  { id: 4, name: 'StartupTech SAS', plan: 'Starter', users: 12, active: 8, scenarios: 2, licenses: 25, expire: '01/09/2025', status: 'active', email: 'cto@startuptech.io', sector: 'Tech' },
+  { id: 5, name: 'Groupe Renault', plan: 'Enterprise', users: 2840, active: 2100, scenarios: 18, licenses: 3000, expire: '31/03/2026', status: 'active', email: 'cybersec@renault.com', sector: 'Industrie' },
 ]
 
 const INITIAL_SCENARIOS = [
@@ -59,9 +59,9 @@ const INITIAL_SCENARIOS = [
 ]
 
 const licensesData = [
-  { id: 1, company: 'ACME Corp', plan: 'Business', seats: 200, used: 161, price: 199, period: 'monthly', expires: '31/12/2025' },
-  { id: 2, company: 'BNP Finance', plan: 'Enterprise', seats: 1000, used: 814, price: 'custom', period: 'annual', expires: '30/06/2025' },
-  { id: 3, company: 'Mairie de Lyon', plan: 'Starter', seats: 25, used: 18, price: 49, period: 'monthly', expires: '15/05/2025' },
+  { id: 1, company: 'ACME Corp', plan: 'Business', seats: 200, used: 161, price: 199, period: 'monthly', expires: '31/12/2025' },
+  { id: 2, company: 'BNP Finance', plan: 'Enterprise', seats: 1000, used: 814, price: 'custom', period: 'annual', expires: '30/06/2025' },
+  { id: 3, company: 'Mairie de Lyon', plan: 'Starter', seats: 25, used: 18, price: 49, period: 'monthly', expires: '15/05/2025' },
 ]
 
 const SECTORS = ['Finance', 'Santé', 'Administration', 'Éducation', 'Industrie', 'Commerce', 'Énergie', 'Juridique', 'Tech', 'Transport']
@@ -74,44 +74,44 @@ const SCENARIO_MODULES = ['photo', 'mapping', 'fakeLink', 'fakeEmail', 'video', 
 
 
 const DEFAULT_SCENARIO_FIELDS = {
-  coverImage: '',
-  coverImageName: '',
-  mappingContext: '',
-  fakeLinkLabel: '',
-  fakeLinkUrl: '',
-  fakeLinkHover: '',
-  fakeEmailSender: '',
-  fakeEmailSubject: '',
-  fakeEmailBody: '',
-  videoUrl: '',
-  photoHotspots: [],
-  quizQuestions: [],
-  modules: [],
+  coverImage: '',
+  coverImageName: '',
+  mappingContext: '',
+  fakeLinkLabel: '',
+  fakeLinkUrl: '',
+  fakeLinkHover: '',
+  fakeEmailSender: '',
+  fakeEmailSubject: '',
+  fakeEmailBody: '',
+  videoUrl: '',
+  photoHotspots: [],
+  quizQuestions: [],
+  modules: [],
 }
 
 const withScenarioDefaults = (scenario) => ({
-  ...DEFAULT_SCENARIO_FIELDS,
-  ...scenario,
-  photoHotspots: Array.isArray(scenario.photoHotspots) ? scenario.photoHotspots : [],
-  quizQuestions: Array.isArray(scenario.quizQuestions) ? scenario.quizQuestions : [],
-  modules: Array.isArray(scenario.modules) ? scenario.modules : [],
+  ...DEFAULT_SCENARIO_FIELDS,
+  ...scenario,
+  photoHotspots: Array.isArray(scenario.photoHotspots) ? scenario.photoHotspots : [],
+  quizQuestions: Array.isArray(scenario.quizQuestions) ? scenario.quizQuestions : [],
+  modules: Array.isArray(scenario.modules) ? scenario.modules : [],
 })
 
 const moduleLabels = {
-  photo: { fr: 'Photo', en: 'Photo' },
-  mapping: { fr: 'Mapping', en: 'Mapping' },
-  fakeLink: { fr: 'Faux lien', en: 'Fake link' },
-  fakeEmail: { fr: 'Faux email', en: 'Fake email' },
-  video: { fr: 'Vidéo', en: 'Video' },
-  quiz: { fr: 'Quizz', en: 'Quiz' },
-  miniPuzzle: { fr: 'Mini puzzle', en: 'Mini puzzle' },
+  photo: { fr: 'Photo', en: 'Photo' },
+  mapping: { fr: 'Mapping', en: 'Mapping' },
+  fakeLink: { fr: 'Faux lien', en: 'Fake link' },
+  fakeEmail: { fr: 'Faux email', en: 'Fake email' },
+  video: { fr: 'Vidéo', en: 'Video' },
+  quiz: { fr: 'Quizz', en: 'Quiz' },
+  miniPuzzle: { fr: 'Mini puzzle', en: 'Mini puzzle' },
 }
 const createId = () => Math.floor(Math.random() * 10_000_000)
 
 function statusBadge(s, t) {
-  const map = { active: [t('badgeActive'), '#22c55e'], expiring: [t('badgeExpiring'), '#f59e0b'], suspended: [t('badgeSuspended'), 'var(--red)'], published: [t('badgePublished'), '#22c55e'], beta: [t('badgeBeta'), '#f59e0b'], draft: [t('badgeDraft'), 'var(--text-muted)'] }
-  const [label, color] = map[s] || [s, 'var(--text-muted)']
-  return <span style={{ padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color, border: `1px solid ${color}`, background: `${color}15` }}>{label}</span>
+  const map = { active: [t('badgeActive'), '#22c55e'], expiring: [t('badgeExpiring'), '#f59e0b'], suspended: [t('badgeSuspended'), 'var(--red)'], published: [t('badgePublished'), '#22c55e'], beta: [t('badgeBeta'), '#f59e0b'], draft: [t('badgeDraft'), 'var(--text-muted)'] }
+  const [label, color] = map[s] || [s, 'var(--text-muted)']
+  return <span style={{ padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color, border: `1px solid ${color}`, background: `${color}15` }}>{label}</span>
 }
 
 export default function SuperAdmin() {
@@ -274,84 +274,84 @@ const onScenarioPhotoUpload = (file) => {
 }
 
 const addHotspotFromImageClick = (e) => {
-  if (!editScenarioForm?.coverImage) return
-  const rect = e.currentTarget.getBoundingClientRect()
-  const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100))
-  const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100))
-  setEditScenarioForm(prev => {
-    const current = prev || {}
-    const photoHotspots = Array.isArray(current.photoHotspots) ? current.photoHotspots : []
-    return {
-      ...current,
-      modules: Array.from(new Set([...(current.modules || []), 'mapping'])),
-      photoHotspots: [
-        ...photoHotspots,
-        {
-          id: createId(),
-          x: Math.round(x),
-          y: Math.round(y),
-          label: lang === 'fr' ? 'Indice' : 'Clue',
-          action: 'clue',
-        },
-      ],
-    }
-  })
+  if (!editScenarioForm?.coverImage) return
+  const rect = e.currentTarget.getBoundingClientRect()
+  const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100))
+  const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100))
+  setEditScenarioForm(prev => {
+    const current = prev || {}
+    const photoHotspots = Array.isArray(current.photoHotspots) ? current.photoHotspots : []
+    return {
+      ...current,
+      modules: Array.from(new Set([...(current.modules || []), 'mapping'])),
+      photoHotspots: [
+        ...photoHotspots,
+        {
+          id: createId(),
+          x: Math.round(x),
+          y: Math.round(y),
+          label: lang === 'fr' ? 'Indice' : 'Clue',
+          action: 'clue',
+        },
+      ],
+    }
+  })
 }
 
 const updateHotspot = (id, patch) => {
-  setEditScenarioForm(prev => ({
-    ...(prev || {}),
-    photoHotspots: (prev?.photoHotspots || []).map(h => (h.id === id ? { ...h, ...patch } : h)),
-  }))
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    photoHotspots: (prev?.photoHotspots || []).map(h => (h.id === id ? { ...h, ...patch } : h)),
+  }))
 }
 
 const removeHotspot = (id) => {
-  setEditScenarioForm(prev => ({
-    ...(prev || {}),
-    photoHotspots: (prev?.photoHotspots || []).filter(h => h.id !== id),
-  }))
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    photoHotspots: (prev?.photoHotspots || []).filter(h => h.id !== id),
+  }))
 }
 
 const addQuizQuestion = () => {
-  setEditScenarioForm(prev => {
-    const current = prev || {}
-    const quizQuestions = Array.isArray(current.quizQuestions) ? current.quizQuestions : []
-    const newQuestion = {
-      id: createId(),
-      prompt: '',
-      design: 'cards',
-      options: [
-        { id: createId(), text: '', isCorrect: true },
-        { id: createId(), text: '', isCorrect: false },
-      ],
-    }
-    return {
-      ...current,
-      modules: Array.from(new Set([...(current.modules || []), 'quiz'])),
-      quizQuestions: [...quizQuestions, newQuestion],
-    }
-  })
+  setEditScenarioForm(prev => {
+    const current = prev || {}
+    const quizQuestions = Array.isArray(current.quizQuestions) ? current.quizQuestions : []
+    const newQuestion = {
+      id: createId(),
+      prompt: '',
+      design: 'cards',
+      options: [
+        { id: createId(), text: '', isCorrect: true },
+        { id: createId(), text: '', isCorrect: false },
+      ],
+    }
+    return {
+      ...current,
+      modules: Array.from(new Set([...(current.modules || []), 'quiz'])),
+      quizQuestions: [...quizQuestions, newQuestion],
+    }
+  })
 }
 
 const updateQuizQuestion = (questionId, patch) => {
-  setEditScenarioForm(prev => ({
-    ...(prev || {}),
-    quizQuestions: (prev?.quizQuestions || []).map(q => (q.id === questionId ? { ...q, ...patch } : q)),
-  }))
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    quizQuestions: (prev?.quizQuestions || []).map(q => (q.id === questionId ? { ...q, ...patch } : q)),
+  }))
 }
 
 const updateQuizOption = (questionId, optionId, patch) => {
-  setEditScenarioForm(prev => ({
-    ...(prev || {}),
-    quizQuestions: (prev?.quizQuestions || []).map(q =>
-      q.id === questionId
-        ? {
-            ...q,
-            options: (q.options || []).map(o => (o.id === optionId ? { ...o, ...patch } : o)),
-          }
-        : q
-    ),
-  }))
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    quizQuestions: (prev?.quizQuestions || []).map(q =>
+      q.id === questionId
+        ? {
+            ...q,
+            options: (q.options || []).map(o => (o.id === optionId ? { ...o, ...patch } : o)),
+          }
+        : q
+    ),
+  }))
 }
   const getScenarioModulesLabel = (scenario) => {
     const modules = Array.isArray(scenario.modules) ? scenario.modules : []
@@ -510,95 +510,95 @@ const updateQuizOption = (questionId, optionId, patch) => {
             </div>
             <div>
 <div>
-  <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-    {lang === 'fr' ? 'OU IMPORTER UNE PHOTO' : 'OR UPLOAD PHOTO'}
-  </label>
-  <input className="input-dark" type="file" accept="image/*" onChange={e => onScenarioPhotoUpload(e.target.files?.[0])} />
+  <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+    {lang === 'fr' ? 'OU IMPORTER UNE PHOTO' : 'OR UPLOAD PHOTO'}
+  </label>
+  <input className="input-dark" type="file" accept="image/*" onChange={e => onScenarioPhotoUpload(e.target.files?.[0])} />
 </div>
-              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>VIDEO (URL)</label>
-              <input className="input-dark" placeholder="https://..." value={editScenarioForm?.videoUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), videoUrl: e.target.value }))} />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'MAPPING / CONTEXTE' : 'MAPPING / CONTEXT'}</label>
-              <textarea className="input-dark" rows={3} placeholder={lang === 'fr' ? 'Ex: Bureau, Open-space, Salle serveur...' : 'Ex: Office, Open-space, Server room...'} value={editScenarioForm?.mappingContext || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), mappingContext: e.target.value }))} />
-            </div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>VIDEO (URL)</label>
+              <input className="input-dark" placeholder="https://..." value={editScenarioForm?.videoUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), videoUrl: e.target.value }))} />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'MAPPING / CONTEXTE' : 'MAPPING / CONTEXT'}</label>
+              <textarea className="input-dark" rows={3} placeholder={lang === 'fr' ? 'Ex: Bureau, Open-space, Salle serveur...' : 'Ex: Office, Open-space, Server room...'} value={editScenarioForm?.mappingContext || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), mappingContext: e.target.value }))} />
+            </div>
 <div style={{ gridColumn: '1 / -1', border: '1px solid var(--border-subtle)', padding: '12px', background: 'rgba(255,255,255,0.02)' }}>
-  <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>
-    {lang === 'fr' ? 'MAPPING EXACT SUR LA PHOTO (CLIQUE POUR POSER UN POINT)' : 'EXACT PHOTO MAPPING (CLICK TO ADD HOTSPOT)'}
-  </label>
-  <div
-    onClick={addHotspotFromImageClick}
-    style={{
-      position: 'relative',
-      border: '1px dashed var(--border-subtle)',
-      minHeight: '180px',
-      cursor: editScenarioForm?.coverImage ? 'crosshair' : 'not-allowed',
-      background: '#0a0a0a',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-    }}
-  >
-    {editScenarioForm?.coverImage ? (
-      <>
-        <img src={editScenarioForm.coverImage} alt="Scenario mapping" style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', opacity: 0.7 }} />
-        {(editScenarioForm?.photoHotspots || []).map((hotspot) => (
-          <button
-            key={hotspot.id}
-            type="button"
-            title={`${hotspot.label} (${hotspot.x}%, ${hotspot.y}%)`}
-            style={{
-              position: 'absolute',
-              left: `${hotspot.x}%`,
-              top: `${hotspot.y}%`,
-              transform: 'translate(-50%, -50%)',
-              width: '16px',
-              height: '16px',
-              borderRadius: '50%',
-              border: '1px solid #fff',
-              background: 'var(--red)',
-              cursor: 'pointer',
-            }}
-          />
-        ))}
-      </>
-    ) : (
-      <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-        {lang === 'fr' ? 'Ajoute une photo puis clique pour placer des zones.' : 'Add a photo then click to place hotspots.'}
-      </div>
-    )}
-  </div>
+  <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>
+    {lang === 'fr' ? 'MAPPING EXACT SUR LA PHOTO (CLIQUE POUR POSER UN POINT)' : 'EXACT PHOTO MAPPING (CLICK TO ADD HOTSPOT)'}
+  </label>
+  <div
+    onClick={addHotspotFromImageClick}
+    style={{
+      position: 'relative',
+      border: '1px dashed var(--border-subtle)',
+      minHeight: '180px',
+      cursor: editScenarioForm?.coverImage ? 'crosshair' : 'not-allowed',
+      background: '#0a0a0a',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+    }}
+  >
+    {editScenarioForm?.coverImage ? (
+      <>
+        <img src={editScenarioForm.coverImage} alt="Scenario mapping" style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', opacity: 0.7 }} />
+        {(editScenarioForm?.photoHotspots || []).map((hotspot) => (
+          <button
+            key={hotspot.id}
+            type="button"
+            title={`${hotspot.label} (${hotspot.x}%, ${hotspot.y}%)`}
+            style={{
+              position: 'absolute',
+              left: `${hotspot.x}%`,
+              top: `${hotspot.y}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              border: '1px solid #fff',
+              background: 'var(--red)',
+              cursor: 'pointer',
+            }}
+          />
+        ))}
+      </>
+    ) : (
+      <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+        {lang === 'fr' ? 'Ajoute une photo puis clique pour placer des zones.' : 'Add a photo then click to place hotspots.'}
+      </div>
+    )}
+  </div>
 
-  {(editScenarioForm?.photoHotspots || []).map((hotspot) => (
-    <div key={hotspot.id} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px auto', gap: '8px', marginTop: '8px' }}>
-      <input className="input-dark" value={hotspot.label} onChange={e => updateHotspot(hotspot.id, { label: e.target.value })} placeholder={lang === 'fr' ? 'Label du point' : 'Hotspot label'} />
-      <input className="input-dark" value={hotspot.x} onChange={e => updateHotspot(hotspot.id, { x: Number(e.target.value) || 0 })} />
-      <input className="input-dark" value={hotspot.y} onChange={e => updateHotspot(hotspot.id, { y: Number(e.target.value) || 0 })} />
-      <button type="button" className="btn-secondary" onClick={() => removeHotspot(hotspot.id)}>✕</button>
-    </div>
-  ))}
+  {(editScenarioForm?.photoHotspots || []).map((hotspot) => (
+    <div key={hotspot.id} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px auto', gap: '8px', marginTop: '8px' }}>
+      <input className="input-dark" value={hotspot.label} onChange={e => updateHotspot(hotspot.id, { label: e.target.value })} placeholder={lang === 'fr' ? 'Label du point' : 'Hotspot label'} />
+      <input className="input-dark" value={hotspot.x} onChange={e => updateHotspot(hotspot.id, { x: Number(e.target.value) || 0 })} />
+      <input className="input-dark" value={hotspot.y} onChange={e => updateHotspot(hotspot.id, { y: Number(e.target.value) || 0 })} />
+      <button type="button" className="btn-secondary" onClick={() => removeHotspot(hotspot.id)}>✕</button>
+    </div>
+  ))}
 </div>
-            <div>
-              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (LABEL)' : 'FAKE LINK (LABEL)'}</label>
-              <input className="input-dark" placeholder={lang === 'fr' ? 'Voir la facture' : 'View invoice'} value={editScenarioForm?.fakeLinkLabel || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkLabel: e.target.value }))} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (URL)' : 'FAKE LINK (URL)'}</label>
-              <input className="input-dark" placeholder="https://fake.example" value={editScenarioForm?.fakeLinkUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkUrl: e.target.value }))} />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'TEXTE AU SURVOL DU FAUX LIEN' : 'HOVER TEXT FOR FAKE LINK'}</label>
-              <input className="input-dark" placeholder={lang === 'fr' ? 'Lien externe suspect' : 'Suspicious external link'} value={editScenarioForm?.fakeLinkHover || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkHover: e.target.value }))} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'EXPÉDITEUR FAUX MAIL' : 'FAKE EMAIL SENDER'}</label>
-              <input className="input-dark" placeholder="finance-secure@internal-alert.com" value={editScenarioForm?.fakeEmailSender || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeEmailSender: e.target.value }))} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'OBJET FAUX MAIL' : 'FAKE EMAIL SUBJECT'}</label>
-              <input className="input-dark" placeholder={lang === 'fr' ? 'Action requise sous 24h' : 'Action required within 24h'} value={editScenarioForm?.fakeEmailSubject || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeEmailSubject: e.target.value }))} />
-            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (LABEL)' : 'FAKE LINK (LABEL)'}</label>
+              <input className="input-dark" placeholder={lang === 'fr' ? 'Voir la facture' : 'View invoice'} value={editScenarioForm?.fakeLinkLabel || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkLabel: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'FAUX LIEN (URL)' : 'FAKE LINK (URL)'}</label>
+              <input className="input-dark" placeholder="https://fake.example" value={editScenarioForm?.fakeLinkUrl || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkUrl: e.target.value }))} />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'TEXTE AU SURVOL DU FAUX LIEN' : 'HOVER TEXT FOR FAKE LINK'}</label>
+              <input className="input-dark" placeholder={lang === 'fr' ? 'Lien externe suspect' : 'Suspicious external link'} value={editScenarioForm?.fakeLinkHover || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeLinkHover: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'EXPÉDITEUR FAUX MAIL' : 'FAKE EMAIL SENDER'}</label>
+              <input className="input-dark" placeholder="finance-secure@internal-alert.com" value={editScenarioForm?.fakeEmailSender || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeEmailSender: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'OBJET FAUX MAIL' : 'FAKE EMAIL SUBJECT'}</label>
+              <input className="input-dark" placeholder={lang === 'fr' ? 'Action requise sous 24h' : 'Action required within 24h'} value={editScenarioForm?.fakeEmailSubject || ''} onChange={e => setEditScenarioForm(f => ({ ...(f || {}), fakeEmailSubject: e.target.value }))} />
+            </div>
 <div style={{ gridColumn: '1 / -1' }}>
   <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>
     {lang === 'fr' ? 'CORPS DU FAUX MAIL' : 'FAKE EMAIL BODY'}
