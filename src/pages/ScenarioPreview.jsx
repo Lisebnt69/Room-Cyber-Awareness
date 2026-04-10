@@ -350,6 +350,8 @@ export default function ScenarioPreview() {
   const [toast, setToast] = useState(null)
 
   const isSuperAdmin = user?.role === ROLES.SUPER_ADMIN
+  const isPlayer = user?.role === ROLES.PLAYER
+  const isAdmin = user?.role === ROLES.ADMIN || isSuperAdmin
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type })
@@ -486,9 +488,11 @@ export default function ScenarioPreview() {
               ⏱ {scenario.duration} min
             </span>
           )}
-          <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', padding: '3px 10px', background: 'rgba(235,40,40,0.1)', border: '1px solid #eb2828', color: '#eb2828', borderRadius: '2px', letterSpacing: '0.12em', fontWeight: 700 }}>
-            MODE TEST
-          </span>
+          {isAdmin && (
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', padding: '3px 10px', background: 'rgba(235,40,40,0.1)', border: '1px solid #eb2828', color: '#eb2828', borderRadius: '2px', letterSpacing: '0.12em', fontWeight: 700 }}>
+              MODE TEST
+            </span>
+          )}
         </div>
       </div>
 
@@ -520,8 +524,8 @@ export default function ScenarioPreview() {
           </div>
         )}
 
-        {/* Assignment section */}
-        <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: '40px' }}>
+        {/* Assignment section — admin only */}
+        {isAdmin && <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: '40px' }}>
           <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#555', letterSpacing: '0.15em', marginBottom: '24px' }}>
             {lang === 'fr' ? 'ASSIGNER CE SCENARIO' : 'ASSIGN THIS SCENARIO'}
           </div>
@@ -580,7 +584,7 @@ export default function ScenarioPreview() {
               </div>
             </div>
           )}
-        </div>
+        </div>}
       </div>
     </div>
   )

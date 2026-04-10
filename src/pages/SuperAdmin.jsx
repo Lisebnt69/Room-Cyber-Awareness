@@ -109,11 +109,11 @@ const withScenarioDefaults = (scenario = {}) => ({
   ...DEFAULT_SCENARIO_FIELDS,
   ...scenario,
   title: {
-    fr: scenario?.title?.fr || '',
-    en: scenario?.title?.en || '',
+    fr: scenario?.title?.fr || scenario?.title_fr || '',
+    en: scenario?.title?.en || scenario?.title_en || scenario?.title_fr || '',
   },
-  titleFr: scenario?.titleFr || scenario?.title?.fr || '',
-  titleEn: scenario?.titleEn || scenario?.title?.en || '',
+  titleFr: scenario?.titleFr || scenario?.title_fr || scenario?.title?.fr || '',
+  titleEn: scenario?.titleEn || scenario?.title_en || scenario?.title?.en || '',
   photoHotspots: Array.isArray(scenario?.photoHotspots) ? scenario.photoHotspots : [],
   quizQuestions: Array.isArray(scenario?.quizQuestions) ? scenario.quizQuestions : [],
   modules: Array.isArray(scenario?.modules) ? scenario.modules : [],
@@ -160,7 +160,7 @@ export default function SuperAdmin() {
     typeof window !== 'undefined' ? window.innerWidth : 1280
   )
   const [companies, setCompanies] = useState(INITIAL_COMPANIES)
-  const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS.map(withScenarioDefaults))
+  const [scenarios, setScenarios] = useState([])
   const [editCompanyForm, setEditCompanyForm] = useState(null)
   const [builderMode, setBuilderMode] = useState(null)
 
@@ -178,12 +178,24 @@ export default function SuperAdmin() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const handleBuilderSave = (data) => {
-    const updated = withScenarioDefaults({
-      id: data.id || Date.now(),
-      title: { fr: data.titleFr, en: data.titleEn || data.titleFr },
-      titleFr: data.titleFr,
-      titleEn: data.titleEn || data.titleFr,
+  const loadScenarios = () =>
+    fetch('/api/scenarios')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setScenarios(data.map(apiToState)) })
+      .catch(() => {})
+
+  useEffect(() => {
+    loadScenarios()
+    fetch('/api/companies')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setCompanies(data) })
+      .catch(() => {})
+  }, [])
+
+  const handleBuilderSave = async (data) => {
+    const body = {
+      title_fr: data.titleFr,
+      title_en: data.titleEn || data.titleFr,
       category: data.category,
       difficulty: data.difficulty,
       duration: data.duration,
@@ -214,8 +226,14 @@ export default function SuperAdmin() {
       setScenarios((prev) => [...prev, updated])
       showToast(lang === 'fr' ? `"${updated.title.fr}" créé` : `"${updated.title.en}" created`)
     }
-
     setBuilderMode(null)
+  }
+
+  const handleDeleteScenario = async (s) => {
+    if (!confirm(lang === 'fr' ? `Supprimer "${s.title?.fr || s.title_fr}" ?` : `Delete "${s.title?.en || s.title_fr}" ?`)) return
+    await fetch(`/api/scenarios/${s.id}`, { method: 'DELETE' })
+    await loadScenarios()
+    showToast(lang === 'fr' ? 'Scénario supprimé' : 'Scenario deleted')
   }
 
   const openEditCompany = (company) => {

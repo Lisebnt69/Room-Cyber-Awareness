@@ -67,6 +67,7 @@ export default function PlayerDashboard() {
   const [stats, setStats] = useState(null)
   const [badges, setBadges] = useState([])
   const [defis, setDefis] = useState(weeklyDefis)
+  const [assignedScenarios, setAssignedScenarios] = useState([])
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([
     { id: 1, msg: '🔥 Défi "Streak 5 jours" — plus que 2 jours !', time: 'Il y a 2h', read: false },
@@ -81,10 +82,16 @@ export default function PlayerDashboard() {
     setStats(s)
     const b = db.getUserBadges(user.id)
     setBadges(b)
-    // Award first badge
     if (db.getUserResults(user.id).length > 0) {
       db.awardBadge(user.id, allBadges[0])
       setBadges(db.getUserBadges(user.id))
+    }
+    // Load assigned scenarios from API
+    if (user.email) {
+      fetch(`/api/players/${encodeURIComponent(user.email)}/scenarios`)
+        .then(r => r.json())
+        .then(data => { if (Array.isArray(data)) setAssignedScenarios(data) })
+        .catch(() => {})
     }
   }, [user])
 
@@ -111,7 +118,11 @@ export default function PlayerDashboard() {
 />
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <LangToggle />
-          <button onClick={() => navigate('/play')} className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }}>▶ Jouer</button>
+          <button onClick={() => {
+            const first = assignedScenarios.find(s => s.status !== 'completed') || assignedScenarios[0]
+            if (first) navigate(`/preview/${first.id}`)
+            else navigate('/play')
+          }} className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }}>▶ Jouer</button>
           <button onClick={() => navigate('/leaderboards')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>🏆 Classement</button>
           <div style={{ position: 'relative' }}>
             <button onClick={() => { setNotifOpen(o => !o); setNotifications(n => n.map(x => ({ ...x, read: true }))) }} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', position: 'relative', padding: '4px' }}>
@@ -247,35 +258,55 @@ export default function PlayerDashboard() {
           <div style={{ marginTop: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '4px' }}>🔍 Scénarios Visuels — Cherche &amp; Trouve</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Analysez des captures d'écran réelles et identifiez les indices cachés</p>
+                <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '4px' }}>Mes scénarios assignés</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Scénarios de sensibilisation à la cybersécurité assignés par votre équipe</p>
               </div>
-              <div className="tag"><span className="status-dot red" /> {visualScenarios.length} scénarios</div>
+              <div className="tag"><span className="status-dot red" /> {assignedScenarios.length} scénario{assignedScenarios.length !== 1 ? 's' : ''}</div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
-              {visualScenarios.map(vs => {
-                const diffColor = vs.difficulty.fr === 'DÉBUTANT' ? '#22c55e' : vs.difficulty.fr === 'INTERMÉDIAIRE' ? '#f59e0b' : '#eb2828'
-                const sceneIcon = vs.scene === 'login' ? '🌐' : vs.scene === 'ceo_email' ? '📧' : vs.scene === 'desktop' ? '🖥️' : '📄'
-                return (
-                  <div key={vs.id} onClick={() => navigate(`/visual/${vs.id}`)}
-                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '20px', cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'; e.currentTarget.style.background = 'rgba(235,40,40,0.04)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--bg-card)' }}
-                  >
-                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>{sceneIcon}</div>
-                    <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: diffColor, letterSpacing: '0.1em', marginBottom: '6px' }}>{vs.difficulty.fr}</div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-light)', marginBottom: '6px', lineHeight: 1.3 }}>{vs.title.fr}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: 1.5 }}>{vs.category.fr}</div>
-                    <div style={{ display: 'flex', gap: '12px', fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>
-                      <span>🔍 {vs.hotspots.length} indices</span>
-                      <span>⏱ {Math.round(vs.duration / 60)}min</span>
-                      <span style={{ color: '#f59e0b' }}>🪙 {vs.coins}</span>
+            {assignedScenarios.length === 0 ? (
+              <div style={{ background: 'var(--bg-card)', border: '1px dashed var(--border-subtle)', padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                Aucun scénario assigné pour le moment. Contactez votre administrateur.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
+                {assignedScenarios.map(s => {
+                  const diffColor = s.difficulty === 'beginner' ? '#22c55e' : s.difficulty === 'advanced' ? '#eb2828' : '#f59e0b'
+                  const statusColor = s.status === 'completed' ? '#22c55e' : s.status === 'in_progress' ? '#f59e0b' : '#555'
+                  return (
+                    <div key={s.assignment_id}
+                      style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '20px', cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '12px' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', padding: '2px 8px', border: `1px solid ${diffColor}`, color: diffColor, borderRadius: '2px' }}>
+                          {s.difficulty === 'beginner' ? 'Débutant' : s.difficulty === 'advanced' ? 'Avancé' : 'Intermédiaire'}
+                        </span>
+                        <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: statusColor }}>
+                          {s.status === 'completed' ? '✓ Terminé' : s.status === 'in_progress' ? '▶ En cours' : '○ En attente'}
+                        </span>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-light)', marginBottom: '4px', lineHeight: 1.3 }}>{s.title_fr}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{s.category}</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>
+                        {s.duration && <span>⏱ {s.duration} min</span>}
+                        {s.score > 0 && <span style={{ color: '#22c55e' }}>Score: {s.score}</span>}
+                      </div>
+                      <button
+                        onClick={() => navigate(`/preview/${s.id}`)}
+                        className="btn-primary"
+                        style={{ padding: '8px 16px', fontSize: '12px', justifyContent: 'center', marginTop: 'auto' }}
+                      >
+                        {s.status === 'completed' ? '↺ Rejouer' : '▶ Jouer'}
+                      </button>
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, ${diffColor}, transparent)` }} />
                     </div>
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, ${diffColor}, transparent)` }} />
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
 
