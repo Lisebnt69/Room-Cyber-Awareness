@@ -101,9 +101,78 @@ app.put('/api/hotspots/:id', (req, res) => {
   res.json(db.prepare('SELECT * FROM hotspots WHERE id = ?').get(req.params.id))
 })
 
+app.patch('/api/hotspots/:id', (req, res) => {
+  const { x, y, label } = req.body
+  if (x !== undefined) db.prepare('UPDATE hotspots SET x=? WHERE id=?').run(x, req.params.id)
+  if (y !== undefined) db.prepare('UPDATE hotspots SET y=? WHERE id=?').run(y, req.params.id)
+  if (label !== undefined) db.prepare('UPDATE hotspots SET label=? WHERE id=?').run(label, req.params.id)
+  res.json(db.prepare('SELECT * FROM hotspots WHERE id=?').get(req.params.id))
+})
+
 app.delete('/api/hotspots/:id', (req, res) => {
   db.prepare('DELETE FROM hotspots WHERE id = ?').run(req.params.id)
   res.json({ ok: true })
+})
+
+// ─── COMPANY SCENARIO ASSIGNMENTS ─────────────────────────────────────────────
+app.get('/api/companies/:id/scenarios', (req, res) => {
+  const rows = db.prepare(`
+    SELECT s.* FROM scenarios s
+    JOIN company_scenarios cs ON cs.scenario_id = s.id
+    WHERE cs.company_id = ?
+    ORDER BY s.id
+  `).all(req.params.id)
+  res.json(rows.map(s => ({ ...s, blocks: getBlocks(s.id) })))
+})
+
+app.post('/api/companies/:id/scenarios', (req, res) => {
+  const { scenario_id } = req.body
+  try {
+    db.prepare('INSERT OR IGNORE INTO company_scenarios (company_id, scenario_id) VALUES (?, ?)').run(req.params.id, scenario_id)
+    res.json({ ok: true })
+  } catch(e) { res.status(400).json({ error: e.message }) }
+})
+
+app.delete('/api/companies/:id/scenarios/:sid', (req, res) => {
+  db.prepare('DELETE FROM company_scenarios WHERE company_id=? AND scenario_id=?').run(req.params.id, req.params.sid)
+  res.json({ ok: true })
+})
+
+// ─── PLAYER ASSIGNMENTS ────────────────────────────────────────────────────────
+app.get('/api/companies/:id/assignments', (req, res) => {
+  const rows = db.prepare(`
+    SELECT pa.*, s.title_fr, s.title_en, s.category, s.difficulty, s.duration
+    FROM player_assignments pa
+    JOIN scenarios s ON s.id = pa.scenario_id
+    WHERE pa.company_id = ?
+    ORDER BY pa.assigned_at DESC
+  `).all(req.params.id)
+  res.json(rows)
+})
+
+app.post('/api/companies/:id/assignments', (req, res) => {
+  const { player_email, player_name, scenario_id } = req.body
+  const info = db.prepare(
+    'INSERT INTO player_assignments (company_id, player_email, player_name, scenario_id) VALUES (?, ?, ?, ?)'
+  ).run(req.params.id, player_email, player_name || player_email, scenario_id)
+  res.status(201).json(db.prepare('SELECT * FROM player_assignments WHERE id=?').get(info.lastInsertRowid))
+})
+
+app.delete('/api/assignments/:id', (req, res) => {
+  db.prepare('DELETE FROM player_assignments WHERE id=?').run(req.params.id)
+  res.json({ ok: true })
+})
+
+app.get('/api/players/:email/scenarios', (req, res) => {
+  const rows = db.prepare(`
+    SELECT pa.id as assignment_id, pa.status, pa.score,
+           s.id, s.title_fr, s.title_en, s.category, s.difficulty, s.duration, s.description
+    FROM player_assignments pa
+    JOIN scenarios s ON s.id = pa.scenario_id
+    WHERE pa.player_email = ?
+    ORDER BY pa.assigned_at DESC
+  `).all(req.params.email)
+  res.json(rows)
 })
 
 // ─── START ────────────────────────────────────────────────────────────────────

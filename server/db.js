@@ -49,6 +49,26 @@ db.exec(`
     y REAL DEFAULT 50,
     label TEXT DEFAULT 'Zone'
   );
+
+  CREATE TABLE IF NOT EXISTS company_scenarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    scenario_id INTEGER NOT NULL,
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(company_id, scenario_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS player_assignments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    player_email TEXT NOT NULL,
+    player_name TEXT,
+    scenario_id INTEGER NOT NULL,
+    status TEXT DEFAULT 'pending',
+    score REAL,
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME
+  );
 `)
 
 // Seed if empty
@@ -104,6 +124,19 @@ if (scenarioCount === 0) {
     ['Google Dorks','Google Dorks','OSINT','advanced','20','Exploitation de requêtes Google pour trouver des données exposées','beta',590,621],
   ]
   for (const row of SEED) ins.run(...row)
+}
+
+const companyScenarioCount = db.prepare('SELECT COUNT(*) as n FROM company_scenarios').get().n
+if (companyScenarioCount === 0) {
+  const insCS = db.prepare('INSERT OR IGNORE INTO company_scenarios (company_id, scenario_id) VALUES (?, ?)')
+  // ACME Corp (id=1): scenarios 1,2,3
+  insCS.run(1, 1); insCS.run(1, 2); insCS.run(1, 3)
+  // BNP Finance (id=2): scenarios 1,3
+  insCS.run(2, 1); insCS.run(2, 3)
+  // Mairie de Lyon (id=3): scenario 1
+  insCS.run(3, 1)
+  // StartupTech SAS (id=4): scenario 1
+  insCS.run(4, 1)
 }
 
 export default db
