@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
@@ -125,20 +125,69 @@ export default function SuperAdmin() {
   const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS.map(withScenarioDefaults))
   const [editCompanyForm, setEditCompanyForm] = useState(null)
   const [editScenarioForm, setEditScenarioForm] = useState(null)
+  const [apiOnline, setApiOnline] = useState(false)
 
   const [builderMode, setBuilderMode] = useState(null) // null | { mode: 'create' } | { mode: 'edit', scenario }
 
+  // Try to load from API if available
+  useEffect(() => {
+    fetch('/api/scenarios')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          setScenarios(data.map(s => ({
+            ...withScenarioDefaults(s),
+            id: s.id,
+            title: { fr: s.title_fr, en: s.title_en || s.title_fr },
+            category: s.category,
+            difficulty: s.difficulty,
+            duration: s.duration,
+            description: s.description,
+            status: s.status,
+            plays: s.plays || 0,
+            score: s.score || 0,
+            blocks: s.blocks || [],
+          })))
+          setApiOnline(true)
+        }
+      }).catch(() => {})
+    fetch('/api/companies')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setCompanies(data.map(c => ({ ...c, users: c.users || 0, active: c.active || 0, scenarios: c.scenarios || 0 }))) })
+      .catch(() => {})
+  }, [])
+
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
-  const handleBuilderSave = (data) => {
+  const handleBuilderSave = async (data) => {
+    const payload = {
+      title_fr: data.titleFr,
+      title_en: data.titleEn || data.titleFr,
+      category: data.category,
+      difficulty: data.difficulty,
+      duration: data.duration,
+      description: data.description,
+      status: data.status,
+      blocks: data.blocks || [],
+    }
+    let saved = null
+    if (apiOnline) {
+      try {
+        const url = builderMode?.mode === 'edit' ? `/api/scenarios/${data.id}` : '/api/scenarios'
+        const method = builderMode?.mode === 'edit' ? 'PUT' : 'POST'
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (res.ok) saved = await res.json()
+      } catch {}
+    }
     const updated = {
-      id: data.id || Date.now(),
+      id: saved?.id || data.id || Date.now(),
       title: { fr: data.titleFr, en: data.titleEn || data.titleFr },
       category: data.category,
       difficulty: data.difficulty,
       duration: data.duration,
       description: data.description,
       status: data.status,
+      blocks: data.blocks || [],
       coverImage: data.coverImage || '',
       coverImageName: data.coverImageName || '',
       photoHotspots: data.photoHotspots || [],
