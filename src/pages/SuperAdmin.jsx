@@ -217,14 +217,26 @@ export default function SuperAdmin() {
       plays: data.plays || 0,
       score: data.score || 0,
       mappingContext: data.mappingContext || '',
-    })
-
-    if (builderMode?.mode === 'edit') {
-      setScenarios((prev) => prev.map((s) => (s.id === updated.id ? updated : s)))
-      showToast(lang === 'fr' ? `"${updated.title.fr}" mis à jour` : `"${updated.title.en}" updated`)
-    } else {
-      setScenarios((prev) => [...prev, updated])
-      showToast(lang === 'fr' ? `"${updated.title.fr}" créé` : `"${updated.title.en}" created`)
+    }
+    try {
+      const isEdit = builderMode?.mode === 'edit' && data.id
+      const url = isEdit ? `/api/scenarios/${data.id}` : '/api/scenarios'
+      const res = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        showToast(`Erreur: ${err.error || 'inconnue'}`)
+        return
+      }
+      await loadScenarios()
+      showToast(lang === 'fr'
+        ? `"${body.title_fr}" ${isEdit ? 'mis à jour' : 'créé'}`
+        : `"${body.title_fr}" ${isEdit ? 'updated' : 'created'}`)
+    } catch {
+      showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
     }
     setBuilderMode(null)
   }
@@ -241,19 +253,29 @@ export default function SuperAdmin() {
     setModal({ type: 'editCompany', data: company })
   }
 
-  const saveCompany = (e) => {
+  const saveCompany = async (e) => {
     e.preventDefault()
-    setCompanies((prev) =>
-      prev.map((c) => (c.id === editCompanyForm.id ? { ...editCompanyForm } : c))
-    )
-    setModal(null)
-    showToast(lang === 'fr' ? `${editCompanyForm.name} mis à jour` : `${editCompanyForm.name} updated`)
+    try {
+      const res = await fetch(`/api/companies/${editCompanyForm.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editCompanyForm),
+      })
+      if (!res.ok) { showToast(lang === 'fr' ? 'Erreur sauvegarde' : 'Save error'); return }
+      const updated = await res.json()
+      setCompanies((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
+      setModal(null)
+      showToast(lang === 'fr' ? `${updated.name} mis à jour` : `${updated.name} updated`)
+    } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
   }
 
-  const deleteCompany = (id) => {
-    setCompanies((prev) => prev.filter((c) => c.id !== id))
-    setModal(null)
-    showToast(lang === 'fr' ? 'Entreprise supprimée' : 'Company deleted')
+  const deleteCompany = async (id) => {
+    try {
+      await fetch(`/api/companies/${id}`, { method: 'DELETE' })
+      setCompanies((prev) => prev.filter((c) => c.id !== id))
+      setModal(null)
+      showToast(lang === 'fr' ? 'Entreprise supprimée' : 'Company deleted')
+    } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
   }
 
   const navItems = [
@@ -305,28 +327,31 @@ export default function SuperAdmin() {
 
       <Modal isOpen={modal?.type === 'addCompany'} onClose={() => setModal(null)} title={t('saAdd')}>
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault()
             const fd = new FormData(e.currentTarget)
             const plan = fd.get('plan')
-
-            const newCompany = {
-              id: Date.now(),
+            const body = {
               name: fd.get('name'),
               email: fd.get('email'),
               plan,
               sector: fd.get('sector'),
-              users: 0,
-              active: 0,
-              scenarios: 0,
               licenses: plan === 'Starter' ? 25 : plan === 'Business' ? 200 : 1000,
               expire: '31/12/2026',
               status: 'active',
             }
-
-            setCompanies((prev) => [...prev, newCompany])
-            setModal(null)
-            showToast(lang === 'fr' ? `${newCompany.name} créée avec succès` : `${newCompany.name} created successfully`)
+            try {
+              const res = await fetch('/api/companies', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              })
+              if (!res.ok) { showToast(lang === 'fr' ? 'Erreur création' : 'Creation error'); return }
+              const created = await res.json()
+              setCompanies((prev) => [...prev, created])
+              setModal(null)
+              showToast(lang === 'fr' ? `${created.name} créée avec succès` : `${created.name} created successfully`)
+            } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
           }}
         >
           {[
