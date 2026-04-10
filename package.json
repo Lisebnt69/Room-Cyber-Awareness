@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "server": "node server/index.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node server/index.js"
+    "server": "node server/index.js",
+    "seed": "node server/seed.js",
+    "add-blocks": "node server/add-blocks.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.85.0",
