@@ -129,33 +129,30 @@ export default function SuperAdmin() {
     showToast(lang === 'fr' ? 'Scénario mis à jour' : 'Scenario updated')
   }
 
-  const newS = {
-  id: Date.now(),
-  title: { fr: editScenarioForm.titleFr, en: editScenarioForm.titleEn || editScenarioForm.titleFr },
-  category: editScenarioForm.category || 'Phishing',
-  difficulty: editScenarioForm.difficulty || 'intermediate',
-  duration: editScenarioForm.duration || '15',
-  description: editScenarioForm.description || '',
-  coverImage: editScenarioForm.coverImage || '',
-  mappingContext: editScenarioForm.mappingContext || '',
-  fakeLinkLabel: editScenarioForm.fakeLinkLabel || '',
-  fakeLinkUrl: editScenarioForm.fakeLinkUrl || '',
-  fakeLinkHover: editScenarioForm.fakeLinkHover || '',
-  fakeEmailSender: editScenarioForm.fakeEmailSender || '',
-  fakeEmailSubject: editScenarioForm.fakeEmailSubject || '',
-  fakeEmailBody: editScenarioForm.fakeEmailBody || '',
-  videoUrl: editScenarioForm.videoUrl || '',
-  coverImageName: editScenarioForm.coverImageName || '',
-  photoHotspots: Array.isArray(editScenarioForm.photoHotspots) ? editScenarioForm.photoHotspots : [],
-  quizQuestions: Array.isArray(editScenarioForm.quizQuestions) ? editScenarioForm.quizQuestions : [],
-  modules: Array.isArray(editScenarioForm.modules) ? editScenarioForm.modules : [],
-  plays: 0,
-  score: 0,
-  status: 'draft',
-}
-      modules: Array.isArray(editScenarioForm.modules) ? editScenarioForm.modules : [],
-      plays: 0, score: 0, status: 'draft',
-    }
+  const createScenario = (e) => {
+    e.preventDefault()
+    const newS = {
+    id: Date.now(),
+    title: { fr: editScenarioForm.titleFr, en: editScenarioForm.titleEn || editScenarioForm.titleFr },
+    category: editScenarioForm.category || 'Phishing',
+    difficulty: editScenarioForm.difficulty || 'intermediate',
+    duration: editScenarioForm.duration || '15',
+    description: editScenarioForm.description || '',
+    coverImage: editScenarioForm.coverImage || '',
+    mappingContext: editScenarioForm.mappingContext || '',
+    fakeLinkLabel: editScenarioForm.fakeLinkLabel || '',
+    fakeLinkUrl: editScenarioForm.fakeLinkUrl || '',
+    fakeLinkHover: editScenarioForm.fakeLinkHover || '',
+    fakeEmailSender: editScenarioForm.fakeEmailSender || '',
+    fakeEmailSubject: editScenarioForm.fakeEmailSubject || '',
+    fakeEmailBody: editScenarioForm.fakeEmailBody || '',
+    videoUrl: editScenarioForm.videoUrl || '',
+    coverImageName: editScenarioForm.coverImageName || '',
+    photoHotspots: Array.isArray(editScenarioForm.photoHotspots) ? editScenarioForm.photoHotspots : [],
+    quizQuestions: Array.isArray(editScenarioForm.quizQuestions) ? editScenarioForm.quizQuestions : [],
+    modules: Array.isArray(editScenarioForm.modules) ? editScenarioForm.modules : [],
+    plays: 0, score: 0, status: 'draft',
+  }
     setScenarios(prev => [...prev, newS])
     setModal(null)
     showToast(lang === 'fr' ? 'Scénario créé' : 'Scenario created')
@@ -526,7 +523,9 @@ const updateQuizOption = (questionId, optionId, patch) => {
       {editScenarioForm?.fakeEmailSender || 'sender@example.com'} → {editScenarioForm?.fakeEmailSubject || (lang === 'fr' ? 'Objet' : 'Subject')}
     </div>
     <div style={{ fontSize: '12px', marginTop: '6px', color: 'var(--text-light)' }}>
-      {editScenarioForm?.fakeEmailBody || (lang === 'fr' ? 'Aperçu du faux mail.'
+      {editScenarioForm?.fakeEmailBody || (lang === 'fr' ? 'Aperçu du faux mail.' : 'Fake email preview.')}
+    </div>
+  </div>
             <div style={{ gridColumn: '1 / -1', padding: '12px', border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
               <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px' }}>{lang === 'fr' ? 'MODULES NATIFS DU SCÉNARIO' : 'NATIVE SCENARIO MODULES'}</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -554,6 +553,7 @@ const updateQuizOption = (questionId, optionId, patch) => {
               </div>
             </div>
           </div>
+        </div>
           <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
             {lang === 'fr' ? '+ Créer scénario' : '+ Create scenario'}
           </button>
@@ -732,6 +732,7 @@ const updateQuizOption = (questionId, optionId, patch) => {
                 </div>
               </div>
             </div>
+          </div>
             <button className="btn-primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
               {lang === 'fr' ? '✓ Sauvegarder les modifications' : '✓ Save changes'}
             </button>
