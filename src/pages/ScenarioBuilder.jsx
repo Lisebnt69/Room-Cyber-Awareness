@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const BLOCK_TYPES = [
   { type: 'email', icon: '📧', label: 'Faux email' },
@@ -117,6 +117,8 @@ function BlockPreview({
     }
   }
 
+
+
   const loadReadyScenario = (preset) => {
     setScenario({
       ...preset,
@@ -176,6 +178,7 @@ function BlockPreview({
 
       <div style={{ display: 'flex', gap: '2px' }}>
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation()
             onMoveUp()
@@ -199,6 +202,7 @@ function BlockPreview({
         </button>
 
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation()
             onMoveDown()
@@ -223,6 +227,7 @@ function BlockPreview({
       </div>
 
       <button
+        type="button"
         onClick={(e) => {
           e.stopPropagation()
           onDelete()
@@ -429,6 +434,7 @@ function PhotoEditor({ block, onChange }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div style={{ display: 'flex', gap: '6px' }}>
         <button
+          type="button"
           onClick={() => fileRef.current?.click()}
           style={{
             padding: '6px 12px',
@@ -445,6 +451,7 @@ function PhotoEditor({ block, onChange }) {
 
         {block.src && (
           <button
+            type="button"
             onClick={() => setAddingZone(!addingZone)}
             style={{
               padding: '6px 12px',
@@ -556,6 +563,7 @@ function PhotoEditor({ block, onChange }) {
           />
 
           <button
+            type="button"
             onClick={() => updateZone(z.id, 'correct', !z.correct)}
             style={{
               padding: '4px 8px',
@@ -571,6 +579,7 @@ function PhotoEditor({ block, onChange }) {
           </button>
 
           <button
+            type="button"
             onClick={() => removeZone(z.id)}
             style={{
               padding: '4px 6px',
@@ -646,6 +655,7 @@ function QuizEditor({ block, onChange }) {
       {block.options.map((o, i) => (
         <div key={i} style={{ display: 'flex', gap: '4px' }}>
           <button
+            type="button"
             onClick={() => setCorrect(i)}
             style={{
               width: '22px',
@@ -742,6 +752,7 @@ function PuzzleEditor({ block, onChange }) {
           />
 
           <button
+            type="button"
             onClick={() => moveItem(i, -1)}
             disabled={i === 0}
             style={{
@@ -759,6 +770,7 @@ function PuzzleEditor({ block, onChange }) {
           </button>
 
           <button
+            type="button"
             onClick={() => moveItem(i, 1)}
             disabled={i === block.items.length - 1}
             style={{
@@ -854,6 +866,7 @@ function DecisionEditor({ block, onChange }) {
         >
           <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
             <button
+              type="button"
               onClick={() => updateChoice(i, 'correct', !c.correct)}
               style={{
                 padding: '3px 8px',
@@ -907,6 +920,7 @@ function DecisionEditor({ block, onChange }) {
 }
 
 export default function ScenarioBuilder({
+  initialData = null,
   onSave = () => {},
   onBack = () => {},
   initialData = null,
@@ -932,6 +946,22 @@ export default function ScenarioBuilder({
   )
   const [selectedId, setSelectedId] = useState(null)
   const [step, setStep] = useState('meta')
+
+  useEffect(() => {
+    if (!initialData) return
+
+    setMeta({
+      titleFr: initialData.titleFr || initialData.title?.fr || '',
+      titleEn: initialData.titleEn || initialData.title?.en || '',
+      category: initialData.category || 'Phishing',
+      difficulty: initialData.difficulty || 'intermediate',
+      duration: initialData.duration || '15',
+      description: initialData.description || '',
+    })
+
+    setBlocks(Array.isArray(initialData.blocks) ? initialData.blocks : [])
+    setSelectedId(initialData.blocks?.[0]?.id || null)
+  }, [initialData])
 
   const updateMeta = (k, v) => setMeta((m) => ({ ...m, [k]: v }))
 
@@ -1010,26 +1040,9 @@ export default function ScenarioBuilder({
       ...meta,
       blocks,
       status,
-      id: initialData?.id ?? null,
+      id: initialData?.id || Date.now(),
     })
   }
-
-  const renderEditor = () => {
-    if (!selectedBlock) return null
-    const change = (patch) => updateBlock(selectedBlock.id, patch)
-    switch (selectedBlock.type) {
-      case 'email':    return <EmailEditor block={selectedBlock} onChange={change} />
-      case 'fakelink': return <FakeLinkEditor block={selectedBlock} onChange={change} />
-      case 'photo':    return <PhotoEditor block={selectedBlock} onChange={change} />
-      case 'quiz':     return <QuizEditor block={selectedBlock} onChange={change} />
-      case 'video':    return <Row label="URL VIDÉO (YouTube, mp4...)"><input style={inp} value={selectedBlock.url || ''} onChange={e => change({ url: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." /></Row>
-      case 'text':     return <Row label="NARRATION / MISE EN SITUATION"><textarea style={{ ...inp, resize: 'vertical' }} rows={10} value={selectedBlock.content || ''} onChange={e => change({ content: e.target.value })} placeholder="Vous êtes en plein travail quand..." /></Row>
-      case 'decision': return <DecisionEditor block={selectedBlock} onChange={change} />
-      default: return null
-    }
-  }
-
-  const blockType = (type) => BLOCK_TYPES.find(t => t.type === type) || { icon: '?', label: type }
 
   return (
     <div
@@ -1053,6 +1066,7 @@ export default function ScenarioBuilder({
         }}
       >
         <button
+          type="button"
           onClick={onBack}
           style={{
             background: 'transparent',
@@ -1097,6 +1111,7 @@ export default function ScenarioBuilder({
         </div>
 
         <button
+          type="button"
           onClick={() => handleSave('draft')}
           style={{
             padding: '6px 14px',
@@ -1112,6 +1127,7 @@ export default function ScenarioBuilder({
         </button>
 
         <button
+          type="button"
           onClick={() => handleSave('published')}
           className="btn-primary"
           style={{ padding: '6px 14px', fontSize: '11px' }}
@@ -1134,6 +1150,7 @@ export default function ScenarioBuilder({
         ].map((s) => (
           <button
             key={s.id}
+            type="button"
             onClick={() => setStep(s.id)}
             style={{
               padding: '8px 20px',
@@ -1174,16 +1191,8 @@ export default function ScenarioBuilder({
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <Field
-                  label="TITRE FR"
-                  value={meta.titleFr}
-                  onChange={(v) => updateMeta('titleFr', v)}
-                />
-                <Field
-                  label="TITLE EN"
-                  value={meta.titleEn}
-                  onChange={(v) => updateMeta('titleEn', v)}
-                />
+                <Field label="TITRE FR" value={meta.titleFr} onChange={(v) => updateMeta('titleFr', v)} />
+                <Field label="TITLE EN" value={meta.titleEn} onChange={(v) => updateMeta('titleEn', v)} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
@@ -1202,11 +1211,11 @@ export default function ScenarioBuilder({
                       borderRadius: '3px',
                     }}
                   >
-                    {['Phishing', 'Ransomware', 'Social Eng.', 'Insider', 'Réseau', 'Malware'].map(
-                      (c) => (
-                        <option key={c}>{c}</option>
-                      ),
-                    )}
+                    {['Phishing', 'Ransomware', 'Social Eng.', 'Insider', 'Réseau', 'Malware', 'OSINT'].map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -1261,6 +1270,7 @@ export default function ScenarioBuilder({
               </div>
 
               <button
+                type="button"
                 onClick={() => setStep('blocks')}
                 className="btn-primary"
                 style={{ padding: '10px', fontSize: '12px', width: '100%' }}
@@ -1299,6 +1309,7 @@ export default function ScenarioBuilder({
             {BLOCK_TYPES.map((bt) => (
               <button
                 key={bt.type}
+                type="button"
                 onClick={() => addBlock(bt.type)}
                 style={{
                   display: 'flex',
