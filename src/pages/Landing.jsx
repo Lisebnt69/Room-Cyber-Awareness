@@ -17,10 +17,10 @@ function GlitchText({ children, className = '' }) {
 
 function CyberGridHero() {
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(235,40,40,0.08) 0%, transparent 70%)' }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,0.07) 0%, transparent 70%)' }}>
       <div className="cyber-grid" style={{ position: 'absolute', inset: 0 }} />
       {[...Array(6)].map((_, i) => (
-        <div key={i} style={{ position: 'absolute', left: `${10 + i * 16}%`, top: 0, bottom: 0, width: '1px', background: `linear-gradient(180deg, transparent, rgba(235,40,40,${0.03 + i * 0.01}) 50%, transparent)`, animation: `fadeIn ${1 + i * 0.3}s ease` }} />
+        <div key={i} style={{ position: 'absolute', left: `${10 + i * 16}%`, top: 0, bottom: 0, width: '1px', background: `linear-gradient(180deg, transparent, rgba(0,212,255,${0.04 + i * 0.012}) 50%, transparent)`, animation: `fadeIn ${1 + i * 0.3}s ease` }} />
       ))}
     </div>
   )
@@ -77,7 +77,7 @@ function HeroSection({ onStart, setModal }) {
 
         <h1 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(48px, 7vw, 88px)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '24px', color: 'var(--text-light)' }}>
           Vous pensez être prêts.<br />
-          <span style={{ color: 'var(--red)' }}>Les attaquants espèrent que non.</span>
+          <span style={{ color: 'var(--cyan)' }}>Les attaquants espèrent que non.</span>
         </h1>
 
         <p style={{ fontSize: '20px', color: 'var(--text-secondary)', lineHeight: 1.8, maxWidth: '700px', margin: '0 auto 20px' }}>
@@ -97,22 +97,26 @@ function HeroSection({ onStart, setModal }) {
           </button>
         </div>
 
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)', letterSpacing: '0.1em', minHeight: '18px', marginBottom: '56px' }}>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--cyan)', letterSpacing: '0.1em', minHeight: '18px', marginBottom: '56px' }}>
           {typed}<span className="animate-blink">█</span>
         </div>
 
         <div style={{ display: 'flex', gap: '48px', justifyContent: 'center', flexWrap: 'wrap', padding: '24px', borderTop: '1px solid var(--border-subtle)' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--red)', fontWeight: 700 }}>90%</div>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--cyan)', fontWeight: 700 }}>90%</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>erreurs humaines</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--red)', fontWeight: 700 }}>4x</div>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--cyan)', fontWeight: 700 }}>4x</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>mieux retenu</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--red)', fontWeight: 700 }}>100%</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>sans risque réel</div>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--cyan)', fontWeight: 700 }}>48+</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>entreprises actives</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--cyan)', fontWeight: 700 }}>15</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>frameworks conformité</div>
           </div>
         </div>
       </div>
@@ -402,45 +406,153 @@ function ROISection() {
 
 function PricingSection({ showToast }) {
   const plans = [
-    { name: 'Starter', price: '49', features: ['Jusqu\'à 50 employés', '4 scénarios', 'Analytics basique', 'Support email'], highlight: false },
-    { name: 'Pro', price: '199', features: ['Jusqu\'à 500 employés', 'Tous les scénarios', 'Analytics avancée', 'Phishing campaigns', 'Support prioritaire'], highlight: true },
-    { name: 'Entreprise', price: 'Sur devis', features: ['Employés illimités', 'Intégrations custom', 'SSO & 2FA', 'API access', 'Support dédié'], highlight: false },
+    {
+      name: 'Starter',
+      price: '99',
+      badge: null,
+      highlight: false,
+      color: 'var(--cyan)',
+      features: [
+        { text: "Jusqu'à 50 employés", included: true },
+        { text: '8 scénarios immersifs', included: true },
+        { text: 'Analytics basique', included: true },
+        { text: 'Support email 48h', included: true },
+        { text: 'Rapports conformité', included: false },
+        { text: 'Moteur Risk Score IA', included: false },
+        { text: 'White-label', included: false },
+      ]
+    },
+    {
+      name: 'Business',
+      price: '449',
+      badge: 'RECOMMANDÉ RSSI',
+      highlight: true,
+      color: 'var(--cyan)',
+      features: [
+        { text: "Jusqu'à 500 employés", included: true },
+        { text: '32 scénarios + sectoriels', included: true },
+        { text: 'Analytics avancée + heatmap', included: true },
+        { text: 'Support prioritaire 4h', included: true },
+        { text: 'Rapports PDF NIS2 & DORA auto', included: true },
+        { text: 'Moteur Risk Score IA comportemental', included: true },
+        { text: 'White-label basique', included: false },
+      ]
+    },
+    {
+      name: 'Enterprise MSP',
+      price: 'Sur devis',
+      badge: null,
+      highlight: false,
+      color: 'var(--white-70)',
+      features: [
+        { text: 'Employés illimités', included: true },
+        { text: 'Scénarios custom + builder', included: true },
+        { text: 'SSO / SAML + 2FA', included: true },
+        { text: 'API REST complète', included: true },
+        { text: 'Rapports conformité multi-frameworks', included: true },
+        { text: 'Multi-tenant MSP full white-label', included: true },
+        { text: 'SLA 99,9% · Hébergement FR dédié', included: true },
+      ]
+    },
   ]
 
   return (
-    <section id="pricing" style={{ padding: '100px 40px' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(32px, 4vw, 48px)', marginBottom: '16px' }}>
-          Un incident coûte des milliers.<br />
-          <span style={{ color: 'var(--red)' }}>Ici, vous payez pour l\'éviter.</span>
-        </h2>
+    <section id="pricing" style={{ padding: '100px 40px', background: 'var(--navy-800)' }}>
+      <div style={{ maxWidth: '1160px', margin: '0 auto', textAlign: 'center' }}>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginTop: '60px' }}>
+        <div className="tag" style={{ marginBottom: '20px', display: 'inline-flex' }}>
+          <span className="status-dot cyan" /> Tarifs transparents · Hébergement 100% France
+        </div>
+        <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(30px, 4vw, 46px)', marginBottom: '16px' }}>
+          Un incident coûte <span style={{ color: 'var(--cyan)' }}>4,5 M€</span> en moyenne.<br />
+          ROOMCA vous en protège dès 99 €/mois.
+        </h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '15px', marginBottom: '64px' }}>
+          Engagements annuels · Sans frais cachés · Données souveraines (OVHcloud France)
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', alignItems: 'start' }}>
           {plans.map((p, idx) => (
-            <div key={idx} style={{ background: p.highlight ? '#0d0d0d' : 'var(--bg-card)', border: p.highlight ? '2px solid var(--red)' : '1px solid var(--border)', padding: '40px 32px', position: 'relative', borderRadius: '4px' }}>
-              {p.highlight && (
-                <div style={{ position: 'absolute', top: '-12px', right: '20px', background: 'var(--red)', color: '#fff', padding: '4px 12px', fontSize: '10px', fontWeight: 700, borderRadius: '2px' }}>
-                  MEILLEUR CHOIX
+            <div key={idx} style={{
+              position: 'relative',
+              background: p.highlight ? 'rgba(0,212,255,0.06)' : 'var(--glass-bg)',
+              border: p.highlight ? '2px solid var(--cyan)' : '1px solid var(--border)',
+              borderRadius: 'var(--r-xl)',
+              padding: '40px 32px',
+              backdropFilter: 'var(--glass-blur)',
+              boxShadow: p.highlight ? '0 0 48px rgba(0,212,255,0.12), var(--glass-shadow)' : 'var(--glass-shadow)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
+            >
+              {p.badge && (
+                <div style={{
+                  position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
+                  background: 'linear-gradient(135deg, var(--cyan), var(--cyan-dim))',
+                  color: 'var(--navy-900)', padding: '4px 16px', fontSize: '10px',
+                  fontWeight: 700, letterSpacing: '0.12em', borderRadius: '100px',
+                  whiteSpace: 'nowrap', fontFamily: 'var(--font-title)'
+                }}>
+                  {p.badge}
                 </div>
               )}
-              <div style={{ fontFamily: 'var(--font-title)', fontSize: '20px', fontWeight: 700, marginBottom: '12px' }}>{p.name}</div>
-              <div style={{ fontFamily: 'var(--font-title)', fontSize: '42px', fontWeight: 700, color: p.highlight ? 'var(--red)' : 'var(--text-light)', marginBottom: '8px' }}>
-                {p.price} €<span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 400 }}>/mois</span>
+
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                {p.name}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '32px', marginBottom: '32px' }}>
+
+              {p.price === 'Sur devis' ? (
+                <div style={{ fontFamily: 'var(--font-title)', fontSize: '32px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                  Sur devis
+                </div>
+              ) : (
+                <div style={{ marginBottom: '8px' }}>
+                  <span style={{ fontFamily: 'var(--font-title)', fontSize: '52px', fontWeight: 700, color: p.highlight ? 'var(--cyan)' : 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                    {p.price} €
+                  </span>
+                  <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>/mois HT</span>
+                </div>
+              )}
+
+              <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '24px 0' }} />
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px', textAlign: 'left' }}>
                 {p.features.map((f, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                    <span style={{ color: 'var(--red)', fontWeight: 700 }}>›</span> {f}
+                  <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px', color: f.included ? 'var(--text-secondary)' : 'var(--text-muted)', opacity: f.included ? 1 : 0.45 }}>
+                    <span style={{ color: f.included ? (p.highlight ? 'var(--cyan)' : 'var(--success)') : 'var(--text-muted)', fontSize: '14px', flexShrink: 0 }}>
+                      {f.included ? '✓' : '–'}
+                    </span>
+                    {f.text}
                   </div>
                 ))}
               </div>
+
               <button
                 className={p.highlight ? 'btn-primary' : 'btn-secondary'}
-                style={{ width: '100%', justifyContent: 'center' }}
-                onClick={() => showToast(`Plan "${p.name}" sélectionné!`)}
+                style={{ width: '100%', justifyContent: 'center', fontSize: '13px' }}
+                onClick={() => showToast(`Plan "${p.name}" sélectionné — notre équipe vous contacte sous 24h.`)}
               >
-                Essayer maintenant
+                {p.price === 'Sur devis' ? 'Demander un devis' : 'Démarrer l\'essai gratuit'}
               </button>
+
+              {p.highlight && (
+                <div style={{ marginTop: '16px', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center' }}>
+                  14 jours d'essai gratuit · Sans carte bancaire
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: '48px', display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+          {[
+            { icon: '🇫🇷', label: 'Données hébergées en France' },
+            { icon: '🔒', label: 'Conforme RGPD & NIS2' },
+            { icon: '📄', label: 'Facture mensuelle · Sans engagement min.' },
+          ].map((t, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+              <span>{t.icon}</span> {t.label}
             </div>
           ))}
         </div>
