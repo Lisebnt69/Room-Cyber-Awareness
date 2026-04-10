@@ -1269,7 +1269,6 @@ export default function ScenarioBuilder({
             >
               BLOCS
             </div>
-          )}
 
             {BLOCK_TYPES.map((bt) => (
               <button

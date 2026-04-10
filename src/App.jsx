@@ -21,6 +21,7 @@ import Reports from './pages/Reports'
 import RiskScore from './pages/RiskScore'
 import EmailTemplates from './pages/EmailTemplates'
 import ScenarioBuilder from './pages/ScenarioBuilder'
+import ScenarioPreview from './pages/ScenarioPreview'
 import PartnerPortal from './pages/PartnerPortal'
 import WhiteLabel from './pages/WhiteLabel'
 import PlayerDashboard from './pages/PlayerDashboard'
@@ -100,6 +101,11 @@ export default function App() {
           <Route path="/scenario-builder" element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <ScenarioBuilder />
+            </ProtectedRoute>
+          } />
+          <Route path="/preview/:id" element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <ScenarioPreview />
             </ProtectedRoute>
           } />
           <Route path="/partners" element={
