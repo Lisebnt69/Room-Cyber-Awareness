@@ -27,3 +27,8 @@ dist-ssr
 server/*.db
 server/*.db-shm
 server/*.db-wal
+
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
