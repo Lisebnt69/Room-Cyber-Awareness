@@ -168,11 +168,11 @@ export default function Onboarding() {
                 }}>
                   {s.recommended && <span style={{ position: 'absolute', top: '-8px', right: '12px', background: 'var(--red)', color: '#fff', fontSize: '9px', padding: '2px 8px', fontWeight: 700 }}>RECOMMANDÉ</span>}
                   <span style={{ fontSize: '28px' }}>{s.icon}</span>
-                  <div>
-                    <div style={{ fontWeight: 600, marginBottom: '4px' }}>{s.name}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{s.desc}</div>
-                  </div>
-                  <div style={{ marginLeft: 'auto', width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${form.scenario === s.id ? 'var(--red)' : 'var(--border)'}`, background: form.scenario === s.id ? 'var(--red)' : 'transparent', flexShrink: 0 }} />
+                  <span style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <span style={{ fontWeight: 600, marginBottom: '4px' }}>{s.name}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{s.desc}</span>
+                  </span>
+                  <span style={{ marginLeft: 'auto', width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${form.scenario === s.id ? 'var(--red)' : 'var(--border)'}`, background: form.scenario === s.id ? 'var(--red)' : 'transparent', flexShrink: 0 }} />
                 </button>
               ))}
             </div>
