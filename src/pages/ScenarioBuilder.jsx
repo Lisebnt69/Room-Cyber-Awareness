@@ -923,7 +923,6 @@ export default function ScenarioBuilder({
   initialData = null,
   onSave = () => {},
   onBack = () => {},
-  initialData = null,
 }) {
   const [meta, setMeta] = useState(initialData ? {
     titleFr: initialData.title_fr || initialData.titleFr || '',
