@@ -8,7 +8,6 @@ import Modal from '../components/Modal'
 import Toast from '../components/Toast'
 import ScenarioBuilder from './ScenarioBuilder'
 
-// --- CONSTANTS ---
 const INITIAL_COMPANIES = [
   {
     id: 1,
@@ -88,29 +87,22 @@ const SCENARIO_CATEGORIES = [
 
 const SCENARIO_STATUSES = ['draft', 'beta', 'published']
 
+
+
 const DEFAULT_SCENARIO_FIELDS = {
-  id: null,
-  title: { fr: '', en: '' },
-  category: 'Phishing',
-  difficulty: 'intermediate',
-  duration: '15',
-  description: '',
-  coverImage: '',
-  coverImageName: '',
-  mappingContext: '',
-  fakeLinkLabel: '',
-  fakeLinkUrl: '',
-  fakeLinkHover: '',
-  fakeEmailSender: '',
-  fakeEmailSubject: '',
-  fakeEmailBody: '',
-  videoUrl: '',
-  photoHotspots: [],
-  quizQuestions: [],
-  modules: [],
-  plays: 0,
-  score: 0,
-  status: 'draft',
+  coverImage: '',
+  coverImageName: '',
+  mappingContext: '',
+  fakeLinkLabel: '',
+  fakeLinkUrl: '',
+  fakeLinkHover: '',
+  fakeEmailSender: '',
+  fakeEmailSubject: '',
+  fakeEmailBody: '',
+  videoUrl: '',
+  photoHotspots: [],
+  quizQuestions: [],
+  modules: [],
 }
 
 // --- UTILS ---
@@ -177,10 +169,45 @@ export default function SuperAdmin() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  // --- ACTIONS ENTREPRISES ---
+  const handleBuilderSave = (data) => {
+    const updated = {
+      id: data.id || Date.now(),
+      title: { fr: data.titleFr, en: data.titleEn || data.titleFr },
+      category: data.category,
+      difficulty: data.difficulty,
+      duration: data.duration,
+      description: data.description,
+      status: data.status,
+      coverImage: data.coverImage || '',
+      coverImageName: data.coverImageName || '',
+      photoHotspots: data.photoHotspots || [],
+      fakeLinkLabel: data.fakeLinkLabel || '',
+      fakeLinkUrl: data.fakeLinkUrl || '',
+      fakeLinkHover: data.fakeLinkHover || '',
+      fakeEmailSender: data.fakeEmailSender || '',
+      fakeEmailSubject: data.fakeEmailSubject || '',
+      fakeEmailBody: data.fakeEmailBody || '',
+      videoUrl: data.videoUrl || '',
+      quizQuestions: data.quizQuestions || [],
+      narrative: data.narrative || '',
+      modules: data.modules || [],
+      plays: data.plays || 0,
+      score: data.score || 0,
+      mappingContext: data.mappingContext || '',
+    }
+    if (builderMode?.mode === 'edit') {
+      setScenarios(prev => prev.map(s => s.id === updated.id ? updated : s))
+      showToast(lang === 'fr' ? `"${updated.title.fr}" mis à jour` : `"${updated.title.en}" updated`)
+    } else {
+      setScenarios(prev => [...prev, updated])
+      showToast(lang === 'fr' ? `"${updated.title.fr}" créé` : `"${updated.title.en}" created`)
+    }
+    setBuilderMode(null)
+  }
+
   const openEditCompany = (c) => {
     setEditCompanyForm({ ...c })
-    setModal({ type: 'editCompany' })
+    setModal({ type: 'editCompany', data: c })
   }
 
   const saveCompany = (e) => {
@@ -198,7 +225,6 @@ export default function SuperAdmin() {
     showToast(lang === 'fr' ? 'Entreprise supprimée' : 'Company deleted')
   }
 
-  // --- ACTIONS SCÉNARIOS ---
   const openEditScenario = (s) => {
     const data = withScenarioDefaults(s)
     setEditScenarioForm({
@@ -282,6 +308,8 @@ export default function SuperAdmin() {
       modules: Array.from(new Set([...(prev?.modules || []), 'photo'])),
     }))
   }
+  reader.readAsDataURL(file)
+}
 
   const addHotspotFromImageClick = (e) => {
     if (!editScenarioForm?.coverImage) return
@@ -306,14 +334,66 @@ export default function SuperAdmin() {
     }))
   }
 
-  // --- UI DATA ---
-  const navItems = [
-    { id: 'overview', label: t('saNavOverview'), icon: '▦' },
-    { id: 'companies', label: t('saNavCompanies'), icon: '◉' },
-    { id: 'scenarios', label: t('saNavScenarios'), icon: '▷' },
-    { id: 'licenses', label: t('saNavLicenses'), icon: '◈' },
-    { id: 'system', label: t('saNavSystem'), icon: '◎' },
-  ]
+const updateHotspot = (id, patch) => {
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    photoHotspots: (prev?.photoHotspots || []).map(h => (h.id === id ? { ...h, ...patch } : h)),
+  }))
+}
+
+const removeHotspot = (id) => {
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    photoHotspots: (prev?.photoHotspots || []).filter(h => h.id !== id),
+  }))
+}
+
+const addQuizQuestion = () => {
+  setEditScenarioForm(prev => {
+    const current = prev || {}
+    const quizQuestions = Array.isArray(current.quizQuestions) ? current.quizQuestions : []
+    const newQuestion = {
+      id: createId(),
+      prompt: '',
+      design: 'cards',
+      options: [
+        { id: createId(), text: '', isCorrect: true },
+        { id: createId(), text: '', isCorrect: false },
+      ],
+    }
+    return {
+      ...current,
+      modules: Array.from(new Set([...(current.modules || []), 'quiz'])),
+      quizQuestions: [...quizQuestions, newQuestion],
+    }
+  })
+}
+
+const updateQuizQuestion = (questionId, patch) => {
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    quizQuestions: (prev?.quizQuestions || []).map(q => (q.id === questionId ? { ...q, ...patch } : q)),
+  }))
+}
+
+const updateQuizOption = (questionId, optionId, patch) => {
+  setEditScenarioForm(prev => ({
+    ...(prev || {}),
+    quizQuestions: (prev?.quizQuestions || []).map(q =>
+      q.id === questionId
+        ? {
+            ...q,
+            options: (q.options || []).map(o => (o.id === optionId ? { ...o, ...patch } : o)),
+          }
+        : q
+    ),
+  }))
+}
+  const getScenarioModulesLabel = (scenario) => {
+    const modules = Array.isArray(scenario.modules) ? scenario.modules : []
+    if (!modules.length) return lang === 'fr' ? 'Aucun module' : 'No modules'
+    return modules.map(m => moduleLabels[m]?.[lang] || m).join(' · ')
+  }
 
   if (builderMode) {
     return (
@@ -540,6 +620,13 @@ export default function SuperAdmin() {
             </button>
           ))}
         </nav>
+        <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border-subtle)' }}>
+          <LangToggle style={{ marginBottom: '12px', width: '100%', justifyContent: 'center' }} />
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
+          <button onClick={() => { logout(); navigate('/login') }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '12px', marginTop: '8px' }} aria-label="Logout">
+            {t('logout')}
+          </button>
+        </div>
       </aside>
 
       <main style={{ marginLeft: '240px', flex: 1, padding: '40px' }}>
@@ -591,11 +678,33 @@ export default function SuperAdmin() {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {companies.map((c, i) => (
+                    <tr key={c.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(235,40,40,0.04)'}
+                      onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'}
+                    >
+                      <td style={{ padding: '14px 20px', fontSize: '13px' }}>{c.name}</td>
+                      <td style={{ padding: '14px 20px', fontSize: '11px', fontFamily: 'var(--mono)' }}>{c.plan}</td>
+                      <td style={{ padding: '14px 20px', fontSize: '11px', color: 'var(--text-muted)' }}>{c.sector || '—'}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px' }}><span style={{ color: 'var(--text-light)' }}>{c.active}</span><span style={{ color: 'var(--text-muted)' }}>/{c.users}</span></td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)' }}>{c.licenses}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: c.status === 'expiring' ? '#f59e0b' : 'var(--text-muted)' }}>{c.expire}</td>
+                      <td style={{ padding: '14px 20px' }}>{statusBadge(c.status, t)}</td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <button onClick={() => openEditCompany(c)} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                          aria-label={`Edit company ${c.name}`}
+                        >✎ {t('saEdit')}</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
         {activeNav === 'scenarios' && (
           <div className="card-table">
@@ -651,11 +760,55 @@ export default function SuperAdmin() {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {licensesData.map((l, i) => (
+                    <tr key={l.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                      <td style={{ padding: '14px 20px', fontSize: '13px' }}>{l.company}</td>
+                      <td style={{ padding: '14px 20px', fontSize: '12px', fontFamily: 'var(--mono)' }}>{l.plan}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-light)' }}>{l.seats}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px' }}>
+                        <div style={{ color: 'var(--text-light)' }}>{l.used}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>({Math.round(l.used / l.seats * 100)}%)</div>
+                      </td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)' }}>{l.price === 'custom' ? 'Custom' : `€${l.price}`}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{l.expires}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* System */}
+          {activeNav === 'system' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              {[
+                { name: lang === 'fr' ? 'Infrastructure' : 'Infrastructure', status: 'operational', uptime: '99.98%', checks: 12 },
+                { name: lang === 'fr' ? 'Bases de données' : 'Databases', status: 'operational', uptime: '100%', checks: 8 },
+                { name: lang === 'fr' ? 'API' : 'API', status: 'operational', uptime: '99.95%', checks: 15 },
+                { name: lang === 'fr' ? 'Stockage' : 'Storage', status: 'operational', uptime: '100%', checks: 5 },
+              ].map(s => (
+                <div key={s.name} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e' }} />
+                    <span style={{ fontSize: '15px', fontWeight: 600 }}>{s.name}</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                    <div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginBottom: '4px' }}>{lang === 'fr' ? 'Disponibilité' : 'Uptime'}</div>
+                      <div style={{ color: '#22c55e', fontWeight: 700 }}>{s.uptime}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginBottom: '4px' }}>{lang === 'fr' ? 'Vérifications' : 'Checks'}</div>
+                      <div style={{ color: 'var(--text-light)', fontWeight: 700 }}>{s.checks}/sec</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )

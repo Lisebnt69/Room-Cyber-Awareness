@@ -9,7 +9,11 @@ import LangToggle from '../components/LangToggle'
 const HINTS = [
   { label: 'Player', email: 'player@acme.com', role: { fr: 'Escape game', en: 'Escape game' } },
   { label: 'Admin', email: 'admin@acme.com', role: { fr: 'Dashboard RSSI', en: 'CISO Dashboard' } },
-  { label: 'Super Admin', email: 'superadmin@roomca.io', role: { fr: 'Console plateforme', en: 'Platform console' } },
+  {
+    label: 'Super Admin',
+    email: 'superadmin@roomca.io',
+    role: { fr: 'Console plateforme', en: 'Platform console' },
+  },
 ]
 
 export default function Login() {
