@@ -18,6 +18,7 @@ function makeBlock(type) {
       return {
         id,
         type,
+        audioUrl: '',
         senderName: 'PayPal Security',
         from: 'noreply@paypal-secure.com',
         to: '{{employee}}',
@@ -31,15 +32,16 @@ function makeBlock(type) {
       }
 
     case 'photo':
-      return { id, type, src: '', alt: 'Image', zones: [] }
+      return { id, type, audioUrl: '', src: '', alt: 'Image', zones: [] }
 
     case 'video':
-      return { id, type, url: '', caption: '' }
+      return { id, type, audioUrl: '', url: '', caption: '' }
 
     case 'quiz':
       return {
         id,
         type,
+        audioUrl: '',
         question: 'Est-ce normal ?',
         options: [
           { text: 'Oui', correct: false },
@@ -52,18 +54,22 @@ function makeBlock(type) {
       return {
         id,
         type,
+        audioUrl: '',
         puzzleType: 'reorder',
         instruction: 'Ordre correct',
         items: ['Vérifier', 'Signaler', 'Supprimer'],
+        pairs: [{ a: 'Terme 1', b: 'Définition 1' }],
+        words: [{ word: 'PHISHING', clue: 'Tentative de vol d\'identité par email' }],
       }
 
     case 'text':
-      return { id, type, heading: '', content: '' }
+      return { id, type, audioUrl: '', heading: '', content: '' }
 
     case 'decision':
       return {
         id,
         type,
+        audioUrl: '',
         question: 'Que faites-vous ?',
         choices: [
           { text: 'Je clique', correct: false, feedback: '❌ Mauvais' },
@@ -107,7 +113,9 @@ function BlockPreview({
       case 'quiz':
         return block.question || 'Quiz'
       case 'puzzle':
-        return `${block.items.length} éléments`
+        if (block.puzzleType === 'memory') return `Mémory · ${(block.pairs || []).length} paire(s)`
+        if (block.puzzleType === 'crossword') return `Mots croisés · ${(block.words || []).length} mot(s)`
+        return `Réordonner · ${(block.items || []).length} éléments`
       case 'text':
         return block.heading || 'Texte'
       case 'decision':
@@ -622,12 +630,17 @@ function QuizEditor({ block, onChange }) {
       'options',
       block.options.map((o, idx) => (idx === i ? { ...o, [k]: v } : o)),
     )
-
-  const setCorrect = (i) =>
+  const toggleCorrect = (i) =>
     update(
       'options',
-      block.options.map((o, idx) => ({ ...o, correct: idx === i })),
+      block.options.map((o, idx) => (idx === i ? { ...o, correct: !o.correct } : o)),
     )
+  const addOption = () =>
+    update('options', [...block.options, { text: '', correct: false }])
+  const removeOption = (i) => {
+    if (block.options.length <= 2) return
+    update('options', block.options.filter((_, idx) => idx !== i))
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -652,11 +665,15 @@ function QuizEditor({ block, onChange }) {
         />
       </div>
 
+      <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)' }}>
+        OPTIONS — cliquer ✓ pour marquer correcte(s)
+      </div>
+
       {block.options.map((o, i) => (
-        <div key={i} style={{ display: 'flex', gap: '4px' }}>
+        <div key={i} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
           <button
             type="button"
-            onClick={() => setCorrect(i)}
+            onClick={() => toggleCorrect(i)}
             style={{
               width: '22px',
               height: '22px',
@@ -686,8 +703,44 @@ function QuizEditor({ block, onChange }) {
               borderRadius: '3px',
             }}
           />
+
+          <button
+            type="button"
+            onClick={() => removeOption(i)}
+            disabled={block.options.length <= 2}
+            style={{
+              width: '20px',
+              height: '20px',
+              background: 'transparent',
+              border: '1px solid var(--border-subtle)',
+              color: block.options.length <= 2 ? 'var(--border)' : 'var(--red)',
+              cursor: block.options.length <= 2 ? 'default' : 'pointer',
+              borderRadius: '3px',
+              fontSize: '11px',
+              flexShrink: 0,
+            }}
+          >
+            ×
+          </button>
         </div>
       ))}
+
+      <button
+        type="button"
+        onClick={addOption}
+        style={{
+          padding: '5px 10px',
+          background: 'transparent',
+          border: '1px dashed var(--border)',
+          color: 'var(--text-muted)',
+          cursor: 'pointer',
+          fontSize: '10px',
+          borderRadius: '3px',
+          textAlign: 'left',
+        }}
+      >
+        + Ajouter une option
+      </button>
 
       <Field
         label="EXPLICATION"
@@ -699,95 +752,167 @@ function QuizEditor({ block, onChange }) {
   )
 }
 
+const PUZZLE_TYPES = [
+  { value: 'reorder', label: '🔀 Réordonner' },
+  { value: 'memory', label: '🃏 Mémory' },
+  { value: 'crossword', label: '📐 Mots croisés' },
+]
+
 function PuzzleEditor({ block, onChange }) {
   const update = (k, v) => onChange({ ...block, [k]: v })
-  const updateItem = (i, v) =>
-    update(
-      'items',
-      block.items.map((it, idx) => (idx === i ? v : it)),
-    )
+  const items = block.items || []
+  const pairs = block.pairs || []
+  const words = block.words || []
 
+  // — Reorder helpers —
+  const updateItem = (i, v) => update('items', items.map((it, idx) => (idx === i ? v : it)))
   const moveItem = (i, dir) => {
-    const arr = [...block.items]
+    const arr = [...items]
     const j = i + dir
     if (j < 0 || j >= arr.length) return
     ;[arr[i], arr[j]] = [arr[j], arr[i]]
     update('items', arr)
   }
+  const addItem = () => update('items', [...items, ''])
+  const removeItem = (i) => { if (items.length > 2) update('items', items.filter((_, idx) => idx !== i)) }
+
+  // — Memory helpers —
+  const updatePair = (i, k, v) => update('pairs', pairs.map((p, idx) => (idx === i ? { ...p, [k]: v } : p)))
+  const addPair = () => update('pairs', [...pairs, { a: '', b: '' }])
+  const removePair = (i) => { if (pairs.length > 1) update('pairs', pairs.filter((_, idx) => idx !== i)) }
+
+  // — Crossword helpers —
+  const updateWord = (i, k, v) => update('words', words.map((w, idx) => (idx === i ? { ...w, [k]: v } : w)))
+  const addWord = () => update('words', [...words, { word: '', clue: '' }])
+  const removeWord = (i) => { if (words.length > 1) update('words', words.filter((_, idx) => idx !== i)) }
+
+  const inputStyle = {
+    flex: 1,
+    padding: '6px 8px',
+    background: '#0d0d0d',
+    border: '1px solid var(--border)',
+    color: 'var(--text-light)',
+    fontSize: '11px',
+    borderRadius: '3px',
+  }
+  const removeBtn = (disabled, onClick) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: '20px',
+        height: '20px',
+        background: 'transparent',
+        border: '1px solid var(--border-subtle)',
+        color: disabled ? 'var(--border)' : 'var(--red)',
+        cursor: disabled ? 'default' : 'pointer',
+        borderRadius: '3px',
+        fontSize: '11px',
+        flexShrink: 0,
+      }}
+    >
+      ×
+    </button>
+  )
+  const addBtn = (label, onClick) => (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: '5px 10px',
+        background: 'transparent',
+        border: '1px dashed var(--border)',
+        color: 'var(--text-muted)',
+        cursor: 'pointer',
+        fontSize: '10px',
+        borderRadius: '3px',
+        textAlign: 'left',
+      }}
+    >
+      {label}
+    </button>
+  )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <Field
-        label="INSTRUCTION"
-        value={block.instruction}
-        onChange={(v) => update('instruction', v)}
-      />
-
-      {block.items.map((item, i) => (
-        <div key={i} style={{ display: 'flex', gap: '4px' }}>
-          <span
-            style={{
-              fontFamily: 'var(--mono)',
-              fontSize: '10px',
-              color: 'var(--text-muted)',
-              width: '16px',
-              flexShrink: 0,
-            }}
-          >
-            {i + 1}
-          </span>
-
-          <input
-            value={item}
-            onChange={(e) => updateItem(i, e.target.value)}
-            style={{
-              flex: 1,
-              padding: '6px 8px',
-              background: '#0d0d0d',
-              border: '1px solid var(--border)',
-              color: 'var(--text-light)',
-              fontSize: '11px',
-              borderRadius: '3px',
-            }}
-          />
-
-          <button
-            type="button"
-            onClick={() => moveItem(i, -1)}
-            disabled={i === 0}
-            style={{
-              background: 'transparent',
-              border: '1px solid var(--border-subtle)',
-              color: i === 0 ? 'var(--border)' : 'var(--text-muted)',
-              width: '18px',
-              height: '18px',
-              cursor: i === 0 ? 'default' : 'pointer',
-              fontSize: '10px',
-              borderRadius: '2px',
-            }}
-          >
-            ↑
-          </button>
-
-          <button
-            type="button"
-            onClick={() => moveItem(i, 1)}
-            disabled={i === block.items.length - 1}
-            style={{
-              background: 'transparent',
-              border: '1px solid var(--border-subtle)',
-              color: i === block.items.length - 1 ? 'var(--border)' : 'var(--text-muted)',
-              width: '18px',
-              height: '18px',
-              cursor: i === block.items.length - 1 ? 'default' : 'pointer',
-              fontSize: '10px',
-              borderRadius: '2px',
-            }}
-          >
-            ↓
-          </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Type selector */}
+      <div>
+        <label style={labelStyle}>TYPE DE PUZZLE</label>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          {PUZZLE_TYPES.map((pt) => (
+            <button
+              key={pt.value}
+              type="button"
+              onClick={() => update('puzzleType', pt.value)}
+              style={{
+                padding: '4px 10px',
+                background: block.puzzleType === pt.value ? 'rgba(235,40,40,0.15)' : 'transparent',
+                border: `1px solid ${block.puzzleType === pt.value ? 'var(--red)' : 'var(--border)'}`,
+                color: block.puzzleType === pt.value ? 'var(--red)' : 'var(--text-muted)',
+                cursor: 'pointer',
+                fontSize: '10px',
+                borderRadius: '3px',
+              }}
+            >
+              {pt.label}
+            </button>
+          ))}
         </div>
-      ))}
+      </div>
+
+      <Field label="INSTRUCTION" value={block.instruction} onChange={(v) => update('instruction', v)} />
+
+      {/* REORDER */}
+      {block.puzzleType === 'reorder' && (
+        <>
+          {items.map((item, i) => (
+            <div key={i} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', width: '16px', flexShrink: 0 }}>
+                {i + 1}
+              </span>
+              <input value={item} onChange={(e) => updateItem(i, e.target.value)} style={inputStyle} />
+              <button type="button" onClick={() => moveItem(i, -1)} disabled={i === 0} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: i === 0 ? 'var(--border)' : 'var(--text-muted)', width: '18px', height: '18px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', borderRadius: '2px' }}>↑</button>
+              <button type="button" onClick={() => moveItem(i, 1)} disabled={i === items.length - 1} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: i === items.length - 1 ? 'var(--border)' : 'var(--text-muted)', width: '18px', height: '18px', cursor: i === items.length - 1 ? 'default' : 'pointer', fontSize: '10px', borderRadius: '2px' }}>↓</button>
+              {removeBtn(items.length <= 2, () => removeItem(i))}
+            </div>
+          ))}
+          {addBtn('+ Ajouter un élément', addItem)}
+        </>
+      )}
+
+      {/* MEMORY */}
+      {block.puzzleType === 'memory' && (
+        <>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)' }}>PAIRES — Carte A / Carte B</div>
+          {pairs.map((pair, i) => (
+            <div key={i} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', width: '16px', flexShrink: 0 }}>{i + 1}</span>
+              <input value={pair.a} onChange={(e) => updatePair(i, 'a', e.target.value)} placeholder="Carte A" style={{ ...inputStyle, borderColor: 'rgba(99,102,241,0.5)' }} />
+              <span style={{ color: 'var(--text-muted)', fontSize: '10px', flexShrink: 0 }}>↔</span>
+              <input value={pair.b} onChange={(e) => updatePair(i, 'b', e.target.value)} placeholder="Carte B" style={{ ...inputStyle, borderColor: 'rgba(99,102,241,0.3)' }} />
+              {removeBtn(pairs.length <= 1, () => removePair(i))}
+            </div>
+          ))}
+          {addBtn('+ Ajouter une paire', addPair)}
+        </>
+      )}
+
+      {/* CROSSWORD */}
+      {block.puzzleType === 'crossword' && (
+        <>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)' }}>MOTS — Réponse / Définition</div>
+          {words.map((w, i) => (
+            <div key={i} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', width: '16px', flexShrink: 0 }}>{i + 1}</span>
+              <input value={w.word} onChange={(e) => updateWord(i, 'word', e.target.value)} placeholder="MOT" style={{ ...inputStyle, flex: '0 0 110px', textTransform: 'uppercase' }} />
+              <input value={w.clue} onChange={(e) => updateWord(i, 'clue', e.target.value)} placeholder="Définition / indice" style={inputStyle} />
+              {removeBtn(words.length <= 1, () => removeWord(i))}
+            </div>
+          ))}
+          {addBtn('+ Ajouter un mot', addWord)}
+        </>
+      )}
     </div>
   )
 }
@@ -923,7 +1048,6 @@ export default function ScenarioBuilder({
   initialData = null,
   onSave = () => {},
   onBack = () => {},
-  initialData = null,
 }) {
   const [meta, setMeta] = useState(initialData ? {
     titleFr: initialData.title_fr || initialData.titleFr || '',
@@ -1015,24 +1139,56 @@ export default function ScenarioBuilder({
       onChange: (updated) => updateBlock(selectedBlock.id, updated),
     }
 
+    let specificEditor = null
     switch (selectedBlock.type) {
       case 'email':
-        return <EmailEditor {...props} />
+        specificEditor = <EmailEditor {...props} />
+        break
       case 'photo':
-        return <PhotoEditor {...props} />
+        specificEditor = <PhotoEditor {...props} />
+        break
       case 'video':
-        return <VideoEditor {...props} />
+        specificEditor = <VideoEditor {...props} />
+        break
       case 'quiz':
-        return <QuizEditor {...props} />
+        specificEditor = <QuizEditor {...props} />
+        break
       case 'puzzle':
-        return <PuzzleEditor {...props} />
+        specificEditor = <PuzzleEditor {...props} />
+        break
       case 'text':
-        return <TextEditor {...props} />
+        specificEditor = <TextEditor {...props} />
+        break
       case 'decision':
-        return <DecisionEditor {...props} />
+        specificEditor = <DecisionEditor {...props} />
+        break
       default:
         return null
     }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {specificEditor}
+        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '10px' }}>
+          <label style={labelStyle}>🎵 AUDIO DE FOND (URL .mp3 / .ogg)</label>
+          <input
+            value={selectedBlock.audioUrl || ''}
+            onChange={(e) => updateBlock(selectedBlock.id, { ...selectedBlock, audioUrl: e.target.value })}
+            placeholder="https://..."
+            style={{
+              width: '100%',
+              padding: '6px 8px',
+              background: '#0d0d0d',
+              border: '1px solid var(--border)',
+              color: 'var(--text-light)',
+              fontSize: '11px',
+              borderRadius: '3px',
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+      </div>
+    )
   }
 
   const handleSave = (status = 'draft') => {
