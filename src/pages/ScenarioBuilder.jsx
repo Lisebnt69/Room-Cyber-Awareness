@@ -530,7 +530,8 @@ const PUZZLE_TYPES = [
   { value: 'crossword', label: '📐 Mots croisés', desc: 'Compléter la grille' },
 ]
 
-function PuzzleEditor({ block, onChange }) {
+function PuzzleEditor({ 
+  block, onChange }) {
   const update = (k, v) => onChange({ ...block, [k]: v })
   const items = block.items || []
   const pairs = block.pairs || []

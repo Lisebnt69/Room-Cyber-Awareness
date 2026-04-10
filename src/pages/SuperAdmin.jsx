@@ -97,8 +97,8 @@ function statusBadge(s, t) {
     <span
       style={{
         padding: '3px 10px',
-        fontSize: '11px',
-        fontFamily: 'var(--mono)',
+        fontSize: '14px',
+        fontFamily: 'var(--font-body)',
         color,
         border: `1px solid ${color}`,
         background: `${color}15`,
@@ -141,6 +141,15 @@ export default function SuperAdmin() {
       .then(data => { if (Array.isArray(data)) setCompanies(data) })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  const isCompact = viewportWidth < 1100
+  const twoCols = isCompact ? '1fr' : '1fr 1fr'
 
   const handleBuilderSave = async (data) => {
     const body = {
@@ -392,8 +401,8 @@ export default function SuperAdmin() {
               <label
                 style={{
                   display: 'block',
-                  fontFamily: 'var(--mono)',
-                  fontSize: '10px',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '13px',
                   color: 'var(--text-muted)',
                   marginBottom: '6px',
                 }}
@@ -415,8 +424,8 @@ export default function SuperAdmin() {
               <label
                 style={{
                   display: 'block',
-                  fontFamily: 'var(--mono)',
-                  fontSize: '10px',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '13px',
                   color: 'var(--text-muted)',
                   marginBottom: '6px',
                 }}
@@ -447,8 +456,8 @@ export default function SuperAdmin() {
               <label
                 style={{
                   display: 'block',
-                  fontFamily: 'var(--mono)',
-                  fontSize: '10px',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '13px',
                   color: 'var(--text-muted)',
                   marginBottom: '6px',
                 }}
@@ -495,8 +504,8 @@ export default function SuperAdmin() {
                 <label
                   style={{
                     display: 'block',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '10px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
                     color: 'var(--text-muted)',
                     marginBottom: '6px',
                   }}
@@ -515,8 +524,8 @@ export default function SuperAdmin() {
                 <label
                   style={{
                     display: 'block',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '10px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
                     color: 'var(--text-muted)',
                     marginBottom: '6px',
                   }}
@@ -537,8 +546,8 @@ export default function SuperAdmin() {
                 <label
                   style={{
                     display: 'block',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '10px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
                     color: 'var(--text-muted)',
                     marginBottom: '6px',
                   }}
@@ -562,8 +571,8 @@ export default function SuperAdmin() {
                 <label
                   style={{
                     display: 'block',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '10px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
                     color: 'var(--text-muted)',
                     marginBottom: '6px',
                   }}
@@ -587,8 +596,8 @@ export default function SuperAdmin() {
                 <label
                   style={{
                     display: 'block',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '10px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
                     color: 'var(--text-muted)',
                     marginBottom: '6px',
                   }}
@@ -614,8 +623,8 @@ export default function SuperAdmin() {
                 <label
                   style={{
                     display: 'block',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '10px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
                     color: 'var(--text-muted)',
                     marginBottom: '6px',
                   }}
@@ -640,8 +649,8 @@ export default function SuperAdmin() {
                 <label
                   style={{
                     display: 'block',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '10px',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
                     color: 'var(--text-muted)',
                     marginBottom: '6px',
                   }}
@@ -671,7 +680,7 @@ export default function SuperAdmin() {
                   border: '1px solid rgba(235,40,40,0.3)',
                   color: 'var(--red)',
                   cursor: 'pointer',
-                  fontSize: '12px',
+                  fontSize: '15px',
                   borderRadius: '4px',
                   transition: 'all 0.2s',
                 }}
@@ -712,15 +721,15 @@ export default function SuperAdmin() {
           >
             <div
               style={{
-                fontFamily: 'var(--mono)',
-                fontSize: '9px',
+                fontFamily: 'var(--font-body)',
+                fontSize: '15px',
                 color: 'var(--red)',
                 letterSpacing: '0.15em',
               }}
             >
               SUPER ADMIN
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px' }}>
               {t('saAccess')}
             </div>
           </div>
@@ -758,14 +767,14 @@ export default function SuperAdmin() {
 
         <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border-subtle)' }}>
           <LangToggle style={{ marginBottom: '12px', width: '100%', justifyContent: 'center' }} />
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
+          <div style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
           <button
             onClick={() => {
               logout()
               navigate('/login')
             }}
             className="btn-secondary"
-            style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '12px', marginTop: '8px' }}
+            style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '15px', marginTop: '8px' }}
             aria-label="Logout"
           >
             {t('logout')}
@@ -790,7 +799,7 @@ export default function SuperAdmin() {
         >
           <div>
             <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '20px' }}>{t('saTitle')}</h1>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)', marginTop: '2px' }}>
               ROOMCA Platform v2.4.1 — 07/04/2025
             </div>
           </div>
@@ -814,8 +823,8 @@ export default function SuperAdmin() {
                 >
                   <div
                     style={{
-                      fontFamily: 'var(--mono)',
-                      fontSize: '10px',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '13px',
                       color: 'var(--text-muted)',
                       letterSpacing: '0.15em',
                       marginBottom: '10px',
@@ -834,7 +843,7 @@ export default function SuperAdmin() {
                   >
                     {k.value}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#22c55e', marginTop: '6px' }}>↑ {k.sub}</div>
+                  <div style={{ fontSize: '15px', color: '#22c55e', marginTop: '6px' }}>↑ {k.sub}</div>
                 </div>
               ))}
             </div>
@@ -851,12 +860,12 @@ export default function SuperAdmin() {
                   justifyContent: 'space-between',
                 }}
               >
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
                   {t('saCompaniesTitle')} ({companies.length})
                 </div>
                 <button
                   className="btn-primary"
-                  style={{ padding: '8px 20px', fontSize: '12px' }}
+                  style={{ padding: '8px 20px', fontSize: '15px' }}
                   onClick={() => setModal({ type: 'addCompany' })}
                   aria-label="Add new company"
                 >
@@ -873,8 +882,8 @@ export default function SuperAdmin() {
                         style={{
                           padding: '12px 20px',
                           textAlign: 'left',
-                          fontFamily: 'var(--mono)',
-                          fontSize: '10px',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '13px',
                           color: 'var(--text-muted)',
                           letterSpacing: '0.1em',
                           fontWeight: 400,
@@ -904,18 +913,18 @@ export default function SuperAdmin() {
                       }}
                     >
                       <td style={{ padding: '14px 20px', fontSize: '13px' }}>{c.name}</td>
-                      <td style={{ padding: '14px 20px', fontSize: '11px', fontFamily: 'var(--mono)' }}>{c.plan}</td>
-                      <td style={{ padding: '14px 20px', fontSize: '11px', color: 'var(--text-muted)' }}>{c.sector || '—'}</td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px' }}>
+                      <td style={{ padding: '14px 20px', fontSize: '14px', fontFamily: 'var(--font-body)' }}>{c.plan}</td>
+                      <td style={{ padding: '14px 20px', fontSize: '14px', color: 'var(--text-muted)' }}>{c.sector || '—'}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px' }}>
                         <span style={{ color: 'var(--text-light)' }}>{c.active}</span>
                         <span style={{ color: 'var(--text-muted)' }}>/ {c.users}</span>
                       </td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)' }}>{c.licenses}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-muted)' }}>{c.licenses}</td>
                       <td
                         style={{
                           padding: '14px 20px',
-                          fontFamily: 'var(--mono)',
-                          fontSize: '11px',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '14px',
                           color: c.status === 'expiring' ? '#f59e0b' : 'var(--text-muted)',
                         }}
                       >
@@ -930,9 +939,9 @@ export default function SuperAdmin() {
                             border: '1px solid var(--border-subtle)',
                             color: 'var(--text-muted)',
                             padding: '4px 12px',
-                            fontSize: '11px',
+                            fontSize: '14px',
                             cursor: 'pointer',
-                            fontFamily: 'var(--mono)',
+                            fontFamily: 'var(--font-body)',
                             transition: 'all 0.15s',
                           }}
                           onMouseEnter={(e) => {
@@ -966,12 +975,12 @@ export default function SuperAdmin() {
                   justifyContent: 'space-between',
                 }}
               >
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
                   {t('saScenariosTitle')} ({scenarios.length})
                 </div>
                 <button
                   className="btn-primary"
-                  style={{ padding: '8px 20px', fontSize: '12px' }}
+                  style={{ padding: '8px 20px', fontSize: '15px' }}
                   onClick={() => setBuilderMode({ mode: 'create' })}
                   aria-label="Create new scenario"
                 >
@@ -988,8 +997,8 @@ export default function SuperAdmin() {
                         style={{
                           padding: '12px 20px',
                           textAlign: 'left',
-                          fontFamily: 'var(--mono)',
-                          fontSize: '10px',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '13px',
                           color: 'var(--text-muted)',
                           letterSpacing: '0.1em',
                           fontWeight: 400,
@@ -1020,23 +1029,23 @@ export default function SuperAdmin() {
                     >
                       <td style={{ padding: '14px 20px', fontSize: '13px' }}>{typeof s.title === 'object' ? s.title[lang] : s.title}</td>
                       <td style={{ padding: '14px 20px' }}>
-                        <span className="tag" style={{ fontSize: '10px', padding: '2px 8px' }}>
+                        <span className="tag" style={{ fontSize: '13px', padding: '2px 8px' }}>
                           {s.category}
                         </span>
                       </td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}>
                         {diffLabel(s.difficulty)}
                       </td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}>
                         {s.duration} min
                       </td>
-                      <td style={{ padding: '14px 20px', fontSize: '11px', color: 'var(--text-muted)', maxWidth: '240px' }}>
+                      <td style={{ padding: '14px 20px', fontSize: '14px', color: 'var(--text-muted)', maxWidth: '240px' }}>
                         {getScenarioModulesLabel(s)}
                       </td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-light)' }}>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-light)' }}>
                         {s.plays.toLocaleString()}
                       </td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)' }}>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--red)' }}>
                         {s.score > 0 ? s.score : '—'}
                       </td>
                       <td style={{ padding: '14px 20px' }}>{statusBadge(s.status, t)}</td>
@@ -1048,9 +1057,9 @@ export default function SuperAdmin() {
                             border: '1px solid #22c55e',
                             color: '#22c55e',
                             padding: '4px 10px',
-                            fontSize: '11px',
+                            fontSize: '14px',
                             cursor: 'pointer',
-                            fontFamily: 'var(--mono)',
+                            fontFamily: 'var(--font-body)',
                           }}
                           aria-label={`Test scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`}
                         >
@@ -1063,9 +1072,9 @@ export default function SuperAdmin() {
                             border: '1px solid var(--border-subtle)',
                             color: 'var(--text-muted)',
                             padding: '4px 12px',
-                            fontSize: '11px',
+                            fontSize: '14px',
                             cursor: 'pointer',
-                            fontFamily: 'var(--mono)',
+                            fontFamily: 'var(--font-body)',
                             transition: 'all 0.15s',
                           }}
                           onMouseEnter={(e) => {
@@ -1082,7 +1091,7 @@ export default function SuperAdmin() {
                         </button>
                         <button
                           onClick={() => handleDeleteScenario(s)}
-                          style={{ background: 'transparent', border: '1px solid rgba(235,40,40,0.4)', color: 'rgba(235,40,40,0.7)', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
+                          style={{ background: 'transparent', border: '1px solid rgba(235,40,40,0.4)', color: 'rgba(235,40,40,0.7)', padding: '4px 10px', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'; e.currentTarget.style.color = 'rgba(235,40,40,0.7)' }}
                           aria-label={`Delete scenario`}
@@ -1101,7 +1110,7 @@ export default function SuperAdmin() {
           {activeNav === 'licenses' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
                   {t('saNavLicenses')}
                 </div>
               </div>
@@ -1115,8 +1124,8 @@ export default function SuperAdmin() {
                         style={{
                           padding: '12px 20px',
                           textAlign: 'left',
-                          fontFamily: 'var(--mono)',
-                          fontSize: '10px',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '13px',
                           color: 'var(--text-muted)',
                           letterSpacing: '0.1em',
                         }}
@@ -1138,18 +1147,18 @@ export default function SuperAdmin() {
                       }}
                     >
                       <td style={{ padding: '14px 20px', fontSize: '13px' }}>{l.company}</td>
-                      <td style={{ padding: '14px 20px', fontSize: '12px', fontFamily: 'var(--mono)' }}>{l.plan}</td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-light)' }}>{l.seats}</td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px' }}>
+                      <td style={{ padding: '14px 20px', fontSize: '15px', fontFamily: 'var(--font-body)' }}>{l.plan}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-light)' }}>{l.seats}</td>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px' }}>
                         <div style={{ color: 'var(--text-light)' }}>{l.used}</div>
-                        <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                           ({Math.round((l.used / l.seats) * 100)}%)
                         </div>
                       </td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)' }}>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--red)' }}>
                         {l.price === 'custom' ? 'Custom' : `€${l.price}`}
                       </td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}>
                         {l.expires}
                       </td>
                     </tr>
@@ -1176,14 +1185,14 @@ export default function SuperAdmin() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
                     <div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginBottom: '4px' }}>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '4px' }}>
                         {lang === 'fr' ? 'Disponibilité' : 'Uptime'}
                       </div>
                       <div style={{ color: '#22c55e', fontWeight: 700 }}>{s.uptime}</div>
                     </div>
 
                     <div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginBottom: '4px' }}>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '4px' }}>
                         {lang === 'fr' ? 'Vérifications' : 'Checks'}
                       </div>
                       <div style={{ color: 'var(--text-light)', fontWeight: 700 }}>{s.checks}/sec</div>

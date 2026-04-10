@@ -52,7 +52,7 @@ function statusColor(s) {
 }
 
 const tooltipStyle = {
-  contentStyle: { background: 'rgba(4,15,32,0.95)', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '8px', fontFamily: 'var(--mono)', fontSize: '11px' },
+  contentStyle: { background: 'rgba(4,15,32,0.95)', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '8px', fontFamily: 'var(--font-body)', fontSize: '14px' },
   labelStyle: { color: 'var(--text-muted)' },
   itemStyle: { color: 'var(--text-light)' },
 }
@@ -60,9 +60,9 @@ const tooltipStyle = {
 function KpiCard({ label, value, sub, trend, accent }) {
   return (
     <div style={{ background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', borderTop: accent ? '2px solid var(--cyan)' : '2px solid transparent', borderRadius: 'var(--r-md)', padding: '24px 28px', backdropFilter: 'var(--glass-blur)', boxShadow: 'var(--glass-shadow)', transition: 'border-color 0.2s' }}>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '12px' }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '12px' }}>{label}</div>
       <div style={{ fontFamily: 'var(--font-title)', fontSize: '36px', fontWeight: 700, color: accent ? 'var(--cyan)' : 'var(--text-light)', lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: '12px', color: trend === 'up' ? '#22c55e' : trend === 'down' ? 'var(--danger)' : 'var(--text-muted)', marginTop: '8px' }}>{trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''} {sub}</div>}
+      {sub && <div style={{ fontSize: '15px', color: trend === 'up' ? '#22c55e' : trend === 'down' ? 'var(--danger)' : 'var(--text-muted)', marginTop: '8px' }}>{trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''} {sub}</div>}
     </div>
   )
 }
@@ -100,7 +100,7 @@ function TabDashboard({ t, pieData }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1px', background: 'var(--border-subtle)', marginBottom: '32px' }}>
         <div style={{ background: 'var(--bg-card)', padding: '28px' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '20px' }}>{t('chartProgress')}</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '20px' }}>{t('chartProgress')}</div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={progressData}>
               <defs>
@@ -108,41 +108,41 @@ function TabDashboard({ t, pieData }) {
                 <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#1a3a6b" stopOpacity={0.4} /><stop offset="95%" stopColor="#1a3a6b" stopOpacity={0} /></linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(84,84,84,0.2)" />
-              <XAxis dataKey="mois" tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--mono)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--mono)' }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="mois" tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--font-body)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--font-body)' }} axisLine={false} tickLine={false} />
               <Tooltip {...tooltipStyle} />
               <Area type="monotone" dataKey="participation" stroke="#00d4ff" strokeWidth={2} fill="url(#gP)" name={t('chartParticipation')} />
               <Area type="monotone" dataKey="reussite" stroke="#1a3a6b" strokeWidth={2} fill="url(#gR)" name={t('chartReussite')} />
             </AreaChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', gap: '24px', marginTop: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}><div style={{ width: 12, height: 2, background: '#00d4ff' }} />{t('chartParticipation')}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}><div style={{ width: 12, height: 2, background: '#1a3a6b' }} />{t('chartReussite')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)' }}><div style={{ width: 12, height: 2, background: '#00d4ff' }} />{t('chartParticipation')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)' }}><div style={{ width: 12, height: 2, background: '#1a3a6b' }} />{t('chartReussite')}</div>
           </div>
         </div>
         <div style={{ background: 'var(--bg-card)', padding: '28px' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '20px' }}>{t('chartGlobal')}</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '20px' }}>{t('chartGlobal')}</div>
 
           <ResponsiveContainer width="100%" height={160}>
             <PieChart><Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0}>{pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie><Tooltip {...tooltipStyle} /></PieChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
             {pieData.map((d, i) => (
-              <div key={d.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+              <div key={d.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)' }}><div style={{ width: 8, height: 8, background: COLORS[i] }} />{d.name}</div>
-                <span style={{ color: 'var(--text-light)', fontFamily: 'var(--mono)' }}>{d.value}%</span>
+                <span style={{ color: 'var(--text-light)', fontFamily: 'var(--font-body)' }}>{d.value}%</span>
               </div>
             ))}
           </div>
         </div>
       </div>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '28px' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '20px' }}>{t('chartDept')}</div>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '20px' }}>{t('chartDept')}</div>
         <ResponsiveContainer width="100%" height={160}>
           <BarChart data={deptData} barSize={32}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(84,84,84,0.2)" vertical={false} />
-            <XAxis dataKey="dept" tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--mono)' }} axisLine={false} tickLine={false} />
-            <YAxis domain={[0, 100]} tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--mono)' }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="dept" tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--font-body)' }} axisLine={false} tickLine={false} />
+            <YAxis domain={[0, 100]} tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--font-body)' }} axisLine={false} tickLine={false} />
             <Tooltip {...tooltipStyle} />
             <Bar dataKey="score" fill="#00d4ff" radius={[4,4,0,0]} name={t('kpiScore')} />
           </BarChart>
@@ -152,8 +152,8 @@ function TabDashboard({ t, pieData }) {
       {/* AI Risk Score */}
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '28px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>SCORE DE RISQUE IA — EMPLOYÉS PRIORITAIRES</div>
-          <span style={{ fontSize: '10px', padding: '3px 10px', background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '12px', fontFamily: 'var(--mono)' }}>IA ROOMCA</span>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>SCORE DE RISQUE IA — EMPLOYÉS PRIORITAIRES</div>
+          <span style={{ fontSize: '13px', padding: '3px 10px', background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '12px', fontFamily: 'var(--font-body)' }}>IA ROOMCA</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {AI_RISK_EMPLOYEES.map((emp, i) => (
@@ -164,21 +164,21 @@ function TabDashboard({ t, pieData }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>{emp.name}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{emp.dept}</div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{emp.dept}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ width: '80px', height: '4px', background: 'var(--bg-black)', borderRadius: '2px' }}>
                     <div style={{ width: `${emp.risk}%`, height: '100%', background: riskColor(emp.risk), borderRadius: '2px', transition: 'width 0.8s' }} />
                   </div>
-                  <span style={{ fontSize: '11px', color: riskColor(emp.risk), fontWeight: 600, width: '48px', textAlign: 'right' }}>{riskLabel(emp.risk)}</span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{expandedRisk === i ? '▲' : '▼'}</span>
+                  <span style={{ fontSize: '14px', color: riskColor(emp.risk), fontWeight: 600, width: '48px', textAlign: 'right' }}>{riskLabel(emp.risk)}</span>
+                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{expandedRisk === i ? '▲' : '▼'}</span>
                 </div>
               </div>
               {expandedRisk === i && (
                 <div style={{ marginLeft: '52px', padding: '10px 14px', background: 'rgba(235,40,40,0.04)', border: '1px solid rgba(235,40,40,0.1)', borderRadius: '6px', marginTop: '4px' }}>
-                  <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px' }}>FACTEURS DE RISQUE DÉTECTÉS</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px' }}>FACTEURS DE RISQUE DÉTECTÉS</div>
                   {emp.factors.map((f, fi) => (
-                    <div key={fi} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    <div key={fi} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px', fontSize: '15px', color: 'var(--text-secondary)' }}>
                       <span style={{ color: riskColor(emp.risk), flexShrink: 0 }}>•</span>
                       {f}
                     </div>
@@ -205,25 +205,25 @@ function TabEmployees({ t, lang, employees, onSelectEmployee, onCreateEmployee, 
     <div>
       <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '16px 24px', flex: 1 }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'TOTAL EMPLOYÉS' : 'TOTAL EMPLOYEES'}</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'TOTAL EMPLOYÉS' : 'TOTAL EMPLOYEES'}</div>
           <div style={{ fontFamily: 'var(--font-title)', fontSize: '28px', color: 'var(--text-light)' }}>{employees.length}</div>
         </div>
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '16px 24px', flex: 1 }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'LICENCES ACTIVES' : 'ACTIVE LICENSES'}</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'LICENCES ACTIVES' : 'ACTIVE LICENSES'}</div>
           <div style={{ fontFamily: 'var(--font-title)', fontSize: '28px', color: 'var(--red)' }}>{licensed}<span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>/{employees.length}</span></div>
         </div>
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '16px 24px', flex: 1 }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'LICENCES DISPONIBLES' : 'AVAILABLE LICENSES'}</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'LICENCES DISPONIBLES' : 'AVAILABLE LICENSES'}</div>
           <div style={{ fontFamily: 'var(--font-title)', fontSize: '28px', color: '#22c55e' }}>{200 - licensed}</div>
         </div>
       </div>
 
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
         <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('tableEmployees')} ({filtered.length})</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('tableEmployees')} ({filtered.length})</div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <input className="input-dark" placeholder={t('searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} style={{ width: '200px', padding: '8px 12px', fontSize: '12px' }} aria-label="Search employees" />
-            <button className="btn-primary" style={{ padding: '8px 18px', fontSize: '12px', whiteSpace: 'nowrap' }} onClick={onCreateEmployee}>
+            <input className="input-dark" placeholder={t('searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} style={{ width: '200px', padding: '8px 12px', fontSize: '15px' }} aria-label="Search employees" />
+            <button className="btn-primary" style={{ padding: '8px 18px', fontSize: '15px', whiteSpace: 'nowrap' }} onClick={onCreateEmployee}>
               + {lang === 'fr' ? 'Créer employé' : 'Add employee'}
             </button>
           </div>
@@ -232,7 +232,7 @@ function TabEmployees({ t, lang, employees, onSelectEmployee, onCreateEmployee, 
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               {[t('colEmployee'), t('colDept'), t('colScore'), t('colScenarios'), t('colStatus'), lang === 'fr' ? 'Licence' : 'License', t('colLastPlay'), ''].map((h, i) => (
-                <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
+                <th key={i} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
               ))}
             </tr>
           </thead>
@@ -243,22 +243,22 @@ function TabEmployees({ t, lang, employees, onSelectEmployee, onCreateEmployee, 
                 onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'}
               >
                 <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-light)' }}>{emp.name}</td>
-                <td style={{ padding: '14px 20px', fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>{emp.dept}</td>
-                <td style={{ padding: '14px 20px' }}><span style={{ fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--red)' }}>{emp.score}</span><span style={{ fontSize: '10px', color: 'var(--text-muted)' }}> /1000</span></td>
-                <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)' }}>{emp.scenarios}</td>
+                <td style={{ padding: '14px 20px', fontSize: '15px', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{emp.dept}</td>
+                <td style={{ padding: '14px 20px' }}><span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--red)' }}>{emp.score}</span><span style={{ fontSize: '13px', color: 'var(--text-muted)' }}> /1000</span></td>
+                <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-muted)' }}>{emp.scenarios}</td>
                 <td style={{ padding: '14px 20px' }}>
-                  <span style={{ padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--mono)', color: statusColor(emp.status), border: `1px solid ${statusColor(emp.status)}`, background: `${statusColor(emp.status)}15` }}>
+                  <span style={{ padding: '3px 10px', fontSize: '14px', fontFamily: 'var(--font-body)', color: statusColor(emp.status), border: `1px solid ${statusColor(emp.status)}`, background: `${statusColor(emp.status)}15` }}>
                     {t(`status${emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}`)}
                   </span>
                 </td>
                 <td style={{ padding: '14px 20px' }}>
-                  <button onClick={() => onToggleLicense(emp.id)} aria-label={`Toggle license for ${emp.name}`} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', border: `1px solid ${emp.license ? '#22c55e' : 'var(--border-subtle)'}`, background: emp.license ? 'rgba(34,197,94,0.1)' : 'transparent', color: emp.license ? '#22c55e' : 'var(--text-muted)', transition: 'all 0.2s', borderRadius: '4px' }}>
+                  <button onClick={() => onToggleLicense(emp.id)} aria-label={`Toggle license for ${emp.name}`} style={{ padding: '4px 12px', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-body)', border: `1px solid ${emp.license ? '#22c55e' : 'var(--border-subtle)'}`, background: emp.license ? 'rgba(34,197,94,0.1)' : 'transparent', color: emp.license ? '#22c55e' : 'var(--text-muted)', transition: 'all 0.2s', borderRadius: '4px' }}>
                     {emp.license ? '✓ Active' : '× Inactive'}
                   </button>
                 </td>
-                <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{emp.lastPlay || '—'}</td>
+                <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}>{emp.lastPlay || '—'}</td>
                 <td style={{ padding: '14px 20px' }}>
-                  <button onClick={() => onSelectEmployee(emp)} aria-label={`View details for ${emp.name}`} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--mono)' }}
+                  <button onClick={() => onSelectEmployee(emp)} aria-label={`View details for ${emp.name}`} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '14px', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--font-body)' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                   >›</button>
@@ -286,8 +286,8 @@ function TabScenarios({ t, lang, onAssign, scenarioLibrary }) {
         >
           <div>
             <div style={{ fontFamily: 'var(--font-title)', fontSize: '15px', marginBottom: '8px' }}>{typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}</div>
-            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
-              <span className="tag" style={{ fontSize: '10px', padding: '2px 8px' }}>{s.category}</span>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '15px', color: 'var(--text-muted)' }}>
+              <span className="tag" style={{ fontSize: '13px', padding: '2px 8px' }}>{s.category}</span>
               <span>{diffLabel(s.difficulty)}</span>
               <span>⏱ {s.duration}</span>
             </div>
@@ -295,15 +295,15 @@ function TabScenarios({ t, lang, onAssign, scenarioLibrary }) {
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={() => navigate('/preview/' + (typeof s.id === 'number' ? s.id : s.id))}
-              style={{ background: 'transparent', border: '1px solid #22c55e', color: '#22c55e', padding: '8px 16px', fontSize: '12px', cursor: 'pointer', fontFamily: 'var(--mono)' }}
+              style={{ background: 'transparent', border: '1px solid #22c55e', color: '#22c55e', padding: '8px 16px', fontSize: '15px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}
               aria-label={`Test scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`}
             >
               ▶ Tester
             </button>
             {launched[s.id] ? (
-              <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: '#22c55e', border: '1px solid #22c55e', padding: '8px 16px' }}>✓ {lang === 'fr' ? 'Assigné' : 'Assigned'}</span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: '#22c55e', border: '1px solid #22c55e', padding: '8px 16px' }}>✓ {lang === 'fr' ? 'Assigné' : 'Assigned'}</span>
             ) : (
-              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} aria-label={`Assign scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`} onClick={() => { setLaunched(l => ({ ...l, [s.id]: true })); onAssign(s) }}>
+              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '15px' }} aria-label={`Assign scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`} onClick={() => { setLaunched(l => ({ ...l, [s.id]: true })); onAssign(s) }}>
                 {lang === 'fr' ? '+ Assigner' : '+ Assign'}
               </button>
             )}
@@ -361,7 +361,7 @@ function TabReports({ t, lang }) {
               <span style={{ fontSize: '24px' }}>📊</span>
               <div>
                 <div style={{ fontFamily: 'var(--font-title)', fontSize: '16px' }}>{lang === 'fr' ? 'Rapport hebdomadaire automatique' : 'Automatic Weekly Report'}</div>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
                   {lang === 'fr' ? 'Envoyé chaque lundi matin · Prochaine édition : Lundi 13 avril' : 'Sent every Monday morning · Next edition: Monday April 13'}
                 </div>
               </div>
@@ -373,18 +373,18 @@ function TabReports({ t, lang }) {
                 { label: lang === 'fr' ? 'Employés à risque' : 'At-risk employees', value: '3', trend: '-1', up: false },
               ].map((m, i) => (
                 <div key={i} style={{ padding: '12px 14px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px' }}>
-                  <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{m.label}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>{m.label}</div>
                   <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-light)' }}>{m.value}</div>
-                  <div style={{ fontSize: '11px', color: m.up ? '#22c55e' : 'var(--red)', marginTop: '2px' }}>{m.up ? '↑' : '↓'} {m.trend} {lang === 'fr' ? 'vs semaine préc.' : 'vs prev. week'}</div>
+                  <div style={{ fontSize: '14px', color: m.up ? '#22c55e' : 'var(--red)', marginTop: '2px' }}>{m.up ? '↑' : '↓'} {m.trend} {lang === 'fr' ? 'vs semaine préc.' : 'vs prev. week'}</div>
                 </div>
               ))}
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flexShrink: 0 }}>
-            <button onClick={sendWeeklyReport} disabled={sendingReport} className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px', opacity: sendingReport ? 0.7 : 1 }}>
+            <button onClick={sendWeeklyReport} disabled={sendingReport} className="btn-primary" style={{ padding: '10px 20px', fontSize: '15px', opacity: sendingReport ? 0.7 : 1 }}>
               {reportSent ? '✓ Envoyé !' : sendingReport ? '⏳ Envoi...' : lang === 'fr' ? '✉ Envoyer maintenant' : '✉ Send now'}
             </button>
-            <button style={{ padding: '8px 20px', fontSize: '12px', background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '4px' }}>
+            <button style={{ padding: '8px 20px', fontSize: '15px', background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '4px' }}>
               {lang === 'fr' ? 'Aperçu email' : 'Preview email'}
             </button>
           </div>
@@ -393,7 +393,7 @@ function TabReports({ t, lang }) {
 
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
       <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
           {lang === 'fr' ? 'RAPPORTS DISPONIBLES' : 'AVAILABLE REPORTS'}
         </div>
       </div>
@@ -401,7 +401,7 @@ function TabReports({ t, lang }) {
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
             {[lang === 'fr' ? 'Rapport' : 'Report', lang === 'fr' ? 'Date' : 'Date', 'Type', lang === 'fr' ? 'Taille' : 'Size', ''].map((h, i) => (
-              <th key={i} style={{ padding: '12px 28px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
+              <th key={i} style={{ padding: '12px 28px', textAlign: 'left', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 400 }} role="columnheader">{h}</th>
             ))}
           </tr>
         </thead>
@@ -409,11 +409,11 @@ function TabReports({ t, lang }) {
           {reports.map((r, i) => (
             <tr key={r.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
               <td style={{ padding: '14px 28px', fontSize: '13px', color: 'var(--text-light)' }}>{r.name}</td>
-              <td style={{ padding: '14px 28px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{r.date}</td>
-              <td style={{ padding: '14px 28px' }}><span className="tag" style={{ fontSize: '10px', padding: '2px 8px' }}>{r.type}</span></td>
-              <td style={{ padding: '14px 28px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{r.size}</td>
+              <td style={{ padding: '14px 28px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}>{r.date}</td>
+              <td style={{ padding: '14px 28px' }}><span className="tag" style={{ fontSize: '13px', padding: '2px 8px' }}>{r.type}</span></td>
+              <td style={{ padding: '14px 28px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}>{r.size}</td>
               <td style={{ padding: '14px 28px' }}>
-                <button onClick={() => dl(r.id)} aria-label={`Download ${r.name}`} style={{ background: downloading === r.id ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${downloading === r.id ? '#22c55e' : 'var(--border-subtle)'}`, color: downloading === r.id ? '#22c55e' : 'var(--text-muted)', padding: '6px 16px', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'var(--mono)' }}>
+                <button onClick={() => dl(r.id)} aria-label={`Download ${r.name}`} style={{ background: downloading === r.id ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${downloading === r.id ? '#22c55e' : 'var(--border-subtle)'}`, color: downloading === r.id ? '#22c55e' : 'var(--text-muted)', padding: '6px 16px', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'var(--font-body)' }}>
                   {downloading === r.id ? (lang === 'fr' ? '↓ Téléchargement...' : '↓ Downloading...') : (lang === 'fr' ? '↓ Télécharger' : '↓ Download')}
                 </button>
               </td>
@@ -435,23 +435,23 @@ function TabSettings({ t, lang, user }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '28px' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '24px' }}>{lbl('INFORMATIONS ENTREPRISE', 'COMPANY INFORMATION')}</div>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '24px' }}>{lbl('INFORMATIONS ENTREPRISE', 'COMPANY INFORMATION')}</div>
         <form onSubmit={save}>
           <div style={{ marginBottom: '20px' }}>
-            <label htmlFor="company-name" style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '8px' }}>{lbl('NOM ENTREPRISE', 'COMPANY NAME')}</label>
+            <label htmlFor="company-name" style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '8px' }}>{lbl('NOM ENTREPRISE', 'COMPANY NAME')}</label>
             <input id="company-name" className="input-dark" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} aria-label="Company name" />
           </div>
           <div style={{ marginBottom: '24px' }}>
-            <label htmlFor="admin-email" style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '8px' }}>{lbl('EMAIL ADMIN', 'ADMIN EMAIL')}</label>
+            <label htmlFor="admin-email" style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '8px' }}>{lbl('EMAIL ADMIN', 'ADMIN EMAIL')}</label>
             <input id="admin-email" className="input-dark" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} aria-label="Admin email address" />
           </div>
-          <button className="btn-primary" type="submit" style={{ padding: '10px 24px', fontSize: '12px', background: saved ? '#22c55e' : undefined, borderColor: saved ? '#22c55e' : undefined }} aria-label="Save settings">
+          <button className="btn-primary" type="submit" style={{ padding: '10px 24px', fontSize: '15px', background: saved ? '#22c55e' : undefined, borderColor: saved ? '#22c55e' : undefined }} aria-label="Save settings">
             {saved ? (lbl('✓ Sauvegardé', '✓ Saved')) : lbl('Sauvegarder', 'Save')}
           </button>
         </form>
       </div>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '28px' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '24px' }}>{lbl('PRÉFÉRENCES', 'PREFERENCES')}</div>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '24px' }}>{lbl('PRÉFÉRENCES', 'PREFERENCES')}</div>
         {[['notifications', lbl('Notifications par email', 'Email notifications')], ['twoFactor', lbl('Double authentification (2FA)', 'Two-factor authentication (2FA)')], ['weeklyReport', lbl('Rapport hebdomadaire automatique', 'Automatic weekly report')]].map(([key, label]) => (
           <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
             <label htmlFor={`toggle-${key}`} style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{label}</label>
@@ -548,15 +548,15 @@ export default function Admin() {
       <Modal isOpen={modal?.type === 'createEmployee'} onClose={() => setModal(null)} title={lang === 'fr' ? 'Créer un employé' : 'Add employee'}>
         <form onSubmit={handleCreateEmployee}>
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'NOM COMPLET' : 'FULL NAME'}</label>
+            <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'NOM COMPLET' : 'FULL NAME'}</label>
             <input className="input-dark" required placeholder={lang === 'fr' ? 'Marie Dupont' : 'Jane Smith'} value={newEmpForm.name} onChange={e => setNewEmpForm(f => ({ ...f, name: e.target.value }))} aria-label="Employee full name" />
           </div>
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'EMAIL PROFESSIONNEL' : 'WORK EMAIL'}</label>
+            <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'EMAIL PROFESSIONNEL' : 'WORK EMAIL'}</label>
             <input className="input-dark" type="email" required placeholder="marie.dupont@company.com" value={newEmpForm.email} onChange={e => setNewEmpForm(f => ({ ...f, email: e.target.value }))} aria-label="Employee email" />
           </div>
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'DÉPARTEMENT' : 'DEPARTMENT'}</label>
+            <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>{lang === 'fr' ? 'DÉPARTEMENT' : 'DEPARTMENT'}</label>
             <select value={newEmpForm.dept} onChange={e => setNewEmpForm(f => ({ ...f, dept: e.target.value }))} style={{ width: '100%', padding: '10px 12px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontFamily: 'var(--font-body)', fontSize: '13px' }} aria-label="Department">
               {DEPTS.map(d => <option key={d}>{d}</option>)}
             </select>
@@ -564,7 +564,7 @@ export default function Admin() {
           <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', borderRadius: '6px' }}>
             <div>
               <div style={{ fontSize: '13px', color: 'var(--text-light)', marginBottom: '2px' }}>{lang === 'fr' ? 'Assigner une licence' : 'Assign a license'}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Accès immédiat aux scénarios' : 'Immediate access to scenarios'}</div>
+              <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Accès immédiat aux scénarios' : 'Immediate access to scenarios'}</div>
             </div>
             <button type="button" onClick={() => setNewEmpForm(f => ({ ...f, license: !f.license }))} style={{ width: '44px', height: '24px', borderRadius: '12px', border: 'none', background: newEmpForm.license ? 'var(--red)' : '#333', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }} role="switch" aria-checked={newEmpForm.license} aria-label="Toggle license">
               <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '3px', transition: 'left 0.2s', left: newEmpForm.license ? '23px' : '3px' }} />
@@ -585,11 +585,11 @@ export default function Admin() {
             >
               <div>
                 <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>{typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}</div>
-                <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: 'var(--text-muted)' }}>
                   <span>{s.category}</span><span>•</span><span>{s.duration}</span>
                 </div>
               </div>
-              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} aria-label={`Assign scenario ${typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? `Scénario assigné à toute l'équipe` : 'Scenario assigned to all employees') }}>
+              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '15px' }} aria-label={`Assign scenario ${typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? `Scénario assigné à toute l'équipe` : 'Scenario assigned to all employees') }}>
                 {lang === 'fr' ? 'Assigner' : 'Assign'}
               </button>
             </div>
@@ -606,20 +606,20 @@ export default function Admin() {
             [lang === 'fr' ? 'Temps moyen' : 'Avg. time', modal?.data?.avgTime],
           ].map(([label, val]) => (
             <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', padding: '16px' }} role="gridcell">
-              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '6px' }}>{label}</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '6px' }}>{label}</div>
               <div style={{ fontFamily: 'var(--font-title)', fontSize: '22px', color: 'var(--red)' }}>{val}</div>
             </div>
           ))}
         </div>
         <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px' }}>{lang === 'fr' ? 'DERNIER SCÉNARIO' : 'LAST SCENARIO'}</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px' }}>{lang === 'fr' ? 'DERNIER SCÉNARIO' : 'LAST SCENARIO'}</div>
           <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{modal?.data?.lastScenario}</div>
         </div>
         <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Send reminder to ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Rappel envoyé par email' : 'Reminder sent by email') }}>
+          <button className="btn-primary" style={{ padding: '10px 20px', fontSize: '15px' }} aria-label={`Send reminder to ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Rappel envoyé par email' : 'Reminder sent by email') }}>
             {lang === 'fr' ? '✉ Envoyer rappel' : '✉ Send reminder'}
           </button>
-          <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '12px' }} aria-label={`Export report for ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Rapport exporté' : 'Report exported') }}>
+          <button className="btn-secondary" style={{ padding: '10px 20px', fontSize: '15px' }} aria-label={`Export report for ${modal?.data?.name}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? 'Rapport exporté' : 'Report exported') }}>
             {lang === 'fr' ? '↓ Exporter' : '↓ Export'}
           </button>
         </div>
@@ -634,8 +634,8 @@ export default function Admin() {
   style={{ height: '32px', width: 'auto', display: 'block' }}
 />
           <div style={{ marginTop: '12px', padding: '8px 10px', background: 'rgba(235,40,40,0.08)', border: '1px solid rgba(235,40,40,0.2)' }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('adminConsoleName')}</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>{user?.company}</div>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('adminConsoleName')}</div>
+            <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '4px' }}>{user?.company}</div>
           </div>
         </div>
         <nav style={{ flex: 1, padding: '16px 0' }} role="navigation" aria-label="Main navigation">
@@ -648,9 +648,9 @@ export default function Admin() {
         </nav>
         <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border-subtle)' }}>
           <LangToggle style={{ marginBottom: '12px', width: '100%', justifyContent: 'center' }} />
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--red)', marginBottom: '12px' }}>{t('adminRole')}</div>
-          <button onClick={() => { logout(); navigate('/login') }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '12px' }} aria-label="Logout">{t('logout')}</button>
+          <div style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--red)', marginBottom: '12px' }}>{t('adminRole')}</div>
+          <button onClick={() => { logout(); navigate('/login') }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '15px' }} aria-label="Logout">{t('logout')}</button>
         </div>
       </aside>
 
@@ -659,11 +659,11 @@ export default function Admin() {
         <div style={{ padding: '20px 40px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#080808', position: 'sticky', top: 0, zIndex: 40 }}>
           <div>
             <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '20px', fontWeight: 700 }}>{navItems.find(n => n.id === activeNav)?.label}</h1>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{t('adminUpdated')}</div>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)', marginTop: '2px' }}>{t('adminUpdated')}</div>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <div className="tag"><span className="status-dot green" style={{ background: '#22c55e' }} /> {t('adminSystemOk')}</div>
-            <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} aria-label="Open new scenario dialog" onClick={() => setModal({ type: 'newScenario' })}>
+            <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '15px' }} aria-label="Open new scenario dialog" onClick={() => setModal({ type: 'newScenario' })}>
               {t('adminNewScenario')}
             </button>
           </div>

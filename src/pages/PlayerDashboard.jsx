@@ -122,8 +122,8 @@ export default function PlayerDashboard() {
             const first = assignedScenarios.find(s => s.status !== 'completed') || assignedScenarios[0]
             if (first) navigate(`/preview/${first.id}`)
             else navigate('/play')
-          }} className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }}>▶ Jouer</button>
-          <button onClick={() => navigate('/leaderboards')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>🏆 Classement</button>
+          }} className="btn-primary" style={{ padding: '8px 20px', fontSize: '15px' }}>▶ Jouer</button>
+          <button onClick={() => navigate('/leaderboards')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '15px' }}>🏆 Classement</button>
           <div style={{ position: 'relative' }}>
             <button onClick={() => { setNotifOpen(o => !o); setNotifications(n => n.map(x => ({ ...x, read: true }))) }} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', position: 'relative', padding: '4px' }}>
               🔔
@@ -131,18 +131,18 @@ export default function PlayerDashboard() {
             </button>
             {notifOpen && (
               <div style={{ position: 'absolute', right: 0, top: '36px', width: '300px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '12px', fontWeight: 600 }}>Notifications</div>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '15px', fontWeight: 600 }}>Notifications</div>
                 {notifications.map(n => (
-                  <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                  <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: '15px' }}>
                     <div style={{ color: 'var(--text-primary)', marginBottom: '4px' }}>{n.msg}</div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{n.time}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{n.time}</div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-          <button onClick={() => navigate('/settings')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>⚙️</button>
-          <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>Logout</button>
+          <button onClick={() => navigate('/settings')} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '15px' }}>⚙️</button>
+          <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '14px' }}>Logout</button>
         </div>
       </nav>
 
@@ -165,7 +165,7 @@ export default function PlayerDashboard() {
         {/* Score hero */}
         <div style={{ background: 'linear-gradient(135deg, rgba(235,40,40,0.1), rgba(235,40,40,0.03))', border: '1px solid rgba(235,40,40,0.2)', padding: '32px', borderRadius: '16px', marginBottom: '28px', display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>VOTRE SCORE DE SÉCURITÉ</div>
+            <div style={{ fontSize: '15px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>VOTRE SCORE DE SÉCURITÉ</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
               <span style={{ fontSize: '72px', fontWeight: 'bold', color: scoreColor, lineHeight: 1 }}>{globalScore}</span>
               <span style={{ fontSize: '24px', color: 'var(--text-muted)' }}>/100</span>
@@ -177,7 +177,7 @@ export default function PlayerDashboard() {
           <div style={{ textAlign: 'right' }}>
             <div style={{ width: '100px', height: '100px', borderRadius: '50%', border: `6px solid ${scoreColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
               <div style={{ fontSize: '28px', fontWeight: 'bold', color: scoreColor }}>{globalScore}</div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Niveau</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Niveau</div>
             </div>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function PlayerDashboard() {
             <div key={i} style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: '28px', marginBottom: '8px' }}>{k.icon}</div>
               <div style={{ fontSize: '32px', fontWeight: 'bold', color: k.color }}>{k.value}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{k.label}</div>
+              <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{k.label}</div>
             </div>
           ))}
         </div>
@@ -224,7 +224,7 @@ export default function PlayerDashboard() {
                   }} title={intensity > 0 ? `${intensity} scénario(s)` : 'Aucun'} />
                 ))}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px', fontSize: '10px', color: 'var(--text-muted)', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px', fontSize: '13px', color: 'var(--text-muted)', alignItems: 'center' }}>
                 <span>Moins</span>
                 {[0, 1, 2, 3, 4].map(i => <div key={i} style={{ width: '12px', height: '12px', background: i === 0 ? 'var(--bg-black)' : `rgba(235,40,40,${i * 0.25})`, borderRadius: '2px' }} />)}
                 <span>Plus</span>
@@ -243,7 +243,7 @@ export default function PlayerDashboard() {
                     <span style={{ fontSize: '24px' }}>{s.icon}</span>
                     <div>
                       <div style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 'bold' }}>{s.name}</div>
-                      <div style={{ fontSize: '10px', color: '#eb2828' }}>{s.tag}</div>
+                      <div style={{ fontSize: '13px', color: '#eb2828' }}>{s.tag}</div>
                     </div>
                     <span style={{ marginLeft: 'auto', fontSize: '20px', color: 'var(--text-muted)' }}>›</span>
                   </div>
@@ -259,7 +259,7 @@ export default function PlayerDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
                 <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '4px' }}>Mes scénarios assignés</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Scénarios de sensibilisation à la cybersécurité assignés par votre équipe</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>Scénarios de sensibilisation à la cybersécurité assignés par votre équipe</p>
               </div>
               <div className="tag"><span className="status-dot red" /> {assignedScenarios.length} scénario{assignedScenarios.length !== 1 ? 's' : ''}</div>
             </div>
@@ -279,25 +279,25 @@ export default function PlayerDashboard() {
                       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', padding: '2px 8px', border: `1px solid ${diffColor}`, color: diffColor, borderRadius: '2px' }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', padding: '2px 8px', border: `1px solid ${diffColor}`, color: diffColor, borderRadius: '2px' }}>
                           {s.difficulty === 'beginner' ? 'Débutant' : s.difficulty === 'advanced' ? 'Avancé' : 'Intermédiaire'}
                         </span>
-                        <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: statusColor }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: statusColor }}>
                           {s.status === 'completed' ? '✓ Terminé' : s.status === 'in_progress' ? '▶ En cours' : '○ En attente'}
                         </span>
                       </div>
                       <div>
                         <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-light)', marginBottom: '4px', lineHeight: 1.3 }}>{s.title_fr}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{s.category}</div>
+                        <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{s.category}</div>
                       </div>
-                      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>
+                      <div style={{ display: 'flex', gap: '16px', fontSize: '14px', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
                         {s.duration && <span>⏱ {s.duration} min</span>}
                         {s.score > 0 && <span style={{ color: '#22c55e' }}>Score: {s.score}</span>}
                       </div>
                       <button
                         onClick={() => navigate(`/preview/${s.id}`)}
                         className="btn-primary"
-                        style={{ padding: '8px 16px', fontSize: '12px', justifyContent: 'center', marginTop: 'auto' }}
+                        style={{ padding: '8px 16px', fontSize: '15px', justifyContent: 'center', marginTop: 'auto' }}
                       >
                         {s.status === 'completed' ? '↺ Rejouer' : '▶ Jouer'}
                       </button>
@@ -315,16 +315,16 @@ export default function PlayerDashboard() {
             <table style={{ width: '100%' }}>
               <thead>
                 <tr style={{ background: 'var(--bg-black)' }}>
-                  <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '11px' }}>DATE</th>
-                  <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '11px' }}>SCÉNARIO</th>
-                  <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '11px' }}>SCORE</th>
-                  <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '11px' }}>RÉSULTAT</th>
+                  <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '14px' }}>DATE</th>
+                  <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '14px' }}>SCÉNARIO</th>
+                  <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '14px' }}>SCORE</th>
+                  <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '14px' }}>RÉSULTAT</th>
                 </tr>
               </thead>
               <tbody>
                 {mockActivity.map((a, i) => (
                   <tr key={i} style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '14px 20px', color: 'var(--text-muted)', fontSize: '12px' }}>{a.date}</td>
+                    <td style={{ padding: '14px 20px', color: 'var(--text-muted)', fontSize: '15px' }}>{a.date}</td>
                     <td style={{ padding: '14px 20px', color: 'var(--text-primary)', fontSize: '13px' }}>{a.scenario}</td>
                     <td style={{ padding: '14px 20px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -335,7 +335,7 @@ export default function PlayerDashboard() {
                       </div>
                     </td>
                     <td style={{ padding: '14px 20px' }}>
-                      <span style={{ padding: '4px 10px', background: a.passed ? 'rgba(34,197,94,0.1)' : 'rgba(235,40,40,0.1)', color: a.passed ? '#22c55e' : '#eb2828', borderRadius: '12px', fontSize: '11px' }}>
+                      <span style={{ padding: '4px 10px', background: a.passed ? 'rgba(34,197,94,0.1)' : 'rgba(235,40,40,0.1)', color: a.passed ? '#22c55e' : '#eb2828', borderRadius: '12px', fontSize: '14px' }}>
                         {a.passed ? '✅ Réussi' : '❌ Échoué'}
                       </span>
                     </td>
@@ -354,8 +354,8 @@ export default function PlayerDashboard() {
                 <div key={b.id} style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', textAlign: 'center', border: '1px solid', borderColor: earned ? 'rgba(235,40,40,0.4)' : 'var(--border-subtle)', opacity: earned ? 1 : 0.45 }}>
                   <div style={{ fontSize: '48px', marginBottom: '12px', filter: earned ? 'none' : 'grayscale(100%)' }}>{b.icon}</div>
                   <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', marginBottom: '6px', fontSize: '14px' }}>{b.name}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{b.desc}</div>
-                  {earned && <div style={{ marginTop: '8px', fontSize: '10px', color: '#22c55e' }}>✅ Obtenu</div>}
+                  <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{b.desc}</div>
+                  {earned && <div style={{ marginTop: '8px', fontSize: '13px', color: '#22c55e' }}>✅ Obtenu</div>}
                 </div>
               )
             })}
@@ -373,9 +373,9 @@ export default function PlayerDashboard() {
                 <div style={{ height: '8px', background: 'var(--bg-black)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
                   <div style={{ height: '100%', width: `${m.progress}%`, background: m.completed ? '#22c55e' : '#eb2828', borderRadius: '4px', transition: 'width 1s' }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--text-muted)' }}>
                   <span>{m.progress}% complété</span>
-                  {!m.completed && <button onClick={() => navigate('/play')} style={{ background: 'transparent', border: 'none', color: '#eb2828', cursor: 'pointer', fontSize: '11px' }}>Continuer →</button>}
+                  {!m.completed && <button onClick={() => navigate('/play')} style={{ background: 'transparent', border: 'none', color: '#eb2828', cursor: 'pointer', fontSize: '14px' }}>Continuer →</button>}
                 </div>
               </div>
             ))}
@@ -389,7 +389,7 @@ export default function PlayerDashboard() {
                 <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', marginBottom: '4px' }}>Défis de la semaine</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Expire le dimanche 13 avril 2026</p>
               </div>
-              <div style={{ padding: '8px 16px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', fontSize: '12px', color: '#f59e0b' }}>
+              <div style={{ padding: '8px 16px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', fontSize: '15px', color: '#f59e0b' }}>
                 {defis.filter(d => d.claimed).length}/{defis.length} défis complétés
               </div>
             </div>
@@ -399,21 +399,21 @@ export default function PlayerDashboard() {
                 const complete = d.done >= d.target
                 return (
                   <div key={d.id} style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '20px', border: `1px solid ${d.claimed ? 'rgba(34,197,94,0.3)' : complete ? 'rgba(245,158,11,0.3)' : 'var(--border-subtle)'}`, position: 'relative', overflow: 'hidden' }}>
-                    {d.claimed && <div style={{ position: 'absolute', top: 0, right: 0, background: '#22c55e', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '0 0 0 8px' }}>RÉCLAMÉ</div>}
+                    {d.claimed && <div style={{ position: 'absolute', top: 0, right: 0, background: '#22c55e', color: '#fff', fontSize: '13px', fontWeight: 700, padding: '4px 10px', borderRadius: '0 0 0 8px' }}>RÉCLAMÉ</div>}
                     <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
                       <span style={{ fontSize: '32px' }}>{d.icon}</span>
                       <div>
                         <div style={{ fontWeight: 600, marginBottom: '4px' }}>{d.title}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{d.desc}</div>
+                        <div style={{ fontSize: '15px', color: 'var(--text-muted)' }}>{d.desc}</div>
                       </div>
                     </div>
                     <div style={{ height: '6px', background: 'var(--bg-black)', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: d.claimed ? '#22c55e' : complete ? '#f59e0b' : 'var(--red)', borderRadius: '3px', transition: 'width 0.8s' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{d.done}/{d.target} · {d.points} pts</span>
+                      <span style={{ fontSize: '15px', color: 'var(--text-muted)' }}>{d.done}/{d.target} · {d.points} pts</span>
                       {complete && !d.claimed && (
-                        <button onClick={() => setDefis(prev => prev.map(x => x.id === d.id ? { ...x, claimed: true } : x))} style={{ padding: '6px 14px', background: 'rgba(245,158,11,0.15)', border: '1px solid #f59e0b', color: '#f59e0b', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
+                        <button onClick={() => setDefis(prev => prev.map(x => x.id === d.id ? { ...x, claimed: true } : x))} style={{ padding: '6px 14px', background: 'rgba(245,158,11,0.15)', border: '1px solid #f59e0b', color: '#f59e0b', borderRadius: '6px', cursor: 'pointer', fontSize: '15px', fontWeight: 600 }}>
                           Réclamer +{d.points} pts
                         </button>
                       )}
@@ -445,15 +445,15 @@ export default function PlayerDashboard() {
                       <div style={{ width: '64px', height: '64px', borderRadius: '12px', background: 'rgba(235,40,40,0.1)', border: '2px solid rgba(235,40,40,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 }}>🎓</div>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{cert.title}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>{cert.level} · Score : {cert.score}/100</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Émis le {cert.date} par {cert.issuer}</div>
+                        <div style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '6px' }}>{cert.level} · Score : {cert.score}/100</div>
+                        <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Émis le {cert.date} par {cert.issuer}</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
-                      <div style={{ padding: '6px 12px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', fontSize: '11px', color: '#22c55e', fontWeight: 600 }}>
+                      <div style={{ padding: '6px 12px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>
                         ✓ Validé
                       </div>
-                      <button onClick={() => downloadCertificate(cert, user?.name)} style={{ padding: '8px 18px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', transition: 'all 0.2s' }}
+                      <button onClick={() => downloadCertificate(cert, user?.name)} style={{ padding: '8px 18px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '6px', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-primary)' }}
                       >
@@ -492,7 +492,7 @@ export default function PlayerDashboard() {
                 <span style={{ fontSize: '20px', width: '32px', textAlign: 'center' }}>{p.badge || `#${p.rank}`}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ color: p.isMe ? '#eb2828' : 'var(--text-primary)', fontWeight: p.isMe ? 'bold' : 'normal' }}>{p.name}{p.isMe && ' (vous)'}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{p.dept}</div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{p.dept}</div>
                 </div>
                 <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{p.score.toLocaleString()} pts</span>
               </div>

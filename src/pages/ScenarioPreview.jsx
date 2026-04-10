@@ -26,9 +26,9 @@ function EmailBlock({ data }) {
         {(data.linkText || data.link) && (
           <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #222' }}>
             <span style={{ color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer', fontSize: '13px' }}>
-              {data.linkText || data.link || 'Cliquez ici'}
+              {data.linkText || (typeof data.link === 'object' ? data.link?.text : data.link) || 'Cliquez ici'}
             </span>
-            <span style={{ marginLeft: '8px', fontSize: '10px', color: '#eb2828', fontFamily: 'var(--mono)' }}>[LIEN PIEGE]</span>
+            <span style={{ marginLeft: '8px', fontSize: '11px', color: '#eb2828' }}>[LIEN PIEGE]</span>
           </div>
         )}
       </div>
