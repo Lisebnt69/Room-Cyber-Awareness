@@ -954,7 +954,22 @@ export default function SuperAdmin() {
                         {s.score > 0 ? s.score : '—'}
                       </td>
                       <td style={{ padding: '14px 20px' }}>{statusBadge(s.status, t)}</td>
-                      <td style={{ padding: '14px 20px' }}>
+                      <td style={{ padding: '14px 20px', display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => navigate('/preview/' + s.id)}
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid #22c55e',
+                            color: '#22c55e',
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--mono)',
+                          }}
+                          aria-label={`Test scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`}
+                        >
+                          ▶ Tester
+                        </button>
                         <button
                           onClick={() => setBuilderMode({ mode: 'edit', scenario: s })}
                           style={{
