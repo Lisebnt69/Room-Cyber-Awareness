@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server/index.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -13,7 +14,6 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.85.0",
     "cors": "^2.8.6",
-    "dotenv": "^17.4.1",
     "express": "^5.2.1",
     "framer-motion": "^12.38.0",
     "jspdf": "^4.2.1",

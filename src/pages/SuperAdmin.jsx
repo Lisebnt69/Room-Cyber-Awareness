@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
@@ -155,6 +155,7 @@ export default function SuperAdmin() {
   const [activeNav, setActiveNav] = useState('overview')
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState(null)
+  const [viewportWidth, setViewportWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1280)
   const [companies, setCompanies] = useState(INITIAL_COMPANIES)
   const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS.map(withScenarioDefaults))
   const [editCompanyForm, setEditCompanyForm] = useState(null)
@@ -255,6 +256,101 @@ export default function SuperAdmin() {
         onBack={() => setBuilderMode(null)}
       />
     )
+  }
+
+  const toggleScenarioModule = (moduleKey) => {
+    setEditScenarioForm(prev => {
+      const current = prev || {}
+      const currentModules = Array.isArray(current.modules) ? current.modules : []
+      const modules = currentModules.includes(moduleKey)
+        ? currentModules.filter(m => m !== moduleKey)
+        : [...currentModules, moduleKey]
+      return { ...current, modules }
+    })
+  }
+
+  const onScenarioPhotoUpload = (file) => {
+    if (!file) return
+    const localUrl = URL.createObjectURL(file)
+    setEditScenarioForm(prev => ({
+      ...(prev || {}),
+      coverImage: localUrl,
+      coverImageName: file.name,
+    }))
+    if (!((editScenarioForm?.modules || []).includes('photo'))) toggleScenarioModule('photo')
+  }
+
+  const addHotspotFromImageClick = (e) => {
+    if (!editScenarioForm?.coverImage) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100))
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100))
+    setEditScenarioForm(prev => {
+      const current = prev || {}
+      const photoHotspots = Array.isArray(current.photoHotspots) ? current.photoHotspots : []
+      return {
+        ...current,
+        modules: Array.from(new Set([...(current.modules || []), 'mapping'])),
+        photoHotspots: [...photoHotspots, { id: createId(), x: Math.round(x), y: Math.round(y), label: lang === 'fr' ? 'Indice' : 'Clue', action: 'clue' }],
+      }
+    })
+  }
+
+  const updateHotspot = (id, patch) => {
+    setEditScenarioForm(prev => ({
+      ...(prev || {}),
+      photoHotspots: (prev?.photoHotspots || []).map(h => h.id === id ? { ...h, ...patch } : h),
+    }))
+  }
+
+  const removeHotspot = (id) => {
+    setEditScenarioForm(prev => ({
+      ...(prev || {}),
+      photoHotspots: (prev?.photoHotspots || []).filter(h => h.id !== id),
+    }))
+  }
+
+  const addQuizQuestion = () => {
+    setEditScenarioForm(prev => {
+      const current = prev || {}
+      const quizQuestions = Array.isArray(current.quizQuestions) ? current.quizQuestions : []
+      const newQuestion = {
+        id: createId(),
+        prompt: '',
+        design: 'cards',
+        options: [
+          { id: createId(), text: '', isCorrect: true },
+          { id: createId(), text: '', isCorrect: false },
+        ],
+      }
+      return {
+        ...current,
+        modules: Array.from(new Set([...(current.modules || []), 'quiz'])),
+        quizQuestions: [...quizQuestions, newQuestion],
+      }
+    })
+  }
+
+  const updateQuizQuestion = (questionId, patch) => {
+    setEditScenarioForm(prev => ({
+      ...(prev || {}),
+      quizQuestions: (prev?.quizQuestions || []).map(q => q.id === questionId ? { ...q, ...patch } : q),
+    }))
+  }
+
+  const updateQuizOption = (questionId, optionId, patch) => {
+    setEditScenarioForm(prev => ({
+      ...(prev || {}),
+      quizQuestions: (prev?.quizQuestions || []).map(q => q.id === questionId
+        ? { ...q, options: (q.options || []).map(o => o.id === optionId ? { ...o, ...patch } : o) }
+        : q),
+    }))
+  }
+
+  const getScenarioModulesLabel = (scenario) => {
+    const modules = Array.isArray(scenario.modules) ? scenario.modules : []
+    if (!modules.length) return lang === 'fr' ? 'Aucun module' : 'No modules'
+    return modules.map((m) => moduleLabels[m]?.[lang] || m).join(' · ')
   }
 
   return (
@@ -404,7 +500,7 @@ export default function SuperAdmin() {
       >
         {editCompanyForm && (
           <form onSubmit={saveCompany}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: twoCols, gap: '12px', marginBottom: '16px' }}>
               <div>
                 <label
                   style={{
@@ -713,7 +809,7 @@ export default function SuperAdmin() {
           </div>
         </div>
 
-        <div style={{ padding: '40px' }}>
+        <div style={{ padding: isCompact ? '16px' : '40px' }}>
           {/* Overview */}
           {activeNav === 'overview' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border-subtle)' }}>
@@ -866,6 +962,7 @@ export default function SuperAdmin() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
 
@@ -999,6 +1096,7 @@ export default function SuperAdmin() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
 
@@ -1061,12 +1159,13 @@ export default function SuperAdmin() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
 
           {/* System */}
           {activeNav === 'system' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '1fr 1fr', gap: '20px' }}>
               {[
                 { name: lang === 'fr' ? 'Infrastructure' : 'Infrastructure', status: 'operational', uptime: '99.98%', checks: 12 },
                 { name: lang === 'fr' ? 'Bases de données' : 'Databases', status: 'operational', uptime: '100%', checks: 8 },
