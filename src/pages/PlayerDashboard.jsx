@@ -93,8 +93,8 @@ export default function PlayerDashboard() {
   const globalScore = stats?.avgScore || 78
   const scoreColor = globalScore >= 80 ? '#22c55e' : globalScore >= 60 ? '#f59e0b' : '#eb2828'
 
-  const heatMap = Array(7).fill(null).map((_, week) =>
-    Array(7).fill(null).map((_, day) => {
+  const heatMap = Array(12).fill(null).map((_, month) =>
+    Array(4).fill(null).map((_, week) => {
       const hasActivity = Math.random() > 0.6
       const intensity = hasActivity ? Math.floor(Math.random() * 4) + 1 : 0
       return intensity
@@ -189,7 +189,7 @@ export default function PlayerDashboard() {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', borderBottom: '1px solid var(--border-subtle)' }}>
-          {['overview', 'activité', 'badges', 'modules', 'défis', 'certificats', 'classement'].map(t => (
+          {['overview', 'activité', 'modules', 'défis', 'badges','certificats', 'classement'].map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               padding: '10px 20px', background: 'transparent', border: 'none', borderBottom: '2px solid',
               borderColor: tab === t ? '#eb2828' : 'transparent',
@@ -203,7 +203,7 @@ export default function PlayerDashboard() {
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
             {/* Activity heatmap */}
             <div style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-              <h3 style={{ color: 'var(--text-primary)', marginBottom: '16px', fontSize: '16px' }}>Activité des 7 dernières semaines</h3>
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '16px', fontSize: '16px' }}>Activité des 12 derniers mois</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
                 {heatMap.flat().map((intensity, i) => (
                   <div key={i} style={{
