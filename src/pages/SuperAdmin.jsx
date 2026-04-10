@@ -500,7 +500,7 @@ export default function SuperAdmin() {
               </div>
               {(editScenarioForm?.quizQuestions || []).map((question, index) => (
                 <div key={question.id} style={{ border: '1px solid var(--border-subtle)', padding: '10px', marginBottom: '8px', background: 'rgba(255,255,255,0.02)' }}>
-                  <input className="input-dark" placeholder={`${lang === 'fr' ? 'Question' : 'Question'} ${index + 1}`} value={question.prompt} onChange={e => updateQuizQuestion(question.id, { prompt: e.target.value })} />
+                  <input className="input-dark" placeholder={(lang === 'fr' ? 'Question ' : 'Question ') + (index + 1)} value={question.prompt} onChange={e => updateQuizQuestion(question.id, { prompt: e.target.value })} />
                   <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '140px 1fr', gap: '8px', marginTop: '8px' }}>
                     <select value={question.design || 'cards'} onChange={e => updateQuizQuestion(question.id, { design: e.target.value })} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '12px' }}>
                       <option value="cards">{lang === 'fr' ? 'Cartes' : 'Cards'}</option>
@@ -678,7 +678,7 @@ export default function SuperAdmin() {
                 </div>
                 {(editScenarioForm.quizQuestions || []).map((question, index) => (
                   <div key={question.id} style={{ border: '1px solid var(--border-subtle)', padding: '10px', marginBottom: '8px', background: 'rgba(255,255,255,0.02)' }}>
-                    <input className="input-dark" placeholder={`${lang === 'fr' ? 'Question' : 'Question'} ${index + 1}`} value={question.prompt} onChange={e => updateQuizQuestion(question.id, { prompt: e.target.value })} />
+                    <input className="input-dark" placeholder={(lang === 'fr' ? 'Question ' : 'Question ') + (index + 1)} value={question.prompt} onChange={e => updateQuizQuestion(question.id, { prompt: e.target.value })} />
                     <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '140px 1fr', gap: '8px', marginTop: '8px' }}>
                       <select value={question.design || 'cards'} onChange={e => updateQuizQuestion(question.id, { design: e.target.value })} style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '12px' }}>
                         <option value="cards">{lang === 'fr' ? 'Cartes' : 'Cards'}</option>
