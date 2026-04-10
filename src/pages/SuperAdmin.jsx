@@ -6,6 +6,7 @@ import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
+import ScenarioBuilder from './ScenarioBuilder'
 
 const INITIAL_COMPANIES = [
   { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@acme.com', sector: 'Finance' },
@@ -125,7 +126,45 @@ export default function SuperAdmin() {
   const [editCompanyForm, setEditCompanyForm] = useState(null)
   const [editScenarioForm, setEditScenarioForm] = useState(null)
 
+  const [builderMode, setBuilderMode] = useState(null) // null | { mode: 'create' } | { mode: 'edit', scenario }
+
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
+
+  const handleBuilderSave = (data) => {
+    const updated = {
+      id: data.id || Date.now(),
+      title: { fr: data.titleFr, en: data.titleEn || data.titleFr },
+      category: data.category,
+      difficulty: data.difficulty,
+      duration: data.duration,
+      description: data.description,
+      status: data.status,
+      coverImage: data.coverImage || '',
+      coverImageName: data.coverImageName || '',
+      photoHotspots: data.photoHotspots || [],
+      fakeLinkLabel: data.fakeLinkLabel || '',
+      fakeLinkUrl: data.fakeLinkUrl || '',
+      fakeLinkHover: data.fakeLinkHover || '',
+      fakeEmailSender: data.fakeEmailSender || '',
+      fakeEmailSubject: data.fakeEmailSubject || '',
+      fakeEmailBody: data.fakeEmailBody || '',
+      videoUrl: data.videoUrl || '',
+      quizQuestions: data.quizQuestions || [],
+      narrative: data.narrative || '',
+      modules: data.modules || [],
+      plays: data.plays || 0,
+      score: data.score || 0,
+      mappingContext: data.mappingContext || '',
+    }
+    if (builderMode?.mode === 'edit') {
+      setScenarios(prev => prev.map(s => s.id === updated.id ? updated : s))
+      showToast(lang === 'fr' ? `"${updated.title.fr}" mis à jour` : `"${updated.title.en}" updated`)
+    } else {
+      setScenarios(prev => [...prev, updated])
+      showToast(lang === 'fr' ? `"${updated.title.fr}" créé` : `"${updated.title.en}" created`)
+    }
+    setBuilderMode(null)
+  }
 
   const openEditCompany = (c) => {
     setEditCompanyForm({ ...c })
@@ -318,6 +357,16 @@ const updateQuizOption = (questionId, optionId, patch) => {
     const modules = Array.isArray(scenario.modules) ? scenario.modules : []
     if (!modules.length) return lang === 'fr' ? 'Aucun module' : 'No modules'
     return modules.map(m => moduleLabels[m]?.[lang] || m).join(' · ')
+  }
+
+  if (builderMode) {
+    return (
+      <ScenarioBuilder
+        initialData={builderMode.mode === 'edit' ? builderMode.scenario : null}
+        onSave={handleBuilderSave}
+        onBack={() => setBuilderMode(null)}
+      />
+    )
   }
 
   return (
@@ -878,7 +927,7 @@ const updateQuizOption = (questionId, optionId, patch) => {
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{t('saScenariosTitle')} ({scenarios.length})</div>
-                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => { setEditScenarioForm({ ...DEFAULT_SCENARIO_FIELDS }); setModal({ type: 'createScenario' }) }} aria-label="Create new scenario">{t('saCreateScenario')}</button>
+                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} onClick={() => setBuilderMode({ mode: 'create' })} aria-label="Create new scenario">{t('saCreateScenario')}</button>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table" aria-label="Scenarios list">
                 <thead>
@@ -903,7 +952,7 @@ const updateQuizOption = (questionId, optionId, patch) => {
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--red)' }}>{s.score > 0 ? s.score : '—'}</td>
                       <td style={{ padding: '14px 20px' }}>{statusBadge(s.status, t)}</td>
                       <td style={{ padding: '14px 20px' }}>
-                        <button onClick={() => openEditScenario(s)} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
+                        <button onClick={() => setBuilderMode({ mode: 'edit', scenario: s })} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                           aria-label={`Edit scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`}
