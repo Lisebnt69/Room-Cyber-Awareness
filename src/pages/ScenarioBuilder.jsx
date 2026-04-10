@@ -4,6 +4,55 @@ import { useAuth } from '../context/AuthContext'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 
+const READY_TO_USE_SCENARIOS = [
+  {
+    id: 'invoice-trap',
+    title: 'Facture urgente du fournisseur',
+    category: 'Phishing',
+    difficulty: 'medium',
+    duration: 540,
+    description: 'Un faux email de comptabilité pousse à cliquer sur une facture.',
+    narrative: 'Vous recevez un email urgent prétendant venir du service finance. L’attaquant joue sur la pression temporelle.',
+    decisions: [
+      { id: 1, text: 'Cliquer le lien de facture', isSafe: false, consequence: 'Exposition à un site de vol de credentials.' },
+      { id: 2, text: 'Vérifier le domaine expéditeur', isSafe: true, consequence: 'Détection du domaine typosquatté.' },
+    ],
+    coverImage: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80',
+    photoHotspots: [{ id: 11, x: 28, y: 44, label: 'Domaine suspect' }, { id: 12, x: 69, y: 66, label: 'Bouton dangereux' }],
+    videoUrl: 'https://www.youtube.com/watch?v=8QxIIz1yEsA',
+    fakeEmailSender: 'finance@cornpany-secure.com',
+    fakeEmailSubject: 'PAIEMENT BLOQUÉ - action sous 2h',
+    fakeEmailBody: 'Veuillez régler la facture en attente immédiatement pour éviter la suspension des services.',
+    fakeLinkLabel: 'Consulter la facture',
+    fakeLinkUrl: 'https://billing-company-secure.example',
+    fakeLinkHover: 'Lien externe non vérifié',
+    quizQuestions: [{ id: 21, prompt: 'Quel est le premier réflexe ?' }],
+  },
+  {
+    id: 'hr-doc',
+    title: 'Document RH confidentiel',
+    category: 'Social Engineering',
+    difficulty: 'hard',
+    duration: 720,
+    description: 'Un attaquant se fait passer pour les RH avec un faux partage.',
+    narrative: 'Un mail RH vous demande de signer un nouveau document contractuel via un lien externe.',
+    decisions: [
+      { id: 3, text: 'Valider l’URL avant connexion', isSafe: true, consequence: 'Réduction du risque d’hameçonnage.' },
+      { id: 4, text: 'Saisir ses identifiants SSO', isSafe: false, consequence: 'Compromission du compte entreprise.' },
+    ],
+    coverImage: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
+    photoHotspots: [{ id: 13, x: 34, y: 51, label: 'URL trompeuse' }],
+    videoUrl: '',
+    fakeEmailSender: 'rh@intranet-support-alert.com',
+    fakeEmailSubject: 'Mise à jour obligatoire du contrat',
+    fakeEmailBody: 'Merci de signer ce document avant la fin de journée.',
+    fakeLinkLabel: 'Signer le document',
+    fakeLinkUrl: 'https://secure-hr-sign.example',
+    fakeLinkHover: 'Nom de domaine inhabituel',
+    quizQuestions: [{ id: 22, prompt: 'Quel indicateur est le plus critique ?' }],
+  },
+]
+
 export default function ScenarioBuilder() {
   const navigate = useNavigate()
   const { logout } = useAuth()
@@ -16,7 +65,17 @@ export default function ScenarioBuilder() {
     narrative: '',
     framework: '',
     sector: '',
-    decisions: []
+    decisions: [],
+    coverImage: '',
+    photoHotspots: [],
+    videoUrl: '',
+    fakeEmailSender: '',
+    fakeEmailSubject: '',
+    fakeEmailBody: '',
+    fakeLinkLabel: '',
+    fakeLinkUrl: '',
+    fakeLinkHover: '',
+    quizQuestions: []
   })
   const [newDecision, setNewDecision] = useState({ text: '', isSafe: true, consequence: '' })
 
@@ -32,8 +91,63 @@ export default function ScenarioBuilder() {
     setScenario({ ...scenario, decisions: scenario.decisions.filter(d => d.id !== id) })
   }
 
+  const handleImageUpload = (file) => {
+    if (!file) return
+    const objectUrl = URL.createObjectURL(file)
+    setScenario(prev => ({ ...prev, coverImage: objectUrl }))
+  }
+
+  const addHotspot = (e) => {
+    if (!scenario.coverImage) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100)
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100)
+    setScenario(prev => ({
+      ...prev,
+      photoHotspots: [...prev.photoHotspots, { id: Date.now() + Math.random(), x, y, label: 'Indice' }],
+    }))
+  }
+
+  const updateHotspot = (id, patch) => {
+    setScenario(prev => ({ ...prev, photoHotspots: prev.photoHotspots.map(h => h.id === id ? { ...h, ...patch } : h) }))
+  }
+
+  const removeHotspot = (id) => {
+    setScenario(prev => ({ ...prev, photoHotspots: prev.photoHotspots.filter(h => h.id !== id) }))
+  }
+
+  const addQuizQuestion = () => {
+    setScenario(prev => ({
+      ...prev,
+      quizQuestions: [...prev.quizQuestions, {
+        id: Date.now() + Math.random(),
+        prompt: '',
+        options: [
+          { id: Math.random(), text: '', isCorrect: true },
+          { id: Math.random(), text: '', isCorrect: false },
+        ]
+      }]
+    }))
+  }
+
   const save = () => {
     alert(`Scénario "${scenario.title}" sauvegardé !`)
+  }
+
+  const loadReadyScenario = (preset) => {
+    setScenario({
+      ...preset,
+      framework: preset.framework || '',
+      sector: preset.sector || '',
+      fakeEmailSender: preset.fakeEmailSender || '',
+      fakeEmailSubject: preset.fakeEmailSubject || '',
+      fakeEmailBody: preset.fakeEmailBody || '',
+      fakeLinkLabel: preset.fakeLinkLabel || '',
+      fakeLinkUrl: preset.fakeLinkUrl || '',
+      fakeLinkHover: preset.fakeLinkHover || '',
+      quizQuestions: preset.quizQuestions || [],
+      photoHotspots: preset.photoHotspots || [],
+    })
   }
 
   return (
@@ -54,6 +168,18 @@ export default function ScenarioBuilder() {
       <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '36px', color: 'var(--text-primary)', marginBottom: '8px' }}>🛠️ Scenario Builder</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Créez vos scénarios immersifs personnalisés</p>
+
+        <div style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', marginBottom: '24px' }}>
+          <h3 style={{ color: '#eb2828', marginBottom: '16px' }}>Scénarios prêts à l’emploi</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            {READY_TO_USE_SCENARIOS.map((preset) => (
+              <button key={preset.id} onClick={() => loadReadyScenario(preset)} style={{ textAlign: 'left', padding: '14px', border: '1px solid var(--border-subtle)', background: 'var(--bg-black)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }}>
+                <div style={{ fontWeight: 700, marginBottom: '4px' }}>{preset.title}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{preset.description}</div>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '12px', marginBottom: '24px' }}>
           <h3 style={{ color: '#eb2828', marginBottom: '20px' }}>1. Informations de base</h3>
@@ -131,6 +257,83 @@ export default function ScenarioBuilder() {
               </label>
               <button onClick={addDecision} style={{ marginLeft: 'auto', padding: '6px 16px', background: '#eb2828', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '12px' }}>+ Ajouter décision</button>
             </div>
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '12px', marginBottom: '24px' }}>
+          <h3 style={{ color: '#eb2828', marginBottom: '20px' }}>4. Image + Mapping + Vidéo</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '12px' }}>
+            <div>
+              <label style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Image (URL)</label>
+              <input type="text" value={scenario.coverImage} onChange={e => setScenario({ ...scenario, coverImage: e.target.value })}
+                placeholder="https://..."
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)', marginTop: '4px' }} />
+            </div>
+            <div>
+              <label style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Ou importer une image</label>
+              <input type="file" accept="image/*" onChange={e => handleImageUpload(e.target.files?.[0])}
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)', marginTop: '4px' }} />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Vidéo (URL)</label>
+              <input type="text" value={scenario.videoUrl} onChange={e => setScenario({ ...scenario, videoUrl: e.target.value })}
+                placeholder="https://youtube.com/..."
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)', marginTop: '4px' }} />
+            </div>
+          </div>
+          <div onClick={addHotspot} style={{ position: 'relative', border: '1px dashed var(--border-subtle)', minHeight: '220px', borderRadius: '8px', overflow: 'hidden', cursor: scenario.coverImage ? 'crosshair' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-black)' }}>
+            {scenario.coverImage ? (
+              <>
+                <img src={scenario.coverImage} alt="mapping" style={{ width: '100%', maxHeight: '320px', objectFit: 'cover', opacity: 0.7 }} />
+                {scenario.photoHotspots.map(h => (
+                  <span key={h.id} style={{ position: 'absolute', left: `${h.x}%`, top: `${h.y}%`, width: '14px', height: '14px', transform: 'translate(-50%, -50%)', borderRadius: '50%', background: '#eb2828', border: '1px solid #fff' }} />
+                ))}
+              </>
+            ) : <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Ajoute une image puis clique pour poser des hotspots</span>}
+          </div>
+          <div style={{ marginTop: '12px' }}>
+            {scenario.photoHotspots.map(h => (
+              <div key={h.id} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px auto', gap: '8px', marginBottom: '8px' }}>
+                <input value={h.label} onChange={e => updateHotspot(h.id, { label: e.target.value })}
+                  style={{ width: '100%', padding: '8px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '4px', color: 'var(--text-primary)' }} />
+                <input value={h.x} onChange={e => updateHotspot(h.id, { x: Number(e.target.value) || 0 })}
+                  style={{ width: '100%', padding: '8px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '4px', color: 'var(--text-primary)' }} />
+                <input value={h.y} onChange={e => updateHotspot(h.id, { y: Number(e.target.value) || 0 })}
+                  style={{ width: '100%', padding: '8px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '4px', color: 'var(--text-primary)' }} />
+                <button onClick={() => removeHotspot(h.id)} style={{ padding: '8px', background: 'transparent', border: '1px solid #eb282860', color: '#eb2828', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '12px', marginBottom: '24px' }}>
+          <h3 style={{ color: '#eb2828', marginBottom: '20px' }}>5. Faux mail + faux lien + quiz</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <input type="text" value={scenario.fakeEmailSender} onChange={e => setScenario({ ...scenario, fakeEmailSender: e.target.value })} placeholder="Expéditeur"
+              style={{ width: '100%', padding: '10px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)' }} />
+            <input type="text" value={scenario.fakeEmailSubject} onChange={e => setScenario({ ...scenario, fakeEmailSubject: e.target.value })} placeholder="Objet"
+              style={{ width: '100%', padding: '10px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)' }} />
+            <textarea rows={3} value={scenario.fakeEmailBody} onChange={e => setScenario({ ...scenario, fakeEmailBody: e.target.value })} placeholder="Corps du faux email"
+              style={{ gridColumn: '1 / -1', width: '100%', padding: '10px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)' }} />
+            <input type="text" value={scenario.fakeLinkLabel} onChange={e => setScenario({ ...scenario, fakeLinkLabel: e.target.value })} placeholder="Label faux lien"
+              style={{ width: '100%', padding: '10px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)' }} />
+            <input type="text" value={scenario.fakeLinkUrl} onChange={e => setScenario({ ...scenario, fakeLinkUrl: e.target.value })} placeholder="URL faux lien"
+              style={{ width: '100%', padding: '10px', background: 'var(--bg-black)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)' }} />
+          </div>
+          <div style={{ marginTop: '12px', padding: '12px', border: '1px solid var(--border-subtle)', borderRadius: '8px', background: 'var(--bg-black)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{scenario.fakeEmailSender || 'sender@example.com'} → {scenario.fakeEmailSubject || 'Objet'}</div>
+            <div style={{ marginTop: '6px', color: 'var(--text-primary)' }}>{scenario.fakeEmailBody || 'Aperçu du faux email'}</div>
+            {scenario.fakeLinkLabel && <a href={scenario.fakeLinkUrl || '#'} style={{ marginTop: '8px', display: 'inline-block', color: '#4ea1ff' }}>{scenario.fakeLinkLabel}</a>}
+          </div>
+          <div style={{ marginTop: '16px' }}>
+            <button onClick={addQuizQuestion} className="btn-secondary">+ Ajouter une question quiz</button>
+            {scenario.quizQuestions.map((q, index) => (
+              <div key={q.id} style={{ marginTop: '8px', padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: '8px', background: 'var(--bg-black)' }}>
+                <input value={q.prompt} onChange={e => setScenario(prev => ({ ...prev, quizQuestions: prev.quizQuestions.map(item => item.id === q.id ? { ...item, prompt: e.target.value } : item) }))}
+                  placeholder={`Question ${index + 1}`}
+                  style={{ width: '100%', padding: '8px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '4px', color: 'var(--text-primary)' }} />
+              </div>
+            ))}
           </div>
         </div>
 
