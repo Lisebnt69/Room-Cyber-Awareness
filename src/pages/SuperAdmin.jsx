@@ -16,11 +16,45 @@ const INITIAL_COMPANIES = [
 ]
 
 const INITIAL_SCENARIOS = [
+  // Phishing
   { id: 1, title: { fr: 'Opération : Inbox Zero', en: 'Operation: Inbox Zero' }, category: 'Phishing', difficulty: 'intermediate', duration: '15', plays: 3241, score: 724, status: 'published', description: 'Simulation d\'attaque phishing avancée par email' },
-  { id: 2, title: { fr: 'Bureau Compromis', en: 'Compromised Desktop' }, category: 'Ransomware', difficulty: 'advanced', duration: '20', plays: 1892, score: 612, status: 'published', description: 'Scénario de ransomware sur poste de travail' },
-  { id: 3, title: { fr: 'Ingénierie Sociale', en: 'Social Engineering' }, category: 'Social Eng.', difficulty: 'beginner', duration: '10', plays: 4102, score: 831, status: 'published', description: 'Manipulation psychologique et pretexting' },
-  { id: 4, title: { fr: 'Fuite de Données', en: 'Data Breach' }, category: 'Insider', difficulty: 'advanced', duration: '25', plays: 987, score: 568, status: 'beta', description: 'Détection d\'une exfiltration de données sensibles' },
-  { id: 5, title: { fr: 'WiFi Piégé', en: 'Rogue WiFi' }, category: 'Réseau', difficulty: 'intermediate', duration: '12', plays: 0, score: 0, status: 'draft', description: 'Attaque par point d\'accès WiFi malveillant' },
+  { id: 2, title: { fr: 'CEO Fraud', en: 'CEO Fraud' }, category: 'Phishing', difficulty: 'advanced', duration: '20', plays: 1540, score: 638, status: 'published', description: 'Usurpation d\'identité du PDG pour virement frauduleux' },
+  { id: 3, title: { fr: 'Alerte Bancaire', en: 'Banking Alert' }, category: 'Phishing', difficulty: 'beginner', duration: '10', plays: 2870, score: 812, status: 'published', description: 'Fausse alerte de sécurité bancaire par email' },
+  { id: 4, title: { fr: 'Faux Support IT', en: 'Fake IT Support' }, category: 'Phishing', difficulty: 'intermediate', duration: '12', plays: 1120, score: 695, status: 'published', description: 'Email frauduleux d\'un faux technicien informatique' },
+  { id: 5, title: { fr: 'Spear Phishing RH', en: 'HR Spear Phishing' }, category: 'Phishing', difficulty: 'advanced', duration: '18', plays: 780, score: 589, status: 'beta', description: 'Attaque ciblée se faisant passer pour les RH' },
+  { id: 6, title: { fr: 'Vishing Téléphonique', en: 'Phone Vishing' }, category: 'Phishing', difficulty: 'beginner', duration: '8', plays: 2130, score: 841, status: 'published', description: 'Arnaque par appel téléphonique simulé' },
+  { id: 7, title: { fr: 'Arnaque Colis', en: 'Parcel Scam' }, category: 'Phishing', difficulty: 'beginner', duration: '8', plays: 3450, score: 863, status: 'published', description: 'SMS frauduleux sur la livraison d\'un colis' },
+  // Ransomware
+  { id: 8, title: { fr: 'Bureau Compromis', en: 'Compromised Desktop' }, category: 'Ransomware', difficulty: 'advanced', duration: '20', plays: 1892, score: 612, status: 'published', description: 'Scénario de ransomware sur poste de travail' },
+  { id: 9, title: { fr: 'LockBit Attack', en: 'LockBit Attack' }, category: 'Ransomware', difficulty: 'advanced', duration: '25', plays: 654, score: 541, status: 'published', description: 'Simulation d\'infection par le ransomware LockBit' },
+  { id: 10, title: { fr: 'Cryptolocker Hôpital', en: 'Hospital Cryptolocker' }, category: 'Ransomware', difficulty: 'advanced', duration: '30', plays: 421, score: 498, status: 'beta', description: 'Ransomware ciblant un établissement de santé' },
+  { id: 11, title: { fr: 'Double Extorsion', en: 'Double Extortion' }, category: 'Ransomware', difficulty: 'intermediate', duration: '18', plays: 530, score: 573, status: 'published', description: 'Chiffrement et exfiltration de données sensibles' },
+  { id: 12, title: { fr: 'Panne Backup', en: 'Backup Failure' }, category: 'Ransomware', difficulty: 'intermediate', duration: '15', plays: 0, score: 0, status: 'draft', description: 'Gestion de crise après destruction des sauvegardes' },
+  // Social Eng.
+  { id: 13, title: { fr: 'Ingénierie Sociale', en: 'Social Engineering' }, category: 'Social Eng.', difficulty: 'beginner', duration: '10', plays: 4102, score: 831, status: 'published', description: 'Manipulation psychologique et pretexting' },
+  { id: 14, title: { fr: 'Prétexting PDG', en: 'CEO Pretexting' }, category: 'Social Eng.', difficulty: 'advanced', duration: '20', plays: 890, score: 602, status: 'published', description: 'Scénario de prétexting complexe impliquant le PDG' },
+  { id: 15, title: { fr: 'Shoulder Surfing', en: 'Shoulder Surfing' }, category: 'Social Eng.', difficulty: 'beginner', duration: '8', plays: 1760, score: 872, status: 'published', description: 'Espionnage visuel dans les espaces publics' },
+  { id: 16, title: { fr: 'Tailgating Bureau', en: 'Office Tailgating' }, category: 'Social Eng.', difficulty: 'intermediate', duration: '12', plays: 1340, score: 718, status: 'published', description: 'Intrusion physique par filature derrière un employé' },
+  { id: 17, title: { fr: 'Manipulation Helpdesk', en: 'Helpdesk Manipulation' }, category: 'Social Eng.', difficulty: 'intermediate', duration: '15', plays: 0, score: 0, status: 'draft', description: 'Manipulation du service d\'assistance pour obtenir un accès' },
+  // Insider
+  { id: 18, title: { fr: 'Fuite de Données', en: 'Data Breach' }, category: 'Insider', difficulty: 'advanced', duration: '25', plays: 987, score: 568, status: 'beta', description: 'Détection d\'une exfiltration de données sensibles' },
+  { id: 19, title: { fr: 'Employé Mécontent', en: 'Disgruntled Employee' }, category: 'Insider', difficulty: 'advanced', duration: '22', plays: 430, score: 511, status: 'beta', description: 'Sabotage interne par un employé insatisfait' },
+  { id: 20, title: { fr: 'Partage Accidentel', en: 'Accidental Share' }, category: 'Insider', difficulty: 'beginner', duration: '10', plays: 1890, score: 803, status: 'published', description: 'Envoi involontaire de documents confidentiels' },
+  { id: 21, title: { fr: 'Abus de Privilèges', en: 'Privilege Abuse' }, category: 'Insider', difficulty: 'intermediate', duration: '15', plays: 0, score: 0, status: 'draft', description: 'Détection d\'un abus de droits d\'accès élevés' },
+  // Réseau
+  { id: 22, title: { fr: 'WiFi Piégé', en: 'Rogue WiFi' }, category: 'Réseau', difficulty: 'intermediate', duration: '12', plays: 0, score: 0, status: 'draft', description: 'Attaque par point d\'accès WiFi malveillant' },
+  { id: 23, title: { fr: 'Attaque MITM', en: 'MITM Attack' }, category: 'Réseau', difficulty: 'advanced', duration: '20', plays: 340, score: 529, status: 'beta', description: 'Interception de communications réseau en temps réel' },
+  { id: 24, title: { fr: 'DNS Poisoning', en: 'DNS Poisoning' }, category: 'Réseau', difficulty: 'advanced', duration: '18', plays: 0, score: 0, status: 'draft', description: 'Empoisonnement du cache DNS pour rediriger le trafic' },
+  { id: 25, title: { fr: 'Scan de Ports', en: 'Port Scan Detection' }, category: 'Réseau', difficulty: 'intermediate', duration: '15', plays: 610, score: 654, status: 'published', description: 'Détection et réponse à une reconnaissance réseau' },
+  { id: 26, title: { fr: 'Fuite VPN', en: 'VPN Leak' }, category: 'Réseau', difficulty: 'beginner', duration: '10', plays: 1230, score: 756, status: 'published', description: 'Identification d\'une fuite DNS sur connexion VPN' },
+  // Malware
+  { id: 27, title: { fr: 'Macro Excel Piégée', en: 'Malicious Excel Macro' }, category: 'Malware', difficulty: 'intermediate', duration: '15', plays: 2100, score: 688, status: 'published', description: 'Exécution d\'un malware via une macro Office' },
+  { id: 28, title: { fr: 'USB Infectée', en: 'Infected USB' }, category: 'Malware', difficulty: 'beginner', duration: '10', plays: 2780, score: 844, status: 'published', description: 'Risque lié à une clé USB inconnue trouvée au sol' },
+  { id: 29, title: { fr: 'Drive-by Download', en: 'Drive-by Download' }, category: 'Malware', difficulty: 'intermediate', duration: '12', plays: 870, score: 672, status: 'published', description: 'Infection silencieuse par navigation web' },
+  { id: 30, title: { fr: 'Rootkit Persistant', en: 'Persistent Rootkit' }, category: 'Malware', difficulty: 'advanced', duration: '25', plays: 0, score: 0, status: 'draft', description: 'Détection d\'un rootkit dissimulé dans le système' },
+  // OSINT
+  { id: 31, title: { fr: 'Reconnaissance LinkedIn', en: 'LinkedIn Reconnaissance' }, category: 'OSINT', difficulty: 'intermediate', duration: '15', plays: 1460, score: 712, status: 'published', description: 'Collecte d\'informations sur les employés via LinkedIn' },
+  { id: 32, title: { fr: 'Google Dorks', en: 'Google Dorks' }, category: 'OSINT', difficulty: 'advanced', duration: '20', plays: 590, score: 621, status: 'beta', description: 'Exploitation de requêtes Google pour trouver des données exposées' },
 ]
 
 const licensesData = [
@@ -188,13 +222,16 @@ export default function SuperAdmin() {
 
 const onScenarioPhotoUpload = (file) => {
   if (!file) return
-  const localUrl = URL.createObjectURL(file)
-  setEditScenarioForm(prev => ({
-    ...(prev || {}),
-    coverImage: localUrl,
-    coverImageName: file.name,
-  }))
-  if (!((editScenarioForm?.modules || []).includes('photo'))) toggleScenarioModule('photo')
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    setEditScenarioForm(prev => ({
+      ...(prev || {}),
+      coverImage: ev.target.result,
+      coverImageName: file.name,
+      modules: Array.from(new Set([...((prev || {}).modules || []), 'photo'])),
+    }))
+  }
+  reader.readAsDataURL(file)
 }
 
 const addHotspotFromImageClick = (e) => {
