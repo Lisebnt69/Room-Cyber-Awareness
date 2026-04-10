@@ -109,15 +109,17 @@ const withScenarioDefaults = (scenario = {}) => ({
   ...DEFAULT_SCENARIO_FIELDS,
   ...scenario,
   title: {
-    fr: scenario?.title?.fr || '',
-    en: scenario?.title?.en || '',
+    fr: scenario?.title?.fr || scenario?.title_fr || '',
+    en: scenario?.title?.en || scenario?.title_en || scenario?.title_fr || '',
   },
-  titleFr: scenario?.titleFr || scenario?.title?.fr || '',
-  titleEn: scenario?.titleEn || scenario?.title?.en || '',
+  titleFr: scenario?.titleFr || scenario?.title_fr || scenario?.title?.fr || '',
+  titleEn: scenario?.titleEn || scenario?.title_en || scenario?.title?.en || '',
   photoHotspots: Array.isArray(scenario?.photoHotspots) ? scenario.photoHotspots : [],
   quizQuestions: Array.isArray(scenario?.quizQuestions) ? scenario.quizQuestions : [],
   modules: Array.isArray(scenario?.modules) ? scenario.modules : [],
 })
+
+const apiToState = (s) => withScenarioDefaults({ ...s })
 
 function statusBadge(s, t) {
   const map = {
@@ -157,7 +159,7 @@ export default function SuperAdmin() {
   const [toast, setToast] = useState(null)
   const [viewportWidth, setViewportWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1280)
   const [companies, setCompanies] = useState(INITIAL_COMPANIES)
-  const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS.map(withScenarioDefaults))
+  const [scenarios, setScenarios] = useState([])
   const [editCompanyForm, setEditCompanyForm] = useState(null)
   const [builderMode, setBuilderMode] = useState(null)
 
@@ -166,44 +168,59 @@ export default function SuperAdmin() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const handleBuilderSave = (data) => {
-    const updated = withScenarioDefaults({
-      id: data.id || Date.now(),
-      title: { fr: data.titleFr, en: data.titleEn || data.titleFr },
-      titleFr: data.titleFr,
-      titleEn: data.titleEn || data.titleFr,
+  const loadScenarios = () =>
+    fetch('/api/scenarios')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setScenarios(data.map(apiToState)) })
+      .catch(() => {})
+
+  useEffect(() => {
+    loadScenarios()
+    fetch('/api/companies')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setCompanies(data) })
+      .catch(() => {})
+  }, [])
+
+  const handleBuilderSave = async (data) => {
+    const body = {
+      title_fr: data.titleFr,
+      title_en: data.titleEn || data.titleFr,
       category: data.category,
       difficulty: data.difficulty,
       duration: data.duration,
       description: data.description,
       status: data.status || 'draft',
-      coverImage: data.coverImage || '',
-      coverImageName: data.coverImageName || '',
-      photoHotspots: data.photoHotspots || [],
-      fakeLinkLabel: data.fakeLinkLabel || '',
-      fakeLinkUrl: data.fakeLinkUrl || '',
-      fakeLinkHover: data.fakeLinkHover || '',
-      fakeEmailSender: data.fakeEmailSender || '',
-      fakeEmailSubject: data.fakeEmailSubject || '',
-      fakeEmailBody: data.fakeEmailBody || '',
-      videoUrl: data.videoUrl || '',
-      quizQuestions: data.quizQuestions || [],
-      narrative: data.narrative || '',
-      modules: data.modules || [],
-      plays: data.plays || 0,
-      score: data.score || 0,
-      mappingContext: data.mappingContext || '',
-    })
-
-    if (builderMode?.mode === 'edit') {
-      setScenarios((prev) => prev.map((s) => (s.id === updated.id ? updated : s)))
-      showToast(lang === 'fr' ? `"${updated.title.fr}" mis à jour` : `"${updated.title.en}" updated`)
-    } else {
-      setScenarios((prev) => [...prev, updated])
-      showToast(lang === 'fr' ? `"${updated.title.fr}" créé` : `"${updated.title.en}" created`)
+      blocks: data.blocks || [],
     }
-
+    try {
+      const isEdit = builderMode?.mode === 'edit' && data.id
+      const url = isEdit ? `/api/scenarios/${data.id}` : '/api/scenarios'
+      const res = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        showToast(`Erreur: ${err.error || 'inconnue'}`)
+        return
+      }
+      await loadScenarios()
+      showToast(lang === 'fr'
+        ? `"${body.title_fr}" ${isEdit ? 'mis à jour' : 'créé'}`
+        : `"${body.title_fr}" ${isEdit ? 'updated' : 'created'}`)
+    } catch {
+      showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
+    }
     setBuilderMode(null)
+  }
+
+  const handleDeleteScenario = async (s) => {
+    if (!confirm(lang === 'fr' ? `Supprimer "${s.title?.fr || s.title_fr}" ?` : `Delete "${s.title?.en || s.title_fr}" ?`)) return
+    await fetch(`/api/scenarios/${s.id}`, { method: 'DELETE' })
+    await loadScenarios()
+    showToast(lang === 'fr' ? 'Scénario supprimé' : 'Scenario deleted')
   }
 
   const openEditCompany = (company) => {
@@ -1090,6 +1107,15 @@ export default function SuperAdmin() {
                           aria-label={`Edit scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`}
                         >
                           ✎ {t('saEdit')}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteScenario(s)}
+                          style={{ background: 'transparent', border: '1px solid rgba(235,40,40,0.4)', color: 'rgba(235,40,40,0.7)', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'var(--mono)', transition: 'all 0.15s' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'; e.currentTarget.style.color = 'rgba(235,40,40,0.7)' }}
+                          aria-label={`Delete scenario`}
+                        >
+                          ✕
                         </button>
                       </td>
                     </tr>

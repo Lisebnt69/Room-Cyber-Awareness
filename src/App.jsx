@@ -104,7 +104,7 @@ export default function App() {
             </ProtectedRoute>
           } />
           <Route path="/preview/:id" element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+            <ProtectedRoute requiredRole={ROLES.PLAYER}>
               <ScenarioPreview />
             </ProtectedRoute>
           } />

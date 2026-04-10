@@ -909,8 +909,16 @@ function DecisionEditor({ block, onChange }) {
 export default function ScenarioBuilder({
   onSave = () => {},
   onBack = () => {},
+  initialData = null,
 }) {
-  const [meta, setMeta] = useState({
+  const [meta, setMeta] = useState(initialData ? {
+    titleFr: initialData.title_fr || initialData.titleFr || '',
+    titleEn: initialData.title_en || initialData.titleEn || '',
+    category: initialData.category || 'Phishing',
+    difficulty: initialData.difficulty || 'intermediate',
+    duration: String(initialData.duration || '15'),
+    description: initialData.description || '',
+  } : {
     titleFr: '',
     titleEn: '',
     category: 'Phishing',
@@ -919,7 +927,9 @@ export default function ScenarioBuilder({
     description: '',
   })
 
-  const [blocks, setBlocks] = useState([])
+  const [blocks, setBlocks] = useState(
+    initialData?.blocks?.map((b, i) => ({ ...b, id: b.id ?? (Date.now() + i) })) || []
+  )
   const [selectedId, setSelectedId] = useState(null)
   const [step, setStep] = useState('meta')
 
@@ -1000,7 +1010,7 @@ export default function ScenarioBuilder({
       ...meta,
       blocks,
       status,
-      id: Date.now(),
+      id: initialData?.id ?? null,
     })
   }
 
