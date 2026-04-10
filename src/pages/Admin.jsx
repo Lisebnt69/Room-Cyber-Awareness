@@ -26,7 +26,7 @@ const deptData = [
 ]
 const COLORS = ['#00d4ff', '#1a3a6b', '#0a1f3d']
 
-const scenarioLibrary = [
+const INITIAL_SCENARIO_LIBRARY = [
   { id: 's1', title: { fr: 'Opération : Inbox Zero', en: 'Operation: Inbox Zero' }, category: 'Phishing', difficulty: 'intermediate', duration: '15 min', status: 'available' },
   { id: 's2', title: { fr: 'Bureau Compromis', en: 'Compromised Desktop' }, category: 'Ransomware', difficulty: 'advanced', duration: '20 min', status: 'available' },
   { id: 's3', title: { fr: 'Ingénierie Sociale', en: 'Social Engineering' }, category: 'Social Eng.', difficulty: 'beginner', duration: '10 min', status: 'available' },
@@ -273,7 +273,8 @@ function TabEmployees({ t, lang, employees, onSelectEmployee, onCreateEmployee, 
 }
 
 // ─── Tab: Scenarios ───────────────────────────────────────────────
-function TabScenarios({ t, lang, onAssign }) {
+function TabScenarios({ t, lang, onAssign, scenarioLibrary }) {
+  const navigate = useNavigate()
   const [launched, setLaunched] = useState({})
   const diffLabel = (d) => ({ intermediate: t('diffIntermediate'), advanced: t('diffAdvanced'), beginner: t('diffBeginner') })[d] || d
   return (
@@ -284,7 +285,7 @@ function TabScenarios({ t, lang, onAssign }) {
           onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
         >
           <div>
-            <div style={{ fontFamily: 'var(--font-title)', fontSize: '15px', marginBottom: '8px' }}>{typeof s.title === 'object' ? s.title[lang] : s.title}</div>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '15px', marginBottom: '8px' }}>{typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}</div>
             <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
               <span className="tag" style={{ fontSize: '10px', padding: '2px 8px' }}>{s.category}</span>
               <span>{diffLabel(s.difficulty)}</span>
@@ -292,6 +293,13 @@ function TabScenarios({ t, lang, onAssign }) {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => navigate('/preview/' + (typeof s.id === 'number' ? s.id : s.id))}
+              style={{ background: 'transparent', border: '1px solid #22c55e', color: '#22c55e', padding: '8px 16px', fontSize: '12px', cursor: 'pointer', fontFamily: 'var(--mono)' }}
+              aria-label={`Test scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`}
+            >
+              ▶ Tester
+            </button>
             {launched[s.id] ? (
               <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: '#22c55e', border: '1px solid #22c55e', padding: '8px 16px' }}>✓ {lang === 'fr' ? 'Assigné' : 'Assigned'}</span>
             ) : (
@@ -467,6 +475,22 @@ export default function Admin() {
   const [toast, setToast] = useState(null)
   const [employees, setEmployees] = useState(INITIAL_EMPLOYEES)
   const [newEmpForm, setNewEmpForm] = useState({ name: '', email: '', dept: 'Finance', license: true })
+  const [scenarioLibrary, setScenarioLibrary] = useState(INITIAL_SCENARIO_LIBRARY)
+
+  useEffect(() => {
+    fetch('/api/companies/1/scenarios')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setScenarioLibrary(data.map(s => ({
+            ...s,
+            title: { fr: s.title_fr, en: s.title_en || s.title_fr },
+            duration: s.duration ? s.duration + ' min' : '—',
+          })))
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
@@ -560,12 +584,12 @@ export default function Admin() {
               onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
             >
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>{typeof s.title === 'object' ? s.title[lang] : s.title}</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>{typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}</div>
                 <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
                   <span>{s.category}</span><span>•</span><span>{s.duration}</span>
                 </div>
               </div>
-              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} aria-label={`Assign scenario ${typeof s.title === 'object' ? s.title[lang] : s.title}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? `Scénario assigné à toute l'équipe` : 'Scenario assigned to all employees') }}>
+              <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '12px' }} aria-label={`Assign scenario ${typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}`} onClick={() => { setModal(null); showToast(lang === 'fr' ? `Scénario assigné à toute l'équipe` : 'Scenario assigned to all employees') }}>
                 {lang === 'fr' ? 'Assigner' : 'Assign'}
               </button>
             </div>
@@ -648,7 +672,7 @@ export default function Admin() {
         <div style={{ padding: '40px' }}>
           {activeNav === 'dashboard' && <TabDashboard t={t} pieData={pieData} />}
           {activeNav === 'employees' && <TabEmployees t={t} lang={lang} employees={employees} onSelectEmployee={(emp) => setModal({ type: 'employee', data: emp })} onCreateEmployee={() => setModal({ type: 'createEmployee' })} onToggleLicense={handleToggleLicense} />}
-          {activeNav === 'scenarios' && <TabScenarios t={t} lang={lang} onAssign={(s) => showToast(lang === 'fr' ? `"${s.title[lang]}" assigné avec succès` : `"${s.title[lang]}" successfully assigned`)} />}
+          {activeNav === 'scenarios' && <TabScenarios t={t} lang={lang} scenarioLibrary={scenarioLibrary} onAssign={(s) => showToast(lang === 'fr' ? `"${typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}" assigné avec succès` : `"${typeof s.title === 'object' ? s.title[lang] : (s.title_en || s.title_fr || s.title)}" successfully assigned`)} />}
           {activeNav === 'reports' && <TabReports t={t} lang={lang} />}
           {activeNav === 'settings' && <TabSettings t={t} lang={lang} user={user} />}
         </div>

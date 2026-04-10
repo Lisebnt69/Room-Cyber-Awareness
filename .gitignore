@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# SQLite database (auto-generated at runtime)
+server/*.db
+server/*.db-shm
+server/*.db-wal
+.env
