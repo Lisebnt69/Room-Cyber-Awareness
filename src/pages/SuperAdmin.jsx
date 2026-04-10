@@ -350,7 +350,7 @@ export default function SuperAdmin() {
   const getScenarioModulesLabel = (scenario) => {
     const modules = Array.isArray(scenario.modules) ? scenario.modules : []
     if (!modules.length) return lang === 'fr' ? 'Aucun module' : 'No modules'
-    return modules.map(m => moduleLabels[m]?.[lang] || m).join(' · ')
+    return modules.map((m) => moduleLabels[m]?.[lang] || m).join(' · ')
   }
 
   return (
