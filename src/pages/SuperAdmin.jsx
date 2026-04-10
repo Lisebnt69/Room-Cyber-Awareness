@@ -152,7 +152,7 @@ export default function SuperAdmin() {
   plays: 0,
   score: 0,
   status: 'draft',
-}
+
       modules: Array.isArray(editScenarioForm.modules) ? editScenarioForm.modules : [],
       plays: 0, score: 0, status: 'draft',
     }
