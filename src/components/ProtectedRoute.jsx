@@ -1,6 +1,12 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth, ROLES } from '../context/AuthContext'
 
+const ROLE_LEVEL = {
+  [ROLES.PLAYER]: 1,
+  [ROLES.ADMIN]: 2,
+  [ROLES.SUPER_ADMIN]: 3,
+}
+
 export default function ProtectedRoute({ children, requiredRole = null }) {
   const { user, isLoading } = useAuth()
 
@@ -25,8 +31,12 @@ export default function ProtectedRoute({ children, requiredRole = null }) {
     return <Navigate to="/login" replace />
   }
 
-  if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to="/login" replace />
+  if (requiredRole) {
+    const userLevel = ROLE_LEVEL[user.role] ?? 0
+    const requiredLevel = ROLE_LEVEL[requiredRole] ?? 0
+    if (userLevel < requiredLevel) {
+      return <Navigate to="/login" replace />
+    }
   }
 
   return children
