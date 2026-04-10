@@ -117,21 +117,7 @@ function BlockPreview({
     }
   }
 
-  const loadReadyScenario = (preset) => {
-    setScenario({
-      ...preset,
-      framework: preset.framework || '',
-      sector: preset.sector || '',
-      fakeEmailSender: preset.fakeEmailSender || '',
-      fakeEmailSubject: preset.fakeEmailSubject || '',
-      fakeEmailBody: preset.fakeEmailBody || '',
-      fakeLinkLabel: preset.fakeLinkLabel || '',
-      fakeLinkUrl: preset.fakeLinkUrl || '',
-      fakeLinkHover: preset.fakeLinkHover || '',
-      quizQuestions: preset.quizQuestions || [],
-      photoHotspots: preset.photoHotspots || [],
-    })
-  }
+
 
   const loadReadyScenario = (preset) => {
     setScenario({
