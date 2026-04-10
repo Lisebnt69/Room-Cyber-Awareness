@@ -23,7 +23,7 @@ const deptData = [
   { dept: 'Finance', score: 82 }, { dept: 'RH', score: 74 },
   { dept: 'IT', score: 91 }, { dept: 'Commercial', score: 63 }, { dept: 'Direction', score: 88 },
 ]
-const COLORS = ['#eb2828', '#545454', '#2e2c2c']
+const COLORS = ['#00d4ff', '#1a3a6b', '#0a1f3d']
 
 const scenarioLibrary = [
   { id: 's1', title: { fr: 'Opération : Inbox Zero', en: 'Operation: Inbox Zero' }, category: 'Phishing', difficulty: 'intermediate', duration: '15 min', status: 'available' },
@@ -51,17 +51,17 @@ function statusColor(s) {
 }
 
 const tooltipStyle = {
-  contentStyle: { background: '#0d0d0d', border: '1px solid #333', borderRadius: 0, fontFamily: 'var(--mono)', fontSize: '11px' },
+  contentStyle: { background: 'rgba(4,15,32,0.95)', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '8px', fontFamily: 'var(--mono)', fontSize: '11px' },
   labelStyle: { color: 'var(--text-muted)' },
   itemStyle: { color: 'var(--text-light)' },
 }
 
 function KpiCard({ label, value, sub, trend, accent }) {
   return (
-    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderTop: accent ? '2px solid var(--red)' : '2px solid transparent', padding: '24px 28px' }}>
+    <div style={{ background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', borderTop: accent ? '2px solid var(--cyan)' : '2px solid transparent', borderRadius: 'var(--r-md)', padding: '24px 28px', backdropFilter: 'var(--glass-blur)', boxShadow: 'var(--glass-shadow)', transition: 'border-color 0.2s' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '12px' }}>{label}</div>
-      <div style={{ fontFamily: 'var(--font-title)', fontSize: '36px', fontWeight: 700, color: accent ? 'var(--red)' : 'var(--text-light)', lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: '12px', color: trend === 'up' ? '#22c55e' : trend === 'down' ? 'var(--red)' : 'var(--text-muted)', marginTop: '8px' }}>{trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''} {sub}</div>}
+      <div style={{ fontFamily: 'var(--font-title)', fontSize: '36px', fontWeight: 700, color: accent ? 'var(--cyan)' : 'var(--text-light)', lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: '12px', color: trend === 'up' ? '#22c55e' : trend === 'down' ? 'var(--danger)' : 'var(--text-muted)', marginTop: '8px' }}>{trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''} {sub}</div>}
     </div>
   )
 }
@@ -103,20 +103,20 @@ function TabDashboard({ t, pieData }) {
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={progressData}>
               <defs>
-                <linearGradient id="gP" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#eb2828" stopOpacity={0.2} /><stop offset="95%" stopColor="#eb2828" stopOpacity={0} /></linearGradient>
-                <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#545454" stopOpacity={0.3} /><stop offset="95%" stopColor="#545454" stopOpacity={0} /></linearGradient>
+                <linearGradient id="gP" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#00d4ff" stopOpacity={0.25} /><stop offset="95%" stopColor="#00d4ff" stopOpacity={0} /></linearGradient>
+                <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#1a3a6b" stopOpacity={0.4} /><stop offset="95%" stopColor="#1a3a6b" stopOpacity={0} /></linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(84,84,84,0.2)" />
               <XAxis dataKey="mois" tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--mono)' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--mono)' }} axisLine={false} tickLine={false} />
               <Tooltip {...tooltipStyle} />
-              <Area type="monotone" dataKey="participation" stroke="#eb2828" strokeWidth={2} fill="url(#gP)" name={t('chartParticipation')} />
-              <Area type="monotone" dataKey="reussite" stroke="#545454" strokeWidth={2} fill="url(#gR)" name={t('chartReussite')} />
+              <Area type="monotone" dataKey="participation" stroke="#00d4ff" strokeWidth={2} fill="url(#gP)" name={t('chartParticipation')} />
+              <Area type="monotone" dataKey="reussite" stroke="#1a3a6b" strokeWidth={2} fill="url(#gR)" name={t('chartReussite')} />
             </AreaChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', gap: '24px', marginTop: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}><div style={{ width: 12, height: 2, background: 'var(--red)' }} />{t('chartParticipation')}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}><div style={{ width: 12, height: 2, background: '#545454' }} />{t('chartReussite')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}><div style={{ width: 12, height: 2, background: '#00d4ff' }} />{t('chartParticipation')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}><div style={{ width: 12, height: 2, background: '#1a3a6b' }} />{t('chartReussite')}</div>
           </div>
         </div>
         <div style={{ background: 'var(--bg-card)', padding: '28px' }}>
@@ -142,7 +142,7 @@ function TabDashboard({ t, pieData }) {
             <XAxis dataKey="dept" tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--mono)' }} axisLine={false} tickLine={false} />
             <YAxis domain={[0, 100]} tick={{ fill: '#828080', fontSize: 11, fontFamily: 'var(--mono)' }} axisLine={false} tickLine={false} />
             <Tooltip {...tooltipStyle} />
-            <Bar dataKey="score" fill="#eb2828" name={t('kpiScore')} />
+            <Bar dataKey="score" fill="#00d4ff" radius={[4,4,0,0]} name={t('kpiScore')} />
           </BarChart>
         </ResponsiveContainer>
       </div>
