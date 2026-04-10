@@ -988,6 +988,23 @@ export default function ScenarioBuilder({
     })
   }
 
+  const renderEditor = () => {
+    if (!selectedBlock) return null
+    const change = (patch) => updateBlock(selectedBlock.id, patch)
+    switch (selectedBlock.type) {
+      case 'email':    return <EmailEditor block={selectedBlock} onChange={change} />
+      case 'fakelink': return <FakeLinkEditor block={selectedBlock} onChange={change} />
+      case 'photo':    return <PhotoEditor block={selectedBlock} onChange={change} />
+      case 'quiz':     return <QuizEditor block={selectedBlock} onChange={change} />
+      case 'video':    return <Row label="URL VIDÉO (YouTube, mp4...)"><input style={inp} value={selectedBlock.url || ''} onChange={e => change({ url: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." /></Row>
+      case 'text':     return <Row label="NARRATION / MISE EN SITUATION"><textarea style={{ ...inp, resize: 'vertical' }} rows={10} value={selectedBlock.content || ''} onChange={e => change({ content: e.target.value })} placeholder="Vous êtes en plein travail quand..." /></Row>
+      case 'decision': return <DecisionEditor block={selectedBlock} onChange={change} />
+      default: return null
+    }
+  }
+
+  const blockType = (type) => BLOCK_TYPES.find(t => t.type === type) || { icon: '?', label: type }
+
   return (
     <div
       style={{
@@ -1252,6 +1269,7 @@ export default function ScenarioBuilder({
             >
               BLOCS
             </div>
+          )}
 
             {BLOCK_TYPES.map((bt) => (
               <button
