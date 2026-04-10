@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
+import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import { sectors } from '../data/sectorScenarios'
 

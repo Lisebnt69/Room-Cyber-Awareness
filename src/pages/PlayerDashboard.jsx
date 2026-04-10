@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import { db } from '../services/db'
-import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
+import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import { visualScenarios } from '../data/visualScenarios'
+import { generateCertificatePDF } from '../services/pdfGenerator'
 
 const allBadges = [
   { id: 'first_blood', name: 'Premier Sang', icon: '🩸', desc: 'Terminer votre premier scénario' },
@@ -46,33 +47,16 @@ const earnedCertificates = [
   { id: 'cert2', title: 'GDPR Awareness', date: '2026-03-29', score: 88, level: 'Débutant', issuer: 'ROOMCA Certification Authority' },
 ]
 
-function downloadCertificate(cert, userName) {
-  const content = `
-CERTIFICAT DE COMPLÉTION
-========================
-Module : ${cert.title}
-Niveau : ${cert.level}
-Titulaire : ${userName || 'Employé ROOMCA'}
-Score obtenu : ${cert.score}/100
-Date d'émission : ${cert.date}
-Émis par : ${cert.issuer}
-
-Ce certificat atteste que le titulaire a complété avec succès
-le module de formation en cybersécurité ROOMCA.
-
-ID de vérification : ROOMCA-${cert.id.toUpperCase()}-${Date.now().toString(36).toUpperCase()}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ROOMCA — Cybersecurity Awareness Platform
-https://roomca.io
-  `.trim()
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `Certificat_ROOMCA_${cert.title.replace(/\s+/g, '_')}.txt`
-  a.click()
-  URL.revokeObjectURL(url)
+async function downloadCertificate(cert, userName) {
+  await generateCertificatePDF({
+    title: cert.title,
+    level: cert.level,
+    userName: userName || 'Employé ROOMCA',
+    score: cert.score,
+    date: cert.date,
+    issuer: cert.issuer,
+    certId: cert.id,
+  })
 }
 
 export default function PlayerDashboard() {

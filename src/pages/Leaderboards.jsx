@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '/home/lise/Room-Cyber-Awareness/public/roomca-logo.png'
+import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Leaderboard from '../components/Leaderboard'
 
