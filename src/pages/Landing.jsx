@@ -247,6 +247,139 @@ function FeaturesSection() {
   )
 }
 
+function LiveDemoTeaser({ onOpenDemo }) {
+  const [revealed, setRevealed] = useState(false)
+  const threats = [
+    { id: 'domain', x: '54%', y: '18%', label: 'Faux domaine', detail: 'acme-corp.io ≠ acme.com', color: '#ef4444' },
+    { id: 'urgency', x: '28%', y: '44%', label: 'Urgence artificielle', detail: '"immédiatement"', color: '#f59e0b' },
+    { id: 'amount', x: '60%', y: '44%', label: 'Virement 78 500€', detail: 'Sans procédure officielle', color: '#ef4444' },
+    { id: 'secret', x: '20%', y: '62%', label: 'Demande de silence', detail: '"N\'en parlez à personne"', color: '#f59e0b' },
+    { id: 'dnd', x: '56%', y: '62%', label: 'PDG injoignable', detail: '"Ne Pas Déranger"', color: '#ef4444' },
+  ]
+  return (
+    <section style={{ padding: '100px 40px', background: 'var(--bg-base)' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '52px' }}>
+          <div style={{ display: 'inline-block', padding: '4px 14px', background: 'rgba(235,40,40,0.1)', border: '1px solid rgba(235,40,40,0.3)', borderRadius: '20px', fontSize: '12px', color: 'var(--red)', letterSpacing: '0.1em', marginBottom: '20px' }}>
+            SIMULATION EN DIRECT
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(28px, 4vw, 44px)', marginBottom: '16px' }}>
+            Vos équipes reconnaîtraient-elles<br />
+            <span style={{ color: 'var(--red)' }}>cette attaque ?</span>
+          </h2>
+          <p style={{ fontSize: '16px', color: 'var(--text-secondary)', maxWidth: '540px', margin: '0 auto' }}>
+            Cet email est arrivé hier dans une PME française. En 4 heures, 78 500€ étaient virés.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center' }}>
+          {/* Email preview */}
+          <div style={{ position: 'relative' }}>
+            <div style={{ background: '#ffffff', color: '#111', borderRadius: '10px', padding: '20px', fontFamily: 'Arial, sans-serif', fontSize: '13px', lineHeight: 1.7, boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ borderBottom: '1px solid #e5e5e5', paddingBottom: '12px', marginBottom: '14px', fontSize: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: '4px' }}>
+                  <span style={{ color: '#666' }}>De :</span>
+                  <span style={{ color: revealed ? '#ef4444' : '#111', fontWeight: revealed ? 700 : 400, transition: 'all 0.3s' }}>
+                    Jean-Marc Dupont &lt;pdg@acme-corp<span style={{ background: revealed ? '#fef2f2' : 'transparent', transition: 'all 0.3s' }}>.io</span>&gt;
+                  </span>
+                  <span style={{ color: '#666' }}>Objet :</span>
+                  <span style={{ fontWeight: 'bold', color: '#b00' }}>⚠️ URGENT — Virement confidentiel</span>
+                </div>
+              </div>
+              <div style={{ marginBottom: '8px' }}>Bonjour Marie,</div>
+              <div style={{ margin: '10px 0' }}>
+                Je suis en réunion confidentielle. J'ai besoin que vous effectuiez{' '}
+                <strong style={{ color: revealed ? '#f59e0b' : '#111', transition: 'color 0.3s' }}>immédiatement</strong>
+                {' '}un virement de{' '}
+                <strong style={{ color: revealed ? '#ef4444' : '#b00', transition: 'color 0.3s' }}>78 500 €</strong>.
+              </div>
+              <div style={{ background: '#f8f8f8', padding: '8px 12px', margin: '10px 0', borderLeft: '3px solid #ccc', fontSize: '11px', fontFamily: 'monospace' }}>
+                IBAN : FR76 1234 5678 9012 3456 7890 123
+              </div>
+              <div style={{ margin: '10px 0', color: revealed ? '#f59e0b' : '#111', transition: 'color 0.3s' }}>
+                <strong>N'en parlez à personne.</strong> Je suis en mode "<strong>Ne Pas Déranger</strong>".
+              </div>
+              <div style={{ marginTop: '14px', color: '#555', fontSize: '12px' }}>
+                Cordialement,<br /><strong>Jean-Marc Dupont</strong>, PDG ACME Corp
+              </div>
+
+              {/* Threat badges — shown on reveal */}
+              {revealed && threats.map(t => (
+                <div key={t.id} style={{ position: 'absolute', left: t.x, top: t.y, transform: 'translate(-50%, -50%)', zIndex: 10 }}>
+                  <div style={{ background: t.color, color: '#fff', fontSize: '10px', padding: '3px 8px', borderRadius: '10px', whiteSpace: 'nowrap', fontWeight: 700, boxShadow: `0 0 12px ${t.color}88` }}>
+                    ⚠ {t.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Reveal overlay */}
+            {!revealed && (
+              <div
+                onClick={() => setRevealed(true)}
+                style={{ position: 'absolute', inset: 0, borderRadius: '10px', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+              >
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: '15px' }}>Repérer les indices</div>
+                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', marginTop: '4px' }}>Cliquez pour révéler</div>
+              </div>
+            )}
+          </div>
+
+          {/* Right side */}
+          <div>
+            {revealed ? (
+              <div>
+                <div style={{ fontSize: '36px', marginBottom: '12px' }}>😱</div>
+                <h3 style={{ fontSize: '22px', color: 'var(--red)', marginBottom: '12px' }}>5 signaux d'alarme ignorés</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
+                  En moyenne, <strong style={{ color: 'var(--text-light)' }}>1 employé sur 3</strong> aurait effectué le virement sans vérifier.
+                  ROOMCA forme vos équipes à repérer chaque indice — avant qu'il ne coûte cher.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '28px' }}>
+                  {threats.map(t => (
+                    <div key={t.id} style={{ display: 'flex', gap: '10px', alignItems: 'center', padding: '8px 12px', background: `${t.color}10`, border: `1px solid ${t.color}33`, borderRadius: '6px' }}>
+                      <span style={{ color: t.color, fontSize: '14px' }}>⚠</span>
+                      <div>
+                        <span style={{ fontSize: '13px', color: t.color, fontWeight: 700 }}>{t.label}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>{t.detail}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={onOpenDemo} className="btn-primary" style={{ padding: '14px 32px', fontSize: '15px' }}>
+                  Tester la simulation complète →
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h3 style={{ fontSize: '22px', marginBottom: '16px' }}>
+                  1 clic peut coûter<br />
+                  <span style={{ color: 'var(--red)' }}>des milliers d'euros</span>
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
+                  Les attaques BEC (Business Email Compromise) ont coûté <strong style={{ color: 'var(--text-light)' }}>2,7 milliards €</strong> aux entreprises européennes en 2023.
+                </p>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '28px' }}>
+                  {[['95%', 'des entreprises ciblées'], ['78k€', 'montant moyen détourné'], ['4h', 'pour virer les fonds']].map(([val, lbl]) => (
+                    <div key={lbl} style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--red)' }}>{val}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{lbl}</div>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  ← Ouvrez l'email pour voir si vous repériez l'attaque
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function VideoSection({ onOpenDemo }) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -631,6 +764,7 @@ function FlagSpan({ flagId, children, found, activeHint, onFind, setActiveHint }
 }
 
 function DemoModal({ onClose }) {
+  const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [answer, setAnswer] = useState(null)
   const [found, setFound] = useState(new Set())
@@ -841,7 +975,7 @@ function DemoModal({ onClose }) {
 
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
             <button onClick={reset} className="btn-secondary" style={{ padding: '10px 20px' }}>🔄 Rejouer</button>
-            <button onClick={onClose} className="btn-primary" style={{ padding: '10px 24px' }}>Essai gratuit →</button>
+            <button onClick={() => { onClose(); navigate('/login') }} className="btn-primary" style={{ padding: '10px 24px' }}>Essai gratuit →</button>
           </div>
         </div>
       )}
@@ -864,6 +998,7 @@ export default function Landing() {
       <ProblemsSection />
       <SolutionSection />
       <FeaturesSection />
+      <LiveDemoTeaser onOpenDemo={() => setModal('demo')} />
       <VideoSection onOpenDemo={() => setModal('demo')} />
       <ROISection />
       <PricingSection showToast={showToast} />

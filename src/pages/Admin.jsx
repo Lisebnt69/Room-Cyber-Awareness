@@ -426,6 +426,146 @@ function TabReports({ lang }) {
   )
 }
 
+// ─── Tab: Executive (Vue Dirigeant) ───────────────────────────────
+function TabExecutive({ lang }) {
+  const [exporting, setExporting] = useState(false)
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      await generateReportPDF(
+        { id: 'exec', name: lang === 'fr' ? 'Vue Dirigeant — Rapport Cybersécurité' : 'Executive View — Cybersecurity Report' },
+        { period: 'Avril 2026', org: 'ACME Corp' }
+      )
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const deptRisks = [
+    { dept: 'IT',         score: 91, click: 1,  risk: 'low' },
+    { dept: 'Direction',  score: 88, click: 2,  risk: 'low' },
+    { dept: 'Finance',    score: 82, click: 3,  risk: 'low' },
+    { dept: 'RH',         score: 74, click: 9,  risk: 'medium' },
+    { dept: 'Marketing',  score: 67, click: 14, risk: 'medium' },
+    { dept: 'Commercial', score: 58, click: 18, risk: 'high' },
+  ]
+
+  const compliances = [
+    { label: 'GDPR',     score: 87, color: '#22c55e' },
+    { label: 'ISO 27001',score: 81, color: '#f59e0b' },
+    { label: 'NIS2',     score: 73, color: '#f59e0b' },
+    { label: 'DORA',     score: 68, color: '#ef4444' },
+  ]
+
+  const recs = [
+    { icon: '🎯', text: lang === 'fr' ? 'Formation urgente — Commercial (score 58/100)' : 'Urgent training — Sales (score 58/100)',          sev: 'high' },
+    { icon: '📧', text: lang === 'fr' ? 'Activer campagne phishing mensuelle automatisée' : 'Enable automated monthly phishing campaign',  sev: 'medium' },
+    { icon: '🛡️', text: lang === 'fr' ? 'Audit NIS2 interne recommandé (score < 80%)' : 'Internal NIS2 audit recommended (score < 80%)',   sev: 'medium' },
+    { icon: '👤', text: lang === 'fr' ? '9 nouveaux arrivants sans formation à intégrer' : '9 new employees with no training to onboard',   sev: 'low' },
+  ]
+
+  const score = 83
+  const radius = 54
+  const circ = 2 * Math.PI * radius
+  const offset = circ - (score / 100) * circ
+  const sevColor = { high: '#ef4444', medium: '#f59e0b', low: 'var(--border-subtle)' }
+  const riskColor = (r) => r === 'high' ? '#ef4444' : r === 'medium' ? '#f59e0b' : '#22c55e'
+
+  return (
+    <div>
+      {/* Row 1 — Global score + KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr', gap: '24px', marginBottom: '28px' }}>
+        <div style={{ background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--r-md)', padding: '28px 20px', backdropFilter: 'var(--glass-blur)', boxShadow: 'var(--glass-shadow)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'relative', width: 130, height: 130 }}>
+            <svg width="130" height="130" style={{ transform: 'rotate(-90deg)' }}>
+              <circle cx="65" cy="65" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
+              <circle cx="65" cy="65" r={radius} fill="none" stroke="#22c55e" strokeWidth="10"
+                strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" />
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ fontSize: '34px', fontWeight: 700, color: '#22c55e', lineHeight: 1 }}>{score}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/100</div>
+            </div>
+          </div>
+          <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.12em', textAlign: 'center' }}>
+            {lang === 'fr' ? 'SCORE CYBER GLOBAL' : 'GLOBAL CYBER SCORE'}
+          </div>
+          <div style={{ marginTop: '6px', fontSize: '12px', color: '#22c55e' }}>
+            {lang === 'fr' ? '✓ Risque maîtrisé' : '✓ Risk under control'}
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+          <KpiCard label={lang === 'fr' ? 'EMPLOYÉS FORMÉS' : 'TRAINED EMPLOYEES'} value="94%" sub="147 / 156" trend="up" accent />
+          <KpiCard label={lang === 'fr' ? 'TAUX CLIC PHISHING' : 'PHISHING CLICK RATE'} value="8%" sub={lang === 'fr' ? '−12 pts vs M−1' : '−12 pts vs prev. mo.'} trend="up" />
+          <KpiCard label={lang === 'fr' ? 'SCORE MOYEN ÉQUIPE' : 'AVG TEAM SCORE'} value="724" sub="/1000" />
+          <KpiCard label={lang === 'fr' ? 'INCIDENTS SIGNALÉS' : 'REPORTED INCIDENTS'} value="3" sub={lang === 'fr' ? 'ce mois' : 'this month'} />
+        </div>
+      </div>
+
+      {/* Row 2 — Compliance */}
+      <div style={{ marginBottom: '28px' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.14em', marginBottom: '14px' }}>
+          {lang === 'fr' ? 'CONFORMITÉ RÉGLEMENTAIRE' : 'REGULATORY COMPLIANCE'}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+          {compliances.map(c => (
+            <div key={c.label} style={{ background: 'var(--glass-bg)', border: `1px solid ${c.color}33`, borderTop: `2px solid ${c.color}`, borderRadius: 'var(--r-md)', padding: '16px 20px', backdropFilter: 'var(--glass-blur)' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>{c.label}</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: c.color, lineHeight: 1, marginBottom: '10px' }}>{c.score}%</div>
+              <div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px' }}>
+                <div style={{ height: '100%', width: `${c.score}%`, background: c.color, borderRadius: '2px' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 3 — Dept risk + recommendations */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '28px' }}>
+        <div style={{ background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--r-md)', padding: '24px', backdropFilter: 'var(--glass-blur)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.14em', marginBottom: '16px' }}>
+            {lang === 'fr' ? 'RISQUE PAR DÉPARTEMENT' : 'RISK BY DEPARTMENT'}
+          </div>
+          {deptRisks.map(d => (
+            <div key={d.dept} style={{ marginBottom: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{d.dept}</span>
+                <span style={{ fontSize: '12px', color: riskColor(d.risk) }}>
+                  {d.score}/100 · {d.click}% clics
+                </span>
+              </div>
+              <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px' }}>
+                <div style={{ height: '100%', width: `${d.score}%`, background: riskColor(d.risk), borderRadius: '2px' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--r-md)', padding: '24px', backdropFilter: 'var(--glass-blur)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.14em', marginBottom: '16px' }}>
+            {lang === 'fr' ? 'ACTIONS PRIORITAIRES' : 'PRIORITY ACTIONS'}
+          </div>
+          {recs.map((r, i) => (
+            <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '12px', marginBottom: '8px', background: 'rgba(255,255,255,0.02)', border: `1px solid ${sevColor[r.sev]}33`, borderLeft: `3px solid ${sevColor[r.sev]}`, borderRadius: '6px' }}>
+              <span style={{ fontSize: '16px', flexShrink: 0 }}>{r.icon}</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{r.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Export */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={handleExport} disabled={exporting} className="btn-primary" style={{ padding: '12px 28px', opacity: exporting ? 0.7 : 1 }}>
+          {exporting ? (lang === 'fr' ? '⏳ Génération...' : '⏳ Generating...') : (lang === 'fr' ? '📥 Exporter rapport PDF' : '📥 Export PDF report')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Tab: Settings ────────────────────────────────────────────────
 function TabSettings({ lang, user }) {
   const [saved, setSaved] = useState(false)
@@ -526,6 +666,7 @@ export default function Admin() {
   }
 
   const navItems = [
+    { id: 'executive', label: lang === 'fr' ? 'Vue Dirigeant' : 'Executive View', icon: '👔' },
     { id: 'dashboard', label: t('adminNavDashboard'), icon: '▦' },
     { id: 'employees', label: t('adminNavEmployees'), icon: '◉' },
     { id: 'scenarios', label: t('adminNavScenarios'), icon: '▷' },
@@ -670,6 +811,7 @@ export default function Admin() {
         </div>
 
         <div style={{ padding: '40px' }}>
+          {activeNav === 'executive' && <TabExecutive lang={lang} />}
           {activeNav === 'dashboard' && <TabDashboard t={t} pieData={pieData} />}
           {activeNav === 'employees' && <TabEmployees t={t} lang={lang} employees={employees} onSelectEmployee={(emp) => setModal({ type: 'employee', data: emp })} onCreateEmployee={() => setModal({ type: 'createEmployee' })} onToggleLicense={handleToggleLicense} />}
           {activeNav === 'scenarios' && <TabScenarios t={t} lang={lang} scenarioLibrary={scenarioLibrary} onAssign={(s) => showToast(lang === 'fr' ? `"${typeof s.title === 'object' ? s.title[lang] : (s.title_fr || s.title)}" assigné avec succès` : `"${typeof s.title === 'object' ? s.title[lang] : (s.title_en || s.title_fr || s.title)}" successfully assigned`)} />}

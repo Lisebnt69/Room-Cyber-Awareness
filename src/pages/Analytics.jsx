@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
+import { generateReportPDF } from '../services/pdfGenerator'
 
 const heatmapData = [
   { scenario: 'Inbox Zero', easy: 95, medium: 87, hard: 42 },
@@ -38,8 +39,17 @@ export default function Analytics() {
     navigate('/login')
   }
 
-  const handleExportPDF = () => {
-    alert('PDF export feature coming soon!')
+  const [exporting, setExporting] = useState(false)
+  const handleExportPDF = async () => {
+    setExporting(true)
+    try {
+      await generateReportPDF(
+        { id: 'exec', name: 'Rapport Analytics — Cybersécurité' },
+        { period: dateRange === 'week' ? 'Cette semaine' : dateRange === 'month' ? 'Ce mois' : 'Ce trimestre', org: 'Mon Entreprise' }
+      )
+    } finally {
+      setExporting(false)
+    }
   }
 
   return (
@@ -93,8 +103,8 @@ export default function Analytics() {
                 {range === 'week' ? 'Week' : range === 'month' ? 'Month' : 'Quarter'}
               </button>
             ))}
-            <button onClick={handleExportPDF} className="btn-primary" style={{ padding: '8px 16px', fontSize: '12px' }}>
-              📥 Export PDF
+            <button onClick={handleExportPDF} disabled={exporting} className="btn-primary" style={{ padding: '8px 16px', fontSize: '12px', opacity: exporting ? 0.7 : 1 }}>
+              {exporting ? '⏳ Génération...' : '📥 Export PDF'}
             </button>
           </div>
         </div>
