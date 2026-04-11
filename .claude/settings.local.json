@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"background.*#0a0a0a\\\\|background.*#111\\\\|background.*#1a1a1a\\\\|background.*'#000'\\\\|background.*rgba\\(0,0,0\" src/pages/*.jsx)",
+      "Bash(ls public/*.png)",
+      "mcp__nano-banana__get_configuration_status",
+      "mcp__nano-banana__generate_image",
+      "Bash(grep -n \"Logo from\\\\|import LangToggle\" src/pages/*.jsx)",
+      "Bash(grep -rn \"font-size:\\\\|letter-spacing:\" src/pages/*.css)",
+      "Bash(grep -rn \"font-size:\\\\|letter-spacing:\" src/*.css)",
+      "Bash(node -e \"const fs=require\\('fs'\\); let s=fs.readFileSync\\('src/pages/Admin.jsx','utf8'\\); s=s.replace\\(/#00d4ff/g,'#38bdf8'\\).replace\\(/#1a3a6b/g,'#7c5cff'\\).replace\\(/#0a1f3d/g,'#a78bfa'\\); fs.writeFileSync\\('src/pages/Admin.jsx',s\\); console.log\\('done'\\)\")",
+      "Bash(node -e ':*)"
+    ]
+  }
+}

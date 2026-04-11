@@ -12,7 +12,7 @@ async function seed() {
     const { rows: existingCompanies } = await client.query('SELECT COUNT(*) as n FROM companies')
     if (Number(existingCompanies[0].n) === 0) {
       const companies = [
-        ['ACME Corp','admin@acme.com','Business','Finance',161,142,6,200,'31/12/2025','active'],
+        ['ROOMCA Corp','admin@roomca.com','Business','Finance',161,142,6,200,'31/12/2025','active'],
         ['BNP Finance','security@bnp.fr','Enterprise','Finance',892,814,12,1000,'30/06/2025','active'],
         ['Mairie de Lyon','dsi@mairie-lyon.fr','Starter','Administration',24,18,3,25,'15/05/2025','expiring'],
         ['StartupTech SAS','cto@startuptech.io','Starter','Tech',12,8,2,25,'01/09/2025','active'],
@@ -132,14 +132,14 @@ async function seed() {
       for (const d of depts) deptMap[`${d.company_id}:${d.name}`] = d.id
 
       const PLAYERS = [
-        [1, deptMap['1:Finance'],         'sophieb@acme-corp.com',  'Sophie Bernard', 920],
-        [1, deptMap['1:Informatique'],     'thomask@acme-corp.com',  'Thomas Keller',  850],
-        [1, deptMap['1:Ressources Humaines'], 'amelied@acme-corp.com','Amélie Durand',  710],
-        [1, deptMap['1:Commercial'],       'marcl@acme-corp.com',    'Marc Lefebvre',  540],
-        [1, deptMap['1:Direction'],        'juliem@acme-corp.com',   'Julie Martin',   880],
-        [1, deptMap['1:Finance'],          'pierrer@acme-corp.com',  'Pierre Rousseau',630],
-        [1, deptMap['1:Commercial'],       'nadiac@acme-corp.com',   'Nadia Chouaib',  490],
-        [1, deptMap['1:Informatique'],     'antoinem@acme-corp.com', 'Antoine Moreau', 960],
+        [1, deptMap['1:Finance'],         'sophieb@roomca-corp.com',  'Sophie Bernard', 920],
+        [1, deptMap['1:Informatique'],     'thomask@roomca-corp.com',  'Thomas Keller',  850],
+        [1, deptMap['1:Ressources Humaines'], 'amelied@roomca-corp.com','Amélie Durand',  710],
+        [1, deptMap['1:Commercial'],       'marcl@roomca-corp.com',    'Marc Lefebvre',  540],
+        [1, deptMap['1:Direction'],        'juliem@roomca-corp.com',   'Julie Martin',   880],
+        [1, deptMap['1:Finance'],          'pierrer@roomca-corp.com',  'Pierre Rousseau',630],
+        [1, deptMap['1:Commercial'],       'nadiac@roomca-corp.com',   'Nadia Chouaib',  490],
+        [1, deptMap['1:Informatique'],     'antoinem@roomca-corp.com', 'Antoine Moreau', 960],
         [2, deptMap['2:Risk & Compliance'],'claire.dupont@bnp.fr',   'Claire Dupont',  780],
         [2, deptMap['2:IT & Cybersécurité'],'kevin.lemaire@bnp.fr',  'Kevin Lemaire',  890],
         [2, deptMap['2:Front Office'],     'sabine.morin@bnp.fr',    'Sabine Morin',   620],

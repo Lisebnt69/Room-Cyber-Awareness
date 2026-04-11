@@ -2,23 +2,22 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '/roomca-logo.png'
+import BrandLogo from '../components/BrandLogo'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
 import ScenarioBuilder from './ScenarioBuilder'
 
 const INITIAL_COMPANIES = [
-  { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@acme.com', sector: 'Finance' },
+  { id: 1, name: 'ROOMCA Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@roomca.com', sector: 'Finance' },
   { id: 2, name: 'BNP Finance', plan: 'Enterprise', users: 892, active: 814, scenarios: 12, licenses: 1000, expire: '30/06/2025', status: 'active', email: 'security@bnp.fr', sector: 'Finance' },
   { id: 3, name: 'Mairie de Lyon', plan: 'Starter', users: 24, active: 18, scenarios: 3, licenses: 25, expire: '15/05/2025', status: 'expiring', email: 'dsi@mairie-lyon.fr', sector: 'Administration' },
   { id: 4, name: 'StartupTech SAS', plan: 'Starter', users: 12, active: 8, scenarios: 2, licenses: 25, expire: '01/09/2025', status: 'active', email: 'cto@startuptech.io', sector: 'Tech' },
   { id: 5, name: 'Groupe Renault', plan: 'Enterprise', users: 2840, active: 2100, scenarios: 18, licenses: 3000, expire: '31/03/2026', status: 'active', email: 'cybersec@renault.com', sector: 'Industrie' },
 ]
 
-
 const licensesData = [
-  { id: 1, company: 'ACME Corp', plan: 'Business', seats: 200, used: 161, price: 199, period: 'monthly', expires: '31/12/2025' },
+  { id: 1, company: 'ROOMCA Corp', plan: 'Business', seats: 200, used: 161, price: 199, period: 'monthly', expires: '31/12/2025' },
   { id: 2, company: 'BNP Finance', plan: 'Enterprise', seats: 1000, used: 814, price: 'custom', period: 'annual', expires: '30/06/2025' },
   { id: 3, company: 'Mairie de Lyon', plan: 'Starter', seats: 25, used: 18, price: 49, period: 'monthly', expires: '15/05/2025' },
 ]
@@ -26,7 +25,6 @@ const licensesData = [
 const SECTORS = ['Finance', 'Santé', 'Administration', 'Éducation', 'Industrie', 'Commerce', 'Énergie', 'Juridique', 'Tech', 'Transport']
 const PLANS = ['Starter', 'Business', 'Enterprise']
 const STATUS_OPTIONS = ['active', 'expiring', 'suspended']
-const SCENARIO_MODULES = ['photo', 'mapping', 'fakeLink', 'fakeEmail', 'video', 'quiz', 'miniPuzzle']
 
 const DEFAULT_SCENARIO_FIELDS = {
   id: null,
@@ -50,6 +48,7 @@ const DEFAULT_SCENARIO_FIELDS = {
   photoHotspots: [],
   quizQuestions: [],
   modules: [],
+  blocks: [],
   plays: 0,
   score: 0,
   status: 'draft',
@@ -80,9 +79,9 @@ const withScenarioDefaults = (scenario = {}) => ({
   blocks: Array.isArray(scenario?.blocks) ? scenario.blocks : [],
 })
 
-const apiToState = (s) => withScenarioDefaults({ ...s })
+const apiToState = (scenario) => withScenarioDefaults({ ...scenario })
 
-function statusBadge(s, t) {
+function statusBadge(status, t) {
   const map = {
     active: [t('badgeActive'), '#22c55e'],
     expiring: [t('badgeExpiring'), '#f59e0b'],
@@ -92,7 +91,7 @@ function statusBadge(s, t) {
     draft: [t('badgeDraft'), 'var(--text-muted)'],
   }
 
-  const [label, color] = map[s] || [s, 'var(--text-muted)']
+  const [label, color] = map[status] || [status, 'var(--text-muted)']
 
   return (
     <span
@@ -131,15 +130,23 @@ export default function SuperAdmin() {
 
   const loadScenarios = () =>
     fetch('/api/scenarios')
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setScenarios(data.map(apiToState)) })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setScenarios(data.map(apiToState))
+        }
+      })
       .catch(() => {})
 
   useEffect(() => {
     loadScenarios()
     fetch('/api/companies')
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setCompanies(data) })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCompanies(data)
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -165,34 +172,50 @@ export default function SuperAdmin() {
       plays: data.plays || 0,
       score: data.score || 0,
       mappingContext: data.mappingContext || '',
+      audio_url: data.audio_url || data.audioUrl || null,
+      audioVolume: data.audioVolume ?? 50,
     }
+
     try {
       const isEdit = builderMode?.mode === 'edit' && data.id
       const url = isEdit ? `/api/scenarios/${data.id}` : '/api/scenarios'
+
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
+
       if (!res.ok) {
         const err = await res.json()
         showToast(`Erreur: ${err.error || 'inconnue'}`)
         return
       }
-      await loadScenarios()
-      showToast(lang === 'fr'
-        ? `"${body.title_fr}" ${isEdit ? 'mis à jour' : 'créé'}`
-        : `"${body.title_fr}" ${isEdit ? 'updated' : 'created'}`)
 
-} catch {
+      await loadScenarios()
+      showToast(
+        lang === 'fr'
+          ? `"${body.title_fr}" ${isEdit ? 'mis à jour' : 'créé'}`
+          : `"${body.title_fr}" ${isEdit ? 'updated' : 'created'}`
+      )
+    } catch {
       showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
     }
+
     setBuilderMode(null)
   }
 
-  const handleDeleteScenario = async (s) => {
-    if (!confirm(lang === 'fr' ? `Supprimer "${s.title?.fr || s.title_fr}" ?` : `Delete "${s.title?.en || s.title_fr}" ?`)) return
-    await fetch(`/api/scenarios/${s.id}`, { method: 'DELETE' })
+  const handleDeleteScenario = async (scenario) => {
+    const label =
+      lang === 'fr'
+        ? scenario.title?.fr || scenario.title_fr
+        : scenario.title?.en || scenario.title_fr
+
+    if (!confirm(lang === 'fr' ? `Supprimer "${label}" ?` : `Delete "${label}" ?`)) {
+      return
+    }
+
+    await fetch(`/api/scenarios/${scenario.id}`, { method: 'DELETE' })
     await loadScenarios()
     showToast(lang === 'fr' ? 'Scénario supprimé' : 'Scenario deleted')
   }
@@ -204,18 +227,26 @@ export default function SuperAdmin() {
 
   const saveCompany = async (e) => {
     e.preventDefault()
+
     try {
       const res = await fetch(`/api/companies/${editCompanyForm.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editCompanyForm),
       })
-      if (!res.ok) { showToast(lang === 'fr' ? 'Erreur sauvegarde' : 'Save error'); return }
+
+      if (!res.ok) {
+        showToast(lang === 'fr' ? 'Erreur sauvegarde' : 'Save error')
+        return
+      }
+
       const updated = await res.json()
       setCompanies((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
       setModal(null)
       showToast(lang === 'fr' ? `${updated.name} mis à jour` : `${updated.name} updated`)
-    } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
+    } catch {
+      showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
+    }
   }
 
   const deleteCompany = async (id) => {
@@ -224,7 +255,9 @@ export default function SuperAdmin() {
       setCompanies((prev) => prev.filter((c) => c.id !== id))
       setModal(null)
       showToast(lang === 'fr' ? 'Entreprise supprimée' : 'Company deleted')
-    } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
+    } catch {
+      showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
+    }
   }
 
   const navItems = [
@@ -242,8 +275,12 @@ export default function SuperAdmin() {
     { label: t('saKpiMrr'), value: '€24 800', sub: t('saKpiMrrSub') },
   ]
 
-  const diffLabel = (d) =>
-    ({ intermediate: t('diffIntermediate'), advanced: t('diffAdvanced'), beginner: t('diffBeginner') })[d] || d
+  const diffLabel = (difficulty) =>
+    ({
+      intermediate: t('diffIntermediate'),
+      advanced: t('diffAdvanced'),
+      beginner: t('diffBeginner'),
+    }[difficulty] || difficulty)
 
   const getScenarioModulesLabel = (scenario) => {
     const modules = Array.isArray(scenario.modules) ? scenario.modules : []
@@ -262,16 +299,17 @@ export default function SuperAdmin() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#000', color: 'var(--text-light)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', position: 'relative' }}>
+      <div className="aurora-bg" style={{ opacity: 0.4 }} />
       {toast && <Toast message={toast} type="success" />}
 
-      {/* Add Company Modal */}
       <Modal isOpen={modal?.type === 'addCompany'} onClose={() => setModal(null)} title={t('saAdd')}>
         <form
           onSubmit={async (e) => {
             e.preventDefault()
             const fd = new FormData(e.currentTarget)
             const plan = fd.get('plan')
+
             const body = {
               name: fd.get('name'),
               email: fd.get('email'),
@@ -281,18 +319,26 @@ export default function SuperAdmin() {
               expire: '31/12/2026',
               status: 'active',
             }
+
             try {
               const res = await fetch('/api/companies', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
               })
-              if (!res.ok) { showToast(lang === 'fr' ? 'Erreur création' : 'Creation error'); return }
+
+              if (!res.ok) {
+                showToast(lang === 'fr' ? 'Erreur création' : 'Creation error')
+                return
+              }
+
               const created = await res.json()
               setCompanies((prev) => [...prev, created])
               setModal(null)
               showToast(lang === 'fr' ? `${created.name} créée avec succès` : `${created.name} created successfully`)
-            } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
+            } catch {
+              showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
+            }
           }}
         >
           {[
@@ -300,7 +346,7 @@ export default function SuperAdmin() {
               name: 'name',
               label: lang === 'fr' ? 'NOM ENTREPRISE' : 'COMPANY NAME',
               type: 'text',
-              placeholder: 'ACME Corp',
+              placeholder: 'ROOMCA Corp',
             },
             {
               name: 'email',
@@ -349,7 +395,7 @@ export default function SuperAdmin() {
                 style={{
                   width: '100%',
                   padding: '10px 12px',
-                  background: '#0d0d0d',
+                  background: 'var(--bg-input)',
                   border: '1px solid var(--border)',
                   color: 'var(--text-light)',
                   fontFamily: 'var(--font-body)',
@@ -381,7 +427,7 @@ export default function SuperAdmin() {
                 style={{
                   width: '100%',
                   padding: '10px 12px',
-                  background: '#0d0d0d',
+                  background: 'var(--bg-input)',
                   border: '1px solid var(--border)',
                   color: 'var(--text-light)',
                   fontFamily: 'var(--font-body)',
@@ -403,7 +449,6 @@ export default function SuperAdmin() {
         </form>
       </Modal>
 
-      {/* Edit Company Modal */}
       <Modal
         isOpen={modal?.type === 'editCompany' && !!editCompanyForm}
         onClose={() => setModal(null)}
@@ -413,15 +458,7 @@ export default function SuperAdmin() {
           <form onSubmit={saveCompany}>
             <div style={{ display: 'grid', gridTemplateColumns: twoCols, gap: '12px', marginBottom: '16px' }}>
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   {lang === 'fr' ? 'NOM' : 'NAME'}
                 </label>
                 <input
@@ -433,15 +470,7 @@ export default function SuperAdmin() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   EMAIL
                 </label>
                 <input
@@ -455,21 +484,13 @@ export default function SuperAdmin() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '16px' }}>
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   PLAN
                 </label>
                 <select
                   value={editCompanyForm.plan}
                   onChange={(e) => setEditCompanyForm((f) => ({ ...f, plan: e.target.value }))}
-                  style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px', background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
                 >
                   {PLANS.map((p) => (
                     <option key={p} value={p}>
@@ -480,21 +501,13 @@ export default function SuperAdmin() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   SECTEUR
                 </label>
                 <select
                   value={editCompanyForm.sector}
                   onChange={(e) => setEditCompanyForm((f) => ({ ...f, sector: e.target.value }))}
-                  style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px', background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
                 >
                   {SECTORS.map((sector) => (
                     <option key={sector} value={sector}>
@@ -505,21 +518,13 @@ export default function SuperAdmin() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   STATUS
                 </label>
                 <select
                   value={editCompanyForm.status}
                   onChange={(e) => setEditCompanyForm((f) => ({ ...f, status: e.target.value }))}
-                  style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px', background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
                 >
                   {STATUS_OPTIONS.map((status) => (
                     <option key={status} value={status}>
@@ -532,15 +537,7 @@ export default function SuperAdmin() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   {lang === 'fr' ? 'LICENCES' : 'LICENSES'}
                 </label>
                 <input
@@ -558,15 +555,7 @@ export default function SuperAdmin() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   {lang === 'fr' ? 'EXPIRATION' : 'EXPIRES'}
                 </label>
                 <input
@@ -589,7 +578,7 @@ export default function SuperAdmin() {
                 style={{
                   padding: '10px 16px',
                   background: 'rgba(235,40,40,0.1)',
-                  border: '1px solid rgba(235,40,40,0.3)',
+                  border: '1px solid var(--border-hover)',
                   color: 'var(--red)',
                   cursor: 'pointer',
                   fontSize: '15px',
@@ -604,13 +593,14 @@ export default function SuperAdmin() {
         )}
       </Modal>
 
-      {/* Sidebar */}
       <aside
         style={{
-          width: '240px',
+          width: '260px',
           flexShrink: 0,
-          background: '#080808',
-          borderRight: '1px solid var(--border-subtle)',
+          background: 'var(--glass-bg-strong)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          borderRight: '1px solid var(--border)',
           display: 'flex',
           flexDirection: 'column',
           position: 'fixed',
@@ -620,73 +610,77 @@ export default function SuperAdmin() {
           zIndex: 50,
         }}
       >
-        <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <img src={Logo} alt="ROOMCA" style={{ height: '32px', width: 'auto', display: 'block' }} />
+        <div style={{ padding: '28px 24px 24px', borderBottom: '1px solid var(--border)' }}>
+          <BrandLogo height={36} />
 
           <div
             style={{
-              marginTop: '12px',
-              padding: '8px 10px',
-              background: 'rgba(235,40,40,0.12)',
-              border: '1px solid rgba(235,40,40,0.3)',
+              marginTop: '14px',
+              padding: '12px 14px',
+              background: 'var(--grad-aurora-soft)',
+              border: '1px solid var(--border-hover)',
+              borderRadius: 'var(--r-md)',
             }}
           >
-            <div
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '15px',
-                color: 'var(--red)',
-                letterSpacing: '0.15em',
-              }}
-            >
-              SUPER ADMIN
+            <div style={{ fontSize: '11px', color: 'var(--violet)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              ⚡ Super Admin
             </div>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
               {t('saAccess')}
             </div>
           </div>
         </div>
 
         <nav style={{ flex: 1, padding: '16px 0' }} role="navigation" aria-label="Main navigation">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveNav(item.id)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 24px',
-                background: activeNav === item.id ? 'rgba(235,40,40,0.08)' : 'transparent',
-                borderLeft: activeNav === item.id ? '2px solid var(--red)' : '2px solid transparent',
-                color: activeNav === item.id ? 'var(--text-light)' : 'var(--text-muted)',
-                fontSize: '13px',
-                fontFamily: 'var(--font-body)',
-                transition: 'all 0.15s',
-                cursor: 'pointer',
-              }}
-              aria-current={activeNav === item.id ? 'page' : undefined}
-              aria-label={`Navigate to ${item.label}`}
-            >
-              <span style={{ fontSize: '16px' }} aria-hidden="true">
-                {item.icon}
-              </span>
-              {item.label}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = activeNav === item.id
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveNav(item.id)}
+                style={{
+                  width: 'calc(100% - 16px)',
+                  margin: '2px 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '11px 16px',
+                  background: isActive ? 'var(--grad-aurora-soft)' : 'transparent',
+                  border: isActive ? '1px solid var(--border-hover)' : '1px solid transparent',
+                  borderRadius: 'var(--r-md)',
+                  color: isActive ? 'var(--violet)' : 'var(--text-secondary)',
+                  fontSize: '13px',
+                  fontWeight: isActive ? 600 : 500,
+                  fontFamily: 'var(--font-body)',
+                  transition: 'all 0.2s var(--ease-quick)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'var(--bg-muted)' }}
+                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                aria-current={isActive ? 'page' : undefined}
+                aria-label={`Navigate to ${item.label}`}
+              >
+                <span style={{ fontSize: '16px', opacity: isActive ? 1 : 0.7 }} aria-hidden="true">
+                  {item.icon}
+                </span>
+                <span style={{ flex: 1 }}>{item.label}</span>
+              </button>
+            )
+          })}
         </nav>
 
-        <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border-subtle)' }}>
+        <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)' }}>
           <LangToggle style={{ marginBottom: '12px', width: '100%', justifyContent: 'center' }} />
-          <div style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
+          <div style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600, marginBottom: '2px' }}>{user?.name}</div>
+          <div style={{ fontSize: '11px', color: 'var(--violet)', marginBottom: '12px' }}>Super Administrator</div>
           <button
             onClick={() => {
               logout()
               navigate('/login')
             }}
             className="btn-secondary"
-            style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '15px', marginTop: '8px' }}
+            style={{ width: '100%', justifyContent: 'center', padding: '10px', fontSize: '13px' }}
             aria-label="Logout"
           >
             {t('logout')}
@@ -694,16 +688,17 @@ export default function SuperAdmin() {
         </div>
       </aside>
 
-      {/* Main */}
-      <main style={{ marginLeft: '240px', flex: 1 }}>
+      <main style={{ marginLeft: '260px', flex: 1, position: 'relative', zIndex: 1 }}>
         <div
           style={{
-            padding: '20px 40px',
-            borderBottom: '1px solid var(--border-subtle)',
+            padding: '24px 40px',
+            borderBottom: '1px solid var(--border)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: '#080808',
+            background: 'var(--glass-bg-strong)',
+            backdropFilter: 'var(--glass-blur)',
+            WebkitBackdropFilter: 'var(--glass-blur)',
             position: 'sticky',
             top: 0,
             zIndex: 40,
@@ -721,7 +716,6 @@ export default function SuperAdmin() {
         </div>
 
         <div style={{ padding: isCompact ? '16px' : '40px' }}>
-          {/* Overview */}
           {activeNav === 'overview' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border-subtle)' }}>
               {kpis.map((k) => (
@@ -733,15 +727,7 @@ export default function SuperAdmin() {
                     borderTop: k.accent ? '2px solid var(--red)' : '2px solid transparent',
                   }}
                 >
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '13px',
-                      color: 'var(--text-muted)',
-                      letterSpacing: '0.15em',
-                      marginBottom: '10px',
-                    }}
-                  >
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '10px' }}>
                     {k.label}
                   </div>
                   <div
@@ -761,7 +747,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* Companies */}
           {activeNav === 'companies' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div
@@ -876,7 +861,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* Scenarios */}
           {activeNav === 'scenarios' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div
@@ -939,7 +923,9 @@ export default function SuperAdmin() {
                         e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'
                       }}
                     >
-                      <td style={{ padding: '14px 20px', fontSize: '13px' }}>{typeof s.title === 'object' ? s.title[lang] : s.title}</td>
+                      <td style={{ padding: '14px 20px', fontSize: '13px' }}>
+                        {typeof s.title === 'object' ? s.title[lang] : s.title}
+                      </td>
                       <td style={{ padding: '14px 20px' }}>
                         <span className="tag" style={{ fontSize: '13px', padding: '2px 8px' }}>
                           {s.category}
@@ -955,7 +941,7 @@ export default function SuperAdmin() {
                         {getScenarioModulesLabel(s)}
                       </td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-light)' }}>
-                        {s.plays.toLocaleString()}
+                        {(s.plays || 0).toLocaleString()}
                       </td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--red)' }}>
                         {s.score > 0 ? s.score : '—'}
@@ -977,6 +963,7 @@ export default function SuperAdmin() {
                         >
                           ▶ Tester
                         </button>
+
                         <button
                           onClick={() => setBuilderMode({ mode: 'edit', scenario: s })}
                           style={{
@@ -1001,14 +988,30 @@ export default function SuperAdmin() {
                         >
                           ✎ {t('saEdit')}
                         </button>
+
                         <button
                           onClick={() => handleDeleteScenario(s)}
-                          style={{ background: 'transparent', border: '1px solid rgba(235,40,40,0.4)', color: 'rgba(235,40,40,0.7)', padding: '4px 10px', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'; e.currentTarget.style.color = 'rgba(235,40,40,0.7)' }}
-                          aria-label={`Delete scenario`}
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid rgba(235,40,40,0.4)',
+                            color: 'rgba(235,40,40,0.7)',
+                            padding: '4px 10px',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-body)',
+                            transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = 'var(--red)'
+                            e.currentTarget.style.color = 'var(--red)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'
+                            e.currentTarget.style.color = 'rgba(235,40,40,0.7)'
+                          }}
+                          aria-label="Delete scenario"
                         >
-                          {'×'}
+                          ×
                         </button>
                       </td>
                     </tr>
@@ -1018,7 +1021,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* Licenses */}
           {activeNav === 'licenses' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)' }}>
@@ -1080,7 +1082,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* System */}
           {activeNav === 'system' && (
             <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '1fr 1fr', gap: '20px' }}>
               {[

@@ -82,8 +82,8 @@ export const visualScenarios = [
         id: 'vs2_h1', points: 125,
         label: { fr: 'Domaine email légèrement modifié', en: 'Slightly modified email domain' },
         description: {
-          fr: '"acme-corp.co" au lieu de "acme-corp.com". Ce type de typosquatting est la base de la fraude BEC (Business Email Compromise).',
-          en: '"acme-corp.co" instead of "acme-corp.com". This type of typosquatting is the foundation of BEC (Business Email Compromise) fraud.'
+          fr: '"roomca-corp.co" au lieu de "roomca-corp.com". Ce type de typosquatting est la base de la fraude BEC (Business Email Compromise).',
+          en: '"roomca-corp.co" instead of "roomca-corp.com". This type of typosquatting is the foundation of BEC (Business Email Compromise) fraud.'
         },
         x: 5, y: 11, w: 65, h: 6.5,
       },
@@ -242,8 +242,8 @@ export const visualScenarios = [
         id: 'vs4_h5', points: 75,
         label: { fr: 'Email de contact avec domaine .cc suspect', en: 'Contact email with suspicious .cc domain' },
         description: {
-          fr: '"comptabilite@acme-corp.cc" — ".cc" (Îles Cocos) est souvent utilisé pour des arnaques. L\'email légitime devrait être "@acme-corp.com".',
-          en: '"comptabilite@acme-corp.cc" — ".cc" (Cocos Islands) is often used for scams. The legitimate email should be "@acme-corp.com".'
+          fr: '"comptabilite@roomca-corp.cc" — ".cc" (Îles Cocos) est souvent utilisé pour des arnaques. L\'email légitime devrait être "@roomca-corp.com".',
+          en: '"comptabilite@roomca-corp.cc" — ".cc" (Cocos Islands) is often used for scams. The legitimate email should be "@roomca-corp.com".'
         },
         x: 3, y: 75.5, w: 65, h: 6,
       }

@@ -21,7 +21,7 @@ describe('Authentication Flow', () => {
     })
 
     it('should accept valid email', () => {
-      const email = 'player@acme.com'
+      const email = 'player@roomca.com'
       const isValid = email.includes('@')
       expect(isValid).toBe(true)
     })
@@ -39,20 +39,20 @@ describe('Authentication Flow', () => {
 
   describe('Authentication Persistence', () => {
     it('should store user in localStorage on login', () => {
-      const user = { id: 1, email: 'player@acme.com', role: 'player' }
+      const user = { id: 1, email: 'player@roomca.com', role: 'player' }
       localStorage.setItem('roomca_user', JSON.stringify(user))
       expect(localStorage.getItem('roomca_user')).toBeTruthy()
     })
 
     it('should retrieve user from localStorage', () => {
-      const user = { id: 1, email: 'player@acme.com', role: 'player' }
+      const user = { id: 1, email: 'player@roomca.com', role: 'player' }
       localStorage.setItem('roomca_user', JSON.stringify(user))
       const stored = JSON.parse(localStorage.getItem('roomca_user'))
-      expect(stored.email).toBe('player@acme.com')
+      expect(stored.email).toBe('player@roomca.com')
     })
 
     it('should clear user from localStorage on logout', () => {
-      const user = { id: 1, email: 'player@acme.com', role: 'player' }
+      const user = { id: 1, email: 'player@roomca.com', role: 'player' }
       localStorage.setItem('roomca_user', JSON.stringify(user))
       localStorage.removeItem('roomca_user')
       expect(localStorage.getItem('roomca_user')).toBeUndefined()
@@ -61,12 +61,12 @@ describe('Authentication Flow', () => {
 
   describe('User Roles', () => {
     it('should have player role', () => {
-      const user = { email: 'player@acme.com', role: 'player' }
+      const user = { email: 'player@roomca.com', role: 'player' }
       expect(user.role).toBe('player')
     })
 
     it('should have admin role', () => {
-      const user = { email: 'admin@acme.com', role: 'admin' }
+      const user = { email: 'admin@roomca.com', role: 'admin' }
       expect(user.role).toBe('admin')
     })
 

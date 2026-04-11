@@ -24,7 +24,7 @@ async function loadJsPDF() {
 // Load logo as base64 via fetch (avoids canvas taint issues)
 async function getLogoBase64() {
   try {
-    const res = await fetch('/roomca-logo.png')
+    const res = await fetch('/assets/roomca-logo-dark.png')
     const blob = await res.blob()
     return await new Promise((resolve) => {
       const reader = new FileReader()
@@ -223,7 +223,7 @@ export async function generateReportPDF(template, data = {}) {
   // Meta info
   doc.setFontSize(9); doc.setTextColor(...GRAY); doc.setFont('helvetica', 'normal')
   doc.text(
-    `Organisation : ${data.org || 'ACME Corp'}   |   Période : ${data.period || 'Dernier mois'}   |   Auteur : Système ROOMCA`,
+    `Organisation : ${data.org || 'ROOMCA Corp'}   |   Période : ${data.period || 'Dernier mois'}   |   Auteur : Système ROOMCA`,
     14, y
   )
   y += 12
