@@ -214,7 +214,7 @@ function PhaseInbox({ onComplete, score, setScore, previewScenario, onRestart, o
         {/* Email list */}
         <div style={{ width: '320px', flexShrink: 0, borderRight: '1px solid var(--border-subtle)', background: '#080808' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
-            {t('playerInbox')} — sophieb@acme-corp.com
+            {t('playerInbox')} — sophieb@roomca-corp.com
           </div>
           {emails.map(email => (
             <div key={email.id} onClick={() => setSelected(email)} style={{ padding: '16px 20px', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)', background: selected?.id === email.id ? 'rgba(235,40,40,0.08)' : 'transparent', borderLeft: selected?.id === email.id ? '2px solid var(--red)' : '2px solid transparent', transition: 'all 0.15s' }}

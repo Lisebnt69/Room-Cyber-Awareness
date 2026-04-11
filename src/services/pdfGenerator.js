@@ -223,7 +223,7 @@ export async function generateReportPDF(template, data = {}) {
   // Meta info
   doc.setFontSize(9); doc.setTextColor(...GRAY); doc.setFont('helvetica', 'normal')
   doc.text(
-    `Organisation : ${data.org || 'ACME Corp'}   |   Période : ${data.period || 'Dernier mois'}   |   Auteur : Système ROOMCA`,
+    `Organisation : ${data.org || 'ROOMCA Corp'}   |   Période : ${data.period || 'Dernier mois'}   |   Auteur : Système ROOMCA`,
     14, y
   )
   y += 12

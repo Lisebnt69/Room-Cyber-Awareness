@@ -236,7 +236,7 @@ export default {
   playerLine1: 'ROOMCA — CENTRE DES OPÉRATIONS DE SÉCURITÉ',
   playerLine2: 'Initialisation du protocole de réponse aux incidents...',
   playerLine3: 'ALERTE : Activité suspecte sur les identifiants détectée',
-  playerLine4: 'Utilisateur ciblé : sophieb@acme-corp.com',
+  playerLine4: 'Utilisateur ciblé : sophieb@roomca-corp.com',
   playerLine5: 'Statut : COMPTE COMPROMIS — enquête requise',
   playerLine6: 'Mission : identifier le vecteur de phishing dans sa boîte mail',
   playerLine7: 'Limite de temps : 15:00 minutes',

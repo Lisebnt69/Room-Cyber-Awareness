@@ -8,8 +8,8 @@ import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 
 const HINTS = [
-  { label: 'Player', email: 'player@acme.com', role: { fr: 'Escape game', en: 'Escape game' } },
-  { label: 'Admin', email: 'admin@acme.com', role: { fr: 'Dashboard RSSI', en: 'CISO Dashboard' } },
+  { label: 'Player', email: 'player@roomca.com', role: { fr: 'Escape game', en: 'Escape game' } },
+  { label: 'Admin', email: 'admin@roomca.com', role: { fr: 'Dashboard RSSI', en: 'CISO Dashboard' } },
   {
     label: 'Super Admin',
     email: 'superadmin@roomca.io',

@@ -250,7 +250,7 @@ function FeaturesSection() {
 function LiveDemoTeaser({ onOpenDemo }) {
   const [revealed, setRevealed] = useState(false)
   const threats = [
-    { id: 'domain', x: '54%', y: '18%', label: 'Faux domaine', detail: 'acme-corp.io ≠ acme.com', color: '#ef4444' },
+    { id: 'domain', x: '54%', y: '18%', label: 'Faux domaine', detail: 'roomca-corp.io ≠ roomca.com', color: '#ef4444' },
     { id: 'urgency', x: '28%', y: '44%', label: 'Urgence artificielle', detail: '"immédiatement"', color: '#f59e0b' },
     { id: 'amount', x: '60%', y: '44%', label: 'Virement 78 500€', detail: 'Sans procédure officielle', color: '#ef4444' },
     { id: 'secret', x: '20%', y: '62%', label: 'Demande de silence', detail: '"N\'en parlez à personne"', color: '#f59e0b' },
@@ -280,7 +280,7 @@ function LiveDemoTeaser({ onOpenDemo }) {
                 <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: '4px' }}>
                   <span style={{ color: '#666' }}>De :</span>
                   <span style={{ color: revealed ? '#ef4444' : '#111', fontWeight: revealed ? 700 : 400, transition: 'all 0.3s' }}>
-                    Jean-Marc Dupont &lt;pdg@acme-corp<span style={{ background: revealed ? '#fef2f2' : 'transparent', transition: 'all 0.3s' }}>.io</span>&gt;
+                    Jean-Marc Dupont &lt;pdg@roomca-corp<span style={{ background: revealed ? '#fef2f2' : 'transparent', transition: 'all 0.3s' }}>.io</span>&gt;
                   </span>
                   <span style={{ color: '#666' }}>Objet :</span>
                   <span style={{ fontWeight: 'bold', color: '#b00' }}>⚠️ URGENT — Virement confidentiel</span>
@@ -300,7 +300,7 @@ function LiveDemoTeaser({ onOpenDemo }) {
                 <strong>N'en parlez à personne.</strong> Je suis en mode "<strong>Ne Pas Déranger</strong>".
               </div>
               <div style={{ marginTop: '14px', color: '#555', fontSize: '12px' }}>
-                Cordialement,<br /><strong>Jean-Marc Dupont</strong>, PDG ACME Corp
+                Cordialement,<br /><strong>Jean-Marc Dupont</strong>, PDG ROOMCA Corp
               </div>
 
               {/* Threat badges — shown on reveal */}
@@ -409,8 +409,8 @@ function VideoSection({ onOpenDemo }) {
                 {['#eb2828', '#f59e0b', '#22c55e'].map((c, i) => <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: c }} />)}
               </div>
               <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: '#22c55e', lineHeight: 1.8 }}>
-                <div style={{ color: 'var(--text-muted)' }}>De : <span style={{ color: '#f59e0b' }}>pdg@acme-corp.net</span> <span style={{ color: 'var(--red)', fontSize: '10px' }}>⚠ domaine suspect</span></div>
-                <div style={{ color: 'var(--text-muted)' }}>À : marie.dupont@acme-corp.com</div>
+                <div style={{ color: 'var(--text-muted)' }}>De : <span style={{ color: '#f59e0b' }}>pdg@roomca-corp.net</span> <span style={{ color: 'var(--red)', fontSize: '10px' }}>⚠ domaine suspect</span></div>
+                <div style={{ color: 'var(--text-muted)' }}>À : marie.dupont@roomca-corp.com</div>
                 <div style={{ color: 'var(--text-muted)' }}>Objet : <span style={{ color: 'var(--text-secondary)' }}>ACTION URGENTE — Virement 47 000€</span></div>
                 <div style={{ marginTop: '12px', color: 'var(--text-muted)', fontSize: '11px' }}>Marie,{'\n'}J'ai besoin que vous effectuiez un virement confidentiel...</div>
               </div>
@@ -738,11 +738,11 @@ const SCENARIOS = [
   {
     id: 'bec', icon: '💼', name: 'Arnaque au Président', tag: 'BEC', difficulty: 'Intermédiaire', diffColor: '#f59e0b',
     desc: 'Un email urgent prétend venir du PDG. Trouvez les signaux d\'alerte avant de décider.',
-    context: 'Vous êtes Marie, assistante de direction chez ACME Corp. Il est 14h27. Votre PDG est en déplacement depuis ce matin.',
+    context: 'Vous êtes Marie, assistante de direction chez ROOMCA Corp. Il est 14h27. Votre PDG est en déplacement depuis ce matin.',
     mission: 'Analysez cet email attentivement avant de prendre une décision. Cliquez sur chaque élément qui vous semble suspect pour le révéler.',
     lookFor: 'Adresse expéditeur · Ton d\'urgence · Nature de la demande · Possibilité de vérification',
     flags: [
-      { id: 'domain',  icon: '🌐', title: 'Faux domaine',           detail: '"acme-corp.io" ≠ "acme.com"',             color: '#ef4444', tip: 'Un caractère différent suffit pour cloner une identité. Vérifiez toujours l\'adresse expéditeur complète.' },
+      { id: 'domain',  icon: '🌐', title: 'Faux domaine',           detail: '"roomca-corp.io" ≠ "roomca.com"',             color: '#ef4444', tip: 'Un caractère différent suffit pour cloner une identité. Vérifiez toujours l\'adresse expéditeur complète.' },
       { id: 'urgency', icon: '⚡', title: 'Urgence artificielle',   detail: '"immédiatement"',                         color: '#f59e0b', tip: 'La pression temporelle est le premier levier d\'une attaque BEC. Prenez toujours le temps de vérifier.' },
       { id: 'amount',  icon: '💸', title: 'Virement sans procédure',detail: '78 500€ sans double validation',           color: '#ef4444', tip: 'Aucune demande financière urgente ne devrait bypasser le processus de validation habituel.' },
       { id: 'secret',  icon: '🤫', title: 'Demande de silence',     detail: '"N\'en parlez à personne"',               color: '#f59e0b', tip: 'L\'isolation est une tactique BEC classique. Au contraire — alertez immédiatement votre responsable.' },
@@ -845,8 +845,8 @@ function ScenarioEmail({ scenarioId, found, findFlag, activeHint, setActiveHint 
       <div style={hdr}>
         <div style={grid}>
           <span style={{ color: '#666' }}>De :</span>
-          <span>Jean-Marc Dupont &lt;<FS id="domain">pdg@acme-corp.io</FS>&gt;</span>
-          <span style={{ color: '#666' }}>À :</span><span>marie.dupont@acme.com</span>
+          <span>Jean-Marc Dupont &lt;<FS id="domain">pdg@roomca-corp.io</FS>&gt;</span>
+          <span style={{ color: '#666' }}>À :</span><span>marie.dupont@roomca.com</span>
           <span style={{ color: '#666' }}>Objet :</span><span style={{ fontWeight: 'bold', color: '#b00' }}>⚠️ URGENT — Virement confidentiel</span>
           <span style={{ color: '#666' }}>Reçu :</span><span style={{ color: '#666' }}>Aujourd'hui 14:27</span>
         </div>
@@ -864,7 +864,7 @@ function ScenarioEmail({ scenarioId, found, findFlag, activeHint, setActiveHint 
       <div style={{ margin: '10px 0' }}>
         <FS id="secret">N'en parlez à <strong>personne</strong></FS>. Je suis en mode "<FS id="dnd">Ne Pas Déranger</FS>". Confirmez uniquement par retour email.
       </div>
-      <p style={{ marginTop: '14px', color: '#555' }}>Cordialement,<br /><strong>Jean-Marc Dupont</strong><br />PDG, ACME Corp</p>
+      <p style={{ marginTop: '14px', color: '#555' }}>Cordialement,<br /><strong>Jean-Marc Dupont</strong><br />PDG, ROOMCA Corp</p>
     </div>
   )
 

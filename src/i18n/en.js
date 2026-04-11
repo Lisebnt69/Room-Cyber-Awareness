@@ -236,7 +236,7 @@ export default {
   playerLine1: 'ROOMCA — SECURITY OPERATIONS CENTER',
   playerLine2: 'Initializing incident response protocol...',
   playerLine3: 'ALERT: Suspicious credential activity detected',
-  playerLine4: 'Targeted user: sophieb@acme-corp.com',
+  playerLine4: 'Targeted user: sophieb@roomca-corp.com',
   playerLine5: 'Status: ACCOUNT COMPROMISED — investigation required',
   playerLine6: 'Mission: identify the phishing vector in her inbox',
   playerLine7: 'Time limit: 15:00 minutes',

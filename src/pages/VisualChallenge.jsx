@@ -133,7 +133,7 @@ function CEOEmailScene({ lang }) {
             <div style={{ display: 'flex', gap: '8px' }}>
               <span style={{ color: '#888', width: '90px', flexShrink: 0 }}>{fr ? 'De :' : 'From:'}</span>
               <span style={{ color: '#1b1b1b', fontFamily: 'monospace', fontSize: '11px' }}>
-                Marc Dupont (PDG) &lt;<span style={{ color: '#cc0000', fontWeight: 700 }}>pdg@acme-corp.co</span>&gt;
+                Marc Dupont (PDG) &lt;<span style={{ color: '#cc0000', fontWeight: 700 }}>pdg@roomca-corp.co</span>&gt;
               </span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -144,7 +144,7 @@ function CEOEmailScene({ lang }) {
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span style={{ color: '#888', width: '90px', flexShrink: 0 }}>{fr ? 'À :' : 'To:'}</span>
-              <span style={{ color: '#555', fontSize: '11px' }}>comptabilite@acme-corp.com</span>
+              <span style={{ color: '#555', fontSize: '11px' }}>comptabilite@roomca-corp.com</span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span style={{ color: '#888', width: '90px', flexShrink: 0 }}>{fr ? 'Date :' : 'Date:'}</span>
@@ -182,7 +182,7 @@ function CEOEmailScene({ lang }) {
             <div style={{ fontFamily: 'monospace', fontSize: '12px' }}>BIC: BCYPCY2N</div>
           </div>
           <div style={{ color: '#888', fontSize: '12px', borderTop: '1px solid #eee', paddingTop: '12px' }}>
-            <div>Marc Dupont — PDG ACME Corporation</div>
+            <div>Marc Dupont — PDG ROOMCA Corporation</div>
             <div style={{ fontStyle: 'italic' }}>Envoyé depuis mon iPhone</div>
           </div>
         </div>
@@ -312,7 +312,7 @@ function InvoiceScene({ lang }) {
               <div style={{ fontSize: '28px', filter: 'blur(0.5px)', opacity: 0.85 }}>🏢</div>
             </div>
             <div>
-              <div style={{ fontSize: '15px', fontWeight: 700, color: '#1565c0' }}>ACME Corporation</div>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#1565c0' }}>ROOMCA Corporation</div>
               <div style={{ fontSize: '10px', color: '#666' }}>123 rue de la Paix, 75001 Paris</div>
               <div style={{ fontSize: '10px', color: '#666' }}>SIRET: 824 671 235 00018</div>
             </div>
@@ -394,11 +394,11 @@ function InvoiceScene({ lang }) {
         <div style={{ padding: '10px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '10px', color: '#666' }}>
             {fr ? 'Questions :' : 'Questions:'}{' '}
-            <span style={{ color: '#cc0000', fontFamily: 'monospace', fontWeight: 700 }}>comptabilite@acme-corp.cc</span>
+            <span style={{ color: '#cc0000', fontFamily: 'monospace', fontWeight: 700 }}>comptabilite@roomca-corp.cc</span>
             {' '}| {fr ? 'Tél :' : 'Tel:'} +33 7 00 00 00 00
           </div>
           <div style={{ fontSize: '9px', color: '#aaa' }}>
-            ACME Corporation — SIRET 824 671 235 00018 — TVA FR 12 824671235
+            ROOMCA Corporation — SIRET 824 671 235 00018 — TVA FR 12 824671235
           </div>
         </div>
       </div>

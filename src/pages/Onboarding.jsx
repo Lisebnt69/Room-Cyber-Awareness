@@ -94,7 +94,7 @@ export default function Onboarding() {
               <p style={{ color: 'var(--text-muted)', marginBottom: '28px' }}>Ces informations permettent d'adapter les scénarios à votre contexte.</p>
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>NOM DE L'ENTREPRISE</label>
-                <input className="input-dark" placeholder="ACME Corp" value={form.company} onChange={e => set('company', e.target.value)} style={{ fontSize: '15px', padding: '12px 16px' }} />
+                <input className="input-dark" placeholder="ROOMCA Corp" value={form.company} onChange={e => set('company', e.target.value)} style={{ fontSize: '15px', padding: '12px 16px' }} />
               </div>
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>SECTEUR D'ACTIVITÉ</label>

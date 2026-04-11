@@ -205,11 +205,11 @@ export default function Reports() {
     if (selected.id === 'audit') {
       downloadCSV(`audit_trail_${Date.now()}.csv`, [
         ['Timestamp', 'User', 'Action', 'Resource', 'IP', 'Result'],
-        ['2026-04-08 09:12:34', 'marie.dupont@acme.com', 'LOGIN', 'Platform', '192.168.1.12', 'SUCCESS'],
-        ['2026-04-08 09:14:21', 'marie.dupont@acme.com', 'SCENARIO_COMPLETE', 'Inbox Zero', '192.168.1.12', 'SCORE:850'],
-        ['2026-04-08 10:05:11', 'pierre.martin@acme.com', 'LOGIN', 'Platform', '192.168.1.45', 'SUCCESS'],
-        ['2026-04-08 10:22:30', 'admin@acme.com', 'CAMPAIGN_CREATE', 'Phishing Campaign #48', '192.168.1.1', 'SUCCESS'],
-        ['2026-04-08 11:45:00', 'thomas.moreau@acme.com', 'CERTIFICATION_PASS', 'ROOMCA Foundation', '192.168.1.88', 'SCORE:92%']
+        ['2026-04-08 09:12:34', 'marie.dupont@roomca.com', 'LOGIN', 'Platform', '192.168.1.12', 'SUCCESS'],
+        ['2026-04-08 09:14:21', 'marie.dupont@roomca.com', 'SCENARIO_COMPLETE', 'Inbox Zero', '192.168.1.12', 'SCORE:850'],
+        ['2026-04-08 10:05:11', 'pierre.martin@roomca.com', 'LOGIN', 'Platform', '192.168.1.45', 'SUCCESS'],
+        ['2026-04-08 10:22:30', 'admin@roomca.com', 'CAMPAIGN_CREATE', 'Phishing Campaign #48', '192.168.1.1', 'SUCCESS'],
+        ['2026-04-08 11:45:00', 'thomas.moreau@roomca.com', 'CERTIFICATION_PASS', 'ROOMCA Foundation', '192.168.1.88', 'SCORE:92%']
       ])
     } else if (selected.id === 'campaign') {
       downloadCSV(`campaign_results_${Date.now()}.csv`, [

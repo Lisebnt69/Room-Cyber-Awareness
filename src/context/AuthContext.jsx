@@ -10,8 +10,8 @@ export const ROLES = {
 }
 
 const MOCK_USERS = [
-  { id: 1, email: 'player@acme.com', password: 'demo', role: ROLES.PLAYER, name: 'Alex Martin', company: 'ACME Corp' },
-  { id: 2, email: 'admin@acme.com', password: 'demo', role: ROLES.ADMIN, name: 'Sophie Bernard', company: 'ACME Corp' },
+  { id: 1, email: 'player@roomca.com', password: 'demo', role: ROLES.PLAYER, name: 'Alex Martin', company: 'ROOMCA Corp' },
+  { id: 2, email: 'admin@roomca.com', password: 'demo', role: ROLES.ADMIN, name: 'Sophie Bernard', company: 'ROOMCA Corp' },
   { id: 3, email: 'superadmin@roomca.io', password: 'demo', role: ROLES.SUPER_ADMIN, name: 'ROOMCA Admin', company: 'ROOMCA' },
 ]
 

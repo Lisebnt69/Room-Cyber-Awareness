@@ -7,16 +7,16 @@
 
 export const tenantsData = [
   {
-    id: 'tenant_acme',
-    name: 'ACME Corp',
-    domain: 'acme.roomca.io',
+    id: 'tenant_roomca',
+    name: 'ROOMCA Corp',
+    domain: 'roomca.roomca.io',
     customDomain: null,
     plan: 'business',
     parentMSP: null,
-    branding: { logo: '/logos/acme.png', primaryColor: '#00d4ff', secondaryColor: '#061428', favicon: '/favicons/acme.ico', loginBg: '/bg/acme.jpg', emailFooter: 'ACME Corp — Sécurité & Innovation' },
+    branding: { logo: '/logos/roomca.png', primaryColor: '#00d4ff', secondaryColor: '#061428', favicon: '/favicons/roomca.ico', loginBg: '/bg/roomca.jpg', emailFooter: 'ROOMCA Corp — Sécurité & Innovation' },
     features: ['sso', '2fa', 'whitelabel', 'api', 'compliance_reports', 'risk_scoring'],
     limits: { employees: 500, scenarios: -1, campaigns: -1, apiCalls: 50000 },
-    billing: { stripeCustomerId: 'cus_acme_001', mrr: 449, currency: 'EUR' },
+    billing: { stripeCustomerId: 'cus_roomca_001', mrr: 449, currency: 'EUR' },
     metadata: { createdAt: '2024-09-15', industry: 'Technology', country: 'FR', complianceFrameworks: ['NIS2', 'ISO27001'] },
     status: 'active'
   },
@@ -135,7 +135,7 @@ export const ssoIntegration = {
       email: 'sso.user@example.com',
       name: 'SSO User',
       role: 'admin',
-      tenantId: 'tenant_acme'
+      tenantId: 'tenant_roomca'
     }
   }
 }

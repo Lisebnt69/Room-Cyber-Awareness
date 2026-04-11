@@ -151,7 +151,7 @@ export default function PlayerDashboard() {
             <h1 style={{ fontSize: '28px', color: 'var(--text-primary)', marginBottom: '4px' }}>
               Bonjour, <span style={{ color: '#eb2828' }}>{user?.name?.split(' ')[0] || 'Joueur'}</span> 👋
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{user?.company || 'ACME Corp'} · Niveau Defender</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{user?.company || 'ROOMCA Corp'} · Niveau Defender</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(235,40,40,0.15)', border: '2px solid #eb2828', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#eb2828', fontWeight: 'bold' }}>
@@ -476,7 +476,7 @@ export default function PlayerDashboard() {
         {tab === 'classement' && (
           <div style={{ background: 'var(--bg-card)', borderRadius: '12px', overflow: 'hidden' }}>
             <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
-              <h3 style={{ color: 'var(--text-primary)' }}>Classement {user?.company || 'ACME Corp'}</h3>
+              <h3 style={{ color: 'var(--text-primary)' }}>Classement {user?.company || 'ROOMCA Corp'}</h3>
               <span style={{ color: '#f59e0b', fontSize: '13px' }}>Votre rang : #3 / 47</span>
             </div>
             {[

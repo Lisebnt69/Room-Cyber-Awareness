@@ -33,7 +33,7 @@ export default function Leaderboards() {
     navigate('/login')
   }
 
-  const userDept = user?.company || 'ACME Corp'
+  const userDept = user?.company || 'ROOMCA Corp'
   const deptUsers = mockUsers.filter(u => u.dept === user?.name?.split(' ')[1] || true)
 
   return (

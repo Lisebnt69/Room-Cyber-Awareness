@@ -9,7 +9,7 @@ import Toast from '../components/Toast'
 import ScenarioBuilder from './ScenarioBuilder'
 
 const INITIAL_COMPANIES = [
-  { id: 1, name: 'ACME Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@acme.com', sector: 'Finance' },
+  { id: 1, name: 'ROOMCA Corp', plan: 'Business', users: 161, active: 142, scenarios: 6, licenses: 200, expire: '31/12/2025', status: 'active', email: 'admin@roomca.com', sector: 'Finance' },
   { id: 2, name: 'BNP Finance', plan: 'Enterprise', users: 892, active: 814, scenarios: 12, licenses: 1000, expire: '30/06/2025', status: 'active', email: 'security@bnp.fr', sector: 'Finance' },
   { id: 3, name: 'Mairie de Lyon', plan: 'Starter', users: 24, active: 18, scenarios: 3, licenses: 25, expire: '15/05/2025', status: 'expiring', email: 'dsi@mairie-lyon.fr', sector: 'Administration' },
   { id: 4, name: 'StartupTech SAS', plan: 'Starter', users: 12, active: 8, scenarios: 2, licenses: 25, expire: '01/09/2025', status: 'active', email: 'cto@startuptech.io', sector: 'Tech' },
@@ -17,7 +17,7 @@ const INITIAL_COMPANIES = [
 ]
 
 const licensesData = [
-  { id: 1, company: 'ACME Corp', plan: 'Business', seats: 200, used: 161, price: 199, period: 'monthly', expires: '31/12/2025' },
+  { id: 1, company: 'ROOMCA Corp', plan: 'Business', seats: 200, used: 161, price: 199, period: 'monthly', expires: '31/12/2025' },
   { id: 2, company: 'BNP Finance', plan: 'Enterprise', seats: 1000, used: 814, price: 'custom', period: 'annual', expires: '30/06/2025' },
   { id: 3, company: 'Mairie de Lyon', plan: 'Starter', seats: 25, used: 18, price: 49, period: 'monthly', expires: '15/05/2025' },
 ]
@@ -343,7 +343,7 @@ export default function SuperAdmin() {
               name: 'name',
               label: lang === 'fr' ? 'NOM ENTREPRISE' : 'COMPANY NAME',
               type: 'text',
-              placeholder: 'ACME Corp',
+              placeholder: 'ROOMCA Corp',
             },
             {
               name: 'email',

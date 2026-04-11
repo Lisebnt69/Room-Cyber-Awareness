@@ -33,14 +33,14 @@ const INITIAL_SCENARIO_LIBRARY = [
 ]
 
 const INITIAL_EMPLOYEES = [
-  { id: 1, name: 'Sophie Bernard', dept: 'Finance', score: 920, scenarios: 4, status: 'excellent', lastPlay: '05/04/2025', email: 'sophieb@acme-corp.com', completionRate: 95, avgTime: '12min', lastScenario: 'Inbox Zero', license: true },
-  { id: 2, name: 'Thomas Keller', dept: 'IT', score: 850, scenarios: 5, status: 'excellent', lastPlay: '06/04/2025', email: 'thomask@acme-corp.com', completionRate: 88, avgTime: '11min', lastScenario: 'Bureau Compromis', license: true },
-  { id: 3, name: 'Amélie Durand', dept: 'RH', score: 710, scenarios: 3, status: 'good', lastPlay: '03/04/2025', email: 'amelied@acme-corp.com', completionRate: 72, avgTime: '14min', lastScenario: 'Inbox Zero', license: true },
-  { id: 4, name: 'Marc Lefebvre', dept: 'Commercial', score: 540, scenarios: 2, status: 'improve', lastPlay: '28/03/2025', email: 'marcl@acme-corp.com', completionRate: 51, avgTime: '18min', lastScenario: 'Ingénierie Sociale', license: true },
-  { id: 5, name: 'Julie Martin', dept: 'Direction', score: 880, scenarios: 4, status: 'excellent', lastPlay: '07/04/2025', email: 'juliem@acme-corp.com', completionRate: 91, avgTime: '10min', lastScenario: 'Inbox Zero', license: true },
-  { id: 6, name: 'Pierre Rousseau', dept: 'Finance', score: 630, scenarios: 3, status: 'good', lastPlay: '04/04/2025', email: 'pierrer@acme-corp.com', completionRate: 68, avgTime: '15min', lastScenario: 'Bureau Compromis', license: true },
-  { id: 7, name: 'Nadia Chouaib', dept: 'Commercial', score: 490, scenarios: 1, status: 'improve', lastPlay: '01/04/2025', email: 'nadiac@acme-corp.com', completionRate: 44, avgTime: '21min', lastScenario: 'Ingénierie Sociale', license: false },
-  { id: 8, name: 'Antoine Moreau', dept: 'IT', score: 960, scenarios: 6, status: 'excellent', lastPlay: '07/04/2025', email: 'antoinem@acme-corp.com', completionRate: 98, avgTime: '9min', lastScenario: 'Bureau Compromis', license: true },
+  { id: 1, name: 'Sophie Bernard', dept: 'Finance', score: 920, scenarios: 4, status: 'excellent', lastPlay: '05/04/2025', email: 'sophieb@roomca-corp.com', completionRate: 95, avgTime: '12min', lastScenario: 'Inbox Zero', license: true },
+  { id: 2, name: 'Thomas Keller', dept: 'IT', score: 850, scenarios: 5, status: 'excellent', lastPlay: '06/04/2025', email: 'thomask@roomca-corp.com', completionRate: 88, avgTime: '11min', lastScenario: 'Bureau Compromis', license: true },
+  { id: 3, name: 'Amélie Durand', dept: 'RH', score: 710, scenarios: 3, status: 'good', lastPlay: '03/04/2025', email: 'amelied@roomca-corp.com', completionRate: 72, avgTime: '14min', lastScenario: 'Inbox Zero', license: true },
+  { id: 4, name: 'Marc Lefebvre', dept: 'Commercial', score: 540, scenarios: 2, status: 'improve', lastPlay: '28/03/2025', email: 'marcl@roomca-corp.com', completionRate: 51, avgTime: '18min', lastScenario: 'Ingénierie Sociale', license: true },
+  { id: 5, name: 'Julie Martin', dept: 'Direction', score: 880, scenarios: 4, status: 'excellent', lastPlay: '07/04/2025', email: 'juliem@roomca-corp.com', completionRate: 91, avgTime: '10min', lastScenario: 'Inbox Zero', license: true },
+  { id: 6, name: 'Pierre Rousseau', dept: 'Finance', score: 630, scenarios: 3, status: 'good', lastPlay: '04/04/2025', email: 'pierrer@roomca-corp.com', completionRate: 68, avgTime: '15min', lastScenario: 'Bureau Compromis', license: true },
+  { id: 7, name: 'Nadia Chouaib', dept: 'Commercial', score: 490, scenarios: 1, status: 'improve', lastPlay: '01/04/2025', email: 'nadiac@roomca-corp.com', completionRate: 44, avgTime: '21min', lastScenario: 'Ingénierie Sociale', license: false },
+  { id: 8, name: 'Antoine Moreau', dept: 'IT', score: 960, scenarios: 6, status: 'excellent', lastPlay: '07/04/2025', email: 'antoinem@roomca-corp.com', completionRate: 98, avgTime: '9min', lastScenario: 'Bureau Compromis', license: true },
 ]
 
 const DEPTS = ['Finance', 'IT', 'RH', 'Commercial', 'Direction', 'Marketing', 'Juridique', 'Opérations']
@@ -338,7 +338,7 @@ function TabReports({ lang }) {
       const tplId = id === 'r4' ? 'risk' : id === 'r3' ? 'audit' : 'exec'
       await generateReportPDF(
         { id: tplId, name: report.name },
-        { period: report.date, org: 'ACME Corp' }
+        { period: report.date, org: 'ROOMCA Corp' }
       )
     } else {
       // CSV export
@@ -435,7 +435,7 @@ function TabExecutive({ lang }) {
     try {
       await generateReportPDF(
         { id: 'exec', name: lang === 'fr' ? 'Vue Dirigeant — Rapport Cybersécurité' : 'Executive View — Cybersecurity Report' },
-        { period: 'Avril 2026', org: 'ACME Corp' }
+        { period: 'Avril 2026', org: 'ROOMCA Corp' }
       )
     } finally {
       setExporting(false)
@@ -569,7 +569,7 @@ function TabExecutive({ lang }) {
 // ─── Tab: Settings ────────────────────────────────────────────────
 function TabSettings({ lang, user }) {
   const [saved, setSaved] = useState(false)
-  const [form, setForm] = useState({ company: user?.company || 'ACME Corp', email: 'admin@acme-corp.com', notifications: true, twoFactor: false, weeklyReport: true })
+  const [form, setForm] = useState({ company: user?.company || 'ROOMCA Corp', email: 'admin@roomca-corp.com', notifications: true, twoFactor: false, weeklyReport: true })
   const save = (e) => { e.preventDefault(); setSaved(true); setTimeout(() => setSaved(false), 2500) }
   const lbl = (fr, en) => lang === 'fr' ? fr : en
   return (

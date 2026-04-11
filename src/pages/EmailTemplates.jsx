@@ -87,12 +87,12 @@ export default function EmailTemplates() {
           <div onClick={() => setPreview(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
             <div onClick={e => e.stopPropagation()} style={{ background: '#fff', maxWidth: '600px', padding: '32px', borderRadius: '12px', color: '#000' }}>
               <h3>{preview.name}</h3>
-              <p style={{ fontSize: '12px', color: '#666' }}>From: it-support@acme-corp.io</p>
+              <p style={{ fontSize: '12px', color: '#666' }}>From: it-support@roomca-corp.io</p>
               <p style={{ fontSize: '12px', color: '#666' }}>Subject: ⚠️ Action Required: Verify Account</p>
               <hr />
               <p>Dear User,</p>
               <p>We detected unusual activity on your account. Please verify your credentials by clicking the link below:</p>
-              <p><a href="#" style={{ color: 'blue' }}>https://acme-corp.io/verify-account</a></p>
+              <p><a href="#" style={{ color: 'blue' }}>https://roomca-corp.io/verify-account</a></p>
               <p>Failure to verify within 24 hours will result in account suspension.</p>
               <p>Best regards,<br/>IT Security Team</p>
               <button onClick={() => setPreview(null)} style={{ marginTop: '16px', padding: '8px 16px', background: '#eb2828', color: '#fff', border: 'none', borderRadius: '6px' }}>Fermer</button>

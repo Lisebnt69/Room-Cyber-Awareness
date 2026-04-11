@@ -20,7 +20,7 @@ export const immersiveScenarios = [
     emails: [
       {
         id: 'email_1',
-        from: 'finance@acme-corp.com',
+        from: 'finance@roomca-corp.com',
         subject: '🔴 URGENT: Confirm bank details for wire transfer',
         time: '09:50',
         preview: 'Click link below to verify account before 10:00 AM...',
@@ -28,7 +28,7 @@ export const immersiveScenarios = [
         hints: {
           obvious: 'Generic greeting "Dear User"',
           medium: 'Shortened URL (bit.ly)',
-          hard: 'Sender is finance@acme-corp.com but signature says "Financial Services"'
+          hard: 'Sender is finance@roomca-corp.com but signature says "Financial Services"'
         },
         consequences: {
           clicked: '❌ BREACH: Phisher captured your credentials. Wire transfer cancelled due to fraud investigation. CEO is furious. -500 points',
@@ -53,11 +53,11 @@ export const immersiveScenarios = [
     timeLimit: 300,
     description: 'Your CEO needs an urgent wire transfer. You have 5 minutes to decide. But is it really him?',
     narrative: `
-      [14:23] Your phone buzzes. Email from: ceo@acme.com
+      [14:23] Your phone buzzes. Email from: ceo@roomca.com
       [14:23] Subject: "⚠️ CONFIDENTIAL - URGENT"
       
       Message: "Need you to send $50K to vendor immediately.
-       Wire to: Acme-Ventures@trustbank.com
+       Wire to: Roomca-Ventures@trustbank.com
        This is urgent. Do not discuss with anyone.
        Confirm receipt."
       
