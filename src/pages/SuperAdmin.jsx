@@ -16,7 +16,6 @@ const INITIAL_COMPANIES = [
   { id: 5, name: 'Groupe Renault', plan: 'Enterprise', users: 2840, active: 2100, scenarios: 18, licenses: 3000, expire: '31/03/2026', status: 'active', email: 'cybersec@renault.com', sector: 'Industrie' },
 ]
 
-
 const licensesData = [
   { id: 1, company: 'ACME Corp', plan: 'Business', seats: 200, used: 161, price: 199, period: 'monthly', expires: '31/12/2025' },
   { id: 2, company: 'BNP Finance', plan: 'Enterprise', seats: 1000, used: 814, price: 'custom', period: 'annual', expires: '30/06/2025' },
@@ -26,7 +25,6 @@ const licensesData = [
 const SECTORS = ['Finance', 'Santé', 'Administration', 'Éducation', 'Industrie', 'Commerce', 'Énergie', 'Juridique', 'Tech', 'Transport']
 const PLANS = ['Starter', 'Business', 'Enterprise']
 const STATUS_OPTIONS = ['active', 'expiring', 'suspended']
-const SCENARIO_MODULES = ['photo', 'mapping', 'fakeLink', 'fakeEmail', 'video', 'quiz', 'miniPuzzle']
 
 const DEFAULT_SCENARIO_FIELDS = {
   id: null,
@@ -50,6 +48,7 @@ const DEFAULT_SCENARIO_FIELDS = {
   photoHotspots: [],
   quizQuestions: [],
   modules: [],
+  blocks: [],
   plays: 0,
   score: 0,
   status: 'draft',
@@ -80,9 +79,9 @@ const withScenarioDefaults = (scenario = {}) => ({
   blocks: Array.isArray(scenario?.blocks) ? scenario.blocks : [],
 })
 
-const apiToState = (s) => withScenarioDefaults({ ...s })
+const apiToState = (scenario) => withScenarioDefaults({ ...scenario })
 
-function statusBadge(s, t) {
+function statusBadge(status, t) {
   const map = {
     active: [t('badgeActive'), '#22c55e'],
     expiring: [t('badgeExpiring'), '#f59e0b'],
@@ -92,7 +91,7 @@ function statusBadge(s, t) {
     draft: [t('badgeDraft'), 'var(--text-muted)'],
   }
 
-  const [label, color] = map[s] || [s, 'var(--text-muted)']
+  const [label, color] = map[status] || [status, 'var(--text-muted)']
 
   return (
     <span
@@ -131,15 +130,23 @@ export default function SuperAdmin() {
 
   const loadScenarios = () =>
     fetch('/api/scenarios')
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setScenarios(data.map(apiToState)) })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setScenarios(data.map(apiToState))
+        }
+      })
       .catch(() => {})
 
   useEffect(() => {
     loadScenarios()
     fetch('/api/companies')
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setCompanies(data) })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCompanies(data)
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -166,33 +173,47 @@ export default function SuperAdmin() {
       score: data.score || 0,
       mappingContext: data.mappingContext || '',
     }
+
     try {
       const isEdit = builderMode?.mode === 'edit' && data.id
       const url = isEdit ? `/api/scenarios/${data.id}` : '/api/scenarios'
+
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
+
       if (!res.ok) {
         const err = await res.json()
         showToast(`Erreur: ${err.error || 'inconnue'}`)
         return
       }
-      await loadScenarios()
-      showToast(lang === 'fr'
-        ? `"${body.title_fr}" ${isEdit ? 'mis à jour' : 'créé'}`
-        : `"${body.title_fr}" ${isEdit ? 'updated' : 'created'}`)
 
-} catch {
+      await loadScenarios()
+      showToast(
+        lang === 'fr'
+          ? `"${body.title_fr}" ${isEdit ? 'mis à jour' : 'créé'}`
+          : `"${body.title_fr}" ${isEdit ? 'updated' : 'created'}`
+      )
+    } catch {
       showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
     }
+
     setBuilderMode(null)
   }
 
-  const handleDeleteScenario = async (s) => {
-    if (!confirm(lang === 'fr' ? `Supprimer "${s.title?.fr || s.title_fr}" ?` : `Delete "${s.title?.en || s.title_fr}" ?`)) return
-    await fetch(`/api/scenarios/${s.id}`, { method: 'DELETE' })
+  const handleDeleteScenario = async (scenario) => {
+    const label =
+      lang === 'fr'
+        ? scenario.title?.fr || scenario.title_fr
+        : scenario.title?.en || scenario.title_fr
+
+    if (!confirm(lang === 'fr' ? `Supprimer "${label}" ?` : `Delete "${label}" ?`)) {
+      return
+    }
+
+    await fetch(`/api/scenarios/${scenario.id}`, { method: 'DELETE' })
     await loadScenarios()
     showToast(lang === 'fr' ? 'Scénario supprimé' : 'Scenario deleted')
   }
@@ -204,18 +225,26 @@ export default function SuperAdmin() {
 
   const saveCompany = async (e) => {
     e.preventDefault()
+
     try {
       const res = await fetch(`/api/companies/${editCompanyForm.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editCompanyForm),
       })
-      if (!res.ok) { showToast(lang === 'fr' ? 'Erreur sauvegarde' : 'Save error'); return }
+
+      if (!res.ok) {
+        showToast(lang === 'fr' ? 'Erreur sauvegarde' : 'Save error')
+        return
+      }
+
       const updated = await res.json()
       setCompanies((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
       setModal(null)
       showToast(lang === 'fr' ? `${updated.name} mis à jour` : `${updated.name} updated`)
-    } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
+    } catch {
+      showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
+    }
   }
 
   const deleteCompany = async (id) => {
@@ -224,7 +253,9 @@ export default function SuperAdmin() {
       setCompanies((prev) => prev.filter((c) => c.id !== id))
       setModal(null)
       showToast(lang === 'fr' ? 'Entreprise supprimée' : 'Company deleted')
-    } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
+    } catch {
+      showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
+    }
   }
 
   const navItems = [
@@ -242,8 +273,12 @@ export default function SuperAdmin() {
     { label: t('saKpiMrr'), value: '€24 800', sub: t('saKpiMrrSub') },
   ]
 
-  const diffLabel = (d) =>
-    ({ intermediate: t('diffIntermediate'), advanced: t('diffAdvanced'), beginner: t('diffBeginner') })[d] || d
+  const diffLabel = (difficulty) =>
+    ({
+      intermediate: t('diffIntermediate'),
+      advanced: t('diffAdvanced'),
+      beginner: t('diffBeginner'),
+    }[difficulty] || difficulty)
 
   const getScenarioModulesLabel = (scenario) => {
     const modules = Array.isArray(scenario.modules) ? scenario.modules : []
@@ -265,13 +300,13 @@ export default function SuperAdmin() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#000', color: 'var(--text-light)' }}>
       {toast && <Toast message={toast} type="success" />}
 
-      {/* Add Company Modal */}
       <Modal isOpen={modal?.type === 'addCompany'} onClose={() => setModal(null)} title={t('saAdd')}>
         <form
           onSubmit={async (e) => {
             e.preventDefault()
             const fd = new FormData(e.currentTarget)
             const plan = fd.get('plan')
+
             const body = {
               name: fd.get('name'),
               email: fd.get('email'),
@@ -281,18 +316,26 @@ export default function SuperAdmin() {
               expire: '31/12/2026',
               status: 'active',
             }
+
             try {
               const res = await fetch('/api/companies', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
               })
-              if (!res.ok) { showToast(lang === 'fr' ? 'Erreur création' : 'Creation error'); return }
+
+              if (!res.ok) {
+                showToast(lang === 'fr' ? 'Erreur création' : 'Creation error')
+                return
+              }
+
               const created = await res.json()
               setCompanies((prev) => [...prev, created])
               setModal(null)
               showToast(lang === 'fr' ? `${created.name} créée avec succès` : `${created.name} created successfully`)
-            } catch { showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error') }
+            } catch {
+              showToast(lang === 'fr' ? 'Erreur réseau' : 'Network error')
+            }
           }}
         >
           {[
@@ -403,7 +446,6 @@ export default function SuperAdmin() {
         </form>
       </Modal>
 
-      {/* Edit Company Modal */}
       <Modal
         isOpen={modal?.type === 'editCompany' && !!editCompanyForm}
         onClose={() => setModal(null)}
@@ -413,15 +455,7 @@ export default function SuperAdmin() {
           <form onSubmit={saveCompany}>
             <div style={{ display: 'grid', gridTemplateColumns: twoCols, gap: '12px', marginBottom: '16px' }}>
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   {lang === 'fr' ? 'NOM' : 'NAME'}
                 </label>
                 <input
@@ -433,15 +467,7 @@ export default function SuperAdmin() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   EMAIL
                 </label>
                 <input
@@ -455,15 +481,7 @@ export default function SuperAdmin() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '16px' }}>
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   PLAN
                 </label>
                 <select
@@ -480,15 +498,7 @@ export default function SuperAdmin() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   SECTEUR
                 </label>
                 <select
@@ -505,15 +515,7 @@ export default function SuperAdmin() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   STATUS
                 </label>
                 <select
@@ -532,15 +534,7 @@ export default function SuperAdmin() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   {lang === 'fr' ? 'LICENCES' : 'LICENSES'}
                 </label>
                 <input
@@ -558,15 +552,7 @@ export default function SuperAdmin() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
+                <label style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>
                   {lang === 'fr' ? 'EXPIRATION' : 'EXPIRES'}
                 </label>
                 <input
@@ -604,7 +590,6 @@ export default function SuperAdmin() {
         )}
       </Modal>
 
-      {/* Sidebar */}
       <aside
         style={{
           width: '240px',
@@ -631,14 +616,7 @@ export default function SuperAdmin() {
               border: '1px solid rgba(235,40,40,0.3)',
             }}
           >
-            <div
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '15px',
-                color: 'var(--red)',
-                letterSpacing: '0.15em',
-              }}
-            >
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--red)', letterSpacing: '0.15em' }}>
               SUPER ADMIN
             </div>
             <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -694,7 +672,6 @@ export default function SuperAdmin() {
         </div>
       </aside>
 
-      {/* Main */}
       <main style={{ marginLeft: '240px', flex: 1 }}>
         <div
           style={{
@@ -721,7 +698,6 @@ export default function SuperAdmin() {
         </div>
 
         <div style={{ padding: isCompact ? '16px' : '40px' }}>
-          {/* Overview */}
           {activeNav === 'overview' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border-subtle)' }}>
               {kpis.map((k) => (
@@ -733,15 +709,7 @@ export default function SuperAdmin() {
                     borderTop: k.accent ? '2px solid var(--red)' : '2px solid transparent',
                   }}
                 >
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '13px',
-                      color: 'var(--text-muted)',
-                      letterSpacing: '0.15em',
-                      marginBottom: '10px',
-                    }}
-                  >
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '10px' }}>
                     {k.label}
                   </div>
                   <div
@@ -761,7 +729,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* Companies */}
           {activeNav === 'companies' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div
@@ -876,7 +843,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* Scenarios */}
           {activeNav === 'scenarios' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div
@@ -939,7 +905,9 @@ export default function SuperAdmin() {
                         e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'
                       }}
                     >
-                      <td style={{ padding: '14px 20px', fontSize: '13px' }}>{typeof s.title === 'object' ? s.title[lang] : s.title}</td>
+                      <td style={{ padding: '14px 20px', fontSize: '13px' }}>
+                        {typeof s.title === 'object' ? s.title[lang] : s.title}
+                      </td>
                       <td style={{ padding: '14px 20px' }}>
                         <span className="tag" style={{ fontSize: '13px', padding: '2px 8px' }}>
                           {s.category}
@@ -955,7 +923,7 @@ export default function SuperAdmin() {
                         {getScenarioModulesLabel(s)}
                       </td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-light)' }}>
-                        {s.plays.toLocaleString()}
+                        {(s.plays || 0).toLocaleString()}
                       </td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--red)' }}>
                         {s.score > 0 ? s.score : '—'}
@@ -977,6 +945,7 @@ export default function SuperAdmin() {
                         >
                           ▶ Tester
                         </button>
+
                         <button
                           onClick={() => setBuilderMode({ mode: 'edit', scenario: s })}
                           style={{
@@ -1001,14 +970,30 @@ export default function SuperAdmin() {
                         >
                           ✎ {t('saEdit')}
                         </button>
+
                         <button
                           onClick={() => handleDeleteScenario(s)}
-                          style={{ background: 'transparent', border: '1px solid rgba(235,40,40,0.4)', color: 'rgba(235,40,40,0.7)', padding: '4px 10px', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'; e.currentTarget.style.color = 'rgba(235,40,40,0.7)' }}
-                          aria-label={`Delete scenario`}
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid rgba(235,40,40,0.4)',
+                            color: 'rgba(235,40,40,0.7)',
+                            padding: '4px 10px',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-body)',
+                            transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = 'var(--red)'
+                            e.currentTarget.style.color = 'var(--red)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(235,40,40,0.4)'
+                            e.currentTarget.style.color = 'rgba(235,40,40,0.7)'
+                          }}
+                          aria-label="Delete scenario"
                         >
-                          {'×'}
+                          ×
                         </button>
                       </td>
                     </tr>
@@ -1018,7 +1003,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* Licenses */}
           {activeNav === 'licenses' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)' }}>
@@ -1080,7 +1064,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* System */}
           {activeNav === 'system' && (
             <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '1fr 1fr', gap: '20px' }}>
               {[
