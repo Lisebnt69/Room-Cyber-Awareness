@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import Modal from '../components/Modal'
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────────
 
@@ -271,6 +272,26 @@ const inputBase = {
   color: 'var(--text-light)',
   fontSize: '11px',
   borderRadius: '3px',
+  boxSizing: 'border-box',
+}
+
+const metaModalLabelStyle = {
+  display: 'block',
+  fontFamily: 'var(--mono)',
+  fontSize: '11px',
+  color: 'var(--text-secondary)',
+  letterSpacing: '0.08em',
+  marginBottom: '8px',
+}
+
+const metaModalSelectStyle = {
+  width: '100%',
+  padding: '12px 16px',
+  background: 'rgba(4, 15, 32, 0.70)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--r-sm)',
+  color: 'var(--text-primary)',
+  fontSize: '14px',
   boxSizing: 'border-box',
 }
 
@@ -715,7 +736,7 @@ export default function ScenarioBuilder({
     initialData?.blocks?.map((b, i) => ({ ...b, id: b.id ?? (Date.now() + i) })) || []
   )
   const [selectedId, setSelectedId] = useState(null)
-  const [metaOpen, setMetaOpen] = useState(true)
+  const [metaModalOpen, setMetaModalOpen] = useState(!initialData)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -1158,49 +1179,35 @@ export default function ScenarioBuilder({
         {/* ── LEFT: META + PALETTE ── */}
         <div style={{ width: '220px', flexShrink: 0, background: '#070707', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-          {/* Meta accordion */}
-          <div style={{ flexShrink: 0 }}>
-            <button type="button" onClick={() => setMetaOpen(o => !o)}
-              style={{ width: '100%', padding: '10px 14px', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', fontFamily: 'var(--mono)', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em' }}>
-              <span>⚙ INFOS SCÉNARIO</span>
-              <span style={{ fontSize: '9px' }}>{metaOpen ? '▲' : '▼'}</span>
-            </button>
-
-            {metaOpen && (
-              <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', borderBottom: '1px solid var(--border-subtle)' }}>
-                <div>
-                  <label style={labelStyle}>TITRE FR</label>
-                  <input value={meta.titleFr} onChange={(e) => updateMeta('titleFr', e.target.value)} placeholder="Titre français" style={{ ...inputBase, fontSize: '11px' }} />
-                </div>
-                <div>
-                  <label style={labelStyle}>TITLE EN</label>
-                  <input value={meta.titleEn} onChange={(e) => updateMeta('titleEn', e.target.value)} placeholder="English title" style={{ ...inputBase, fontSize: '11px' }} />
-                </div>
-                <div>
-                  <label style={labelStyle}>CATÉGORIE</label>
-                  <select value={meta.category} onChange={(e) => updateMeta('category', e.target.value)} style={{ ...inputBase, fontSize: '11px' }}>
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                  <div>
-                    <label style={labelStyle}>NIVEAU</label>
-                    <select value={meta.difficulty} onChange={(e) => updateMeta('difficulty', e.target.value)} style={{ ...inputBase, fontSize: '11px' }}>
-                      {DIFFICULTIES.map(d => <option key={d.v} value={d.v}>{d.l}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={labelStyle}>DURÉE (min)</label>
-                    <input type="number" value={meta.duration} onChange={(e) => updateMeta('duration', e.target.value)} style={{ ...inputBase, fontSize: '11px' }} />
-                  </div>
-                </div>
-                <div>
-                  <label style={labelStyle}>DESCRIPTION</label>
-                  <textarea value={meta.description} onChange={(e) => updateMeta('description', e.target.value)} rows={2}
-                    style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', fontSize: '11px' }} />
-                </div>
+          {/* Meta summary + open modal button */}
+          <div style={{ flexShrink: 0, borderBottom: '1px solid var(--border-subtle)' }}>
+            <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>⚙ INFOS SCÉNARIO</span>
+              <button type="button" onClick={() => setMetaModalOpen(true)}
+                style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-light)', cursor: 'pointer', fontSize: '10px', fontFamily: 'var(--mono)', padding: '3px 8px', borderRadius: '3px', letterSpacing: '0.05em' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-light)' }}
+              >
+                ✏ ÉDITER
+              </button>
+            </div>
+            <button type="button" onClick={() => setMetaModalOpen(true)}
+              style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'left', padding: '0 14px 14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '6px' }}
+            >
+              <div style={{ fontSize: '13px', color: meta.titleFr ? 'var(--text-light)' : 'var(--text-muted)', fontWeight: 500, lineHeight: 1.3, wordBreak: 'break-word' }}>
+                {meta.titleFr || 'Titre non défini'}
               </div>
-            )}
+              {meta.description && (
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {meta.description}
+                </div>
+              )}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '3px' }}>{meta.category}</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '3px' }}>{DIFFICULTIES.find(d => d.v === meta.difficulty)?.l || meta.difficulty}</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '3px' }}>{meta.duration} min</span>
+              </div>
+            </button>
           </div>
 
           {/* Block palette */}
@@ -1325,6 +1332,114 @@ export default function ScenarioBuilder({
         </div>
 
       </div>
+
+      {/* ── INFOS SCÉNARIO MODAL ── */}
+      <Modal
+        isOpen={metaModalOpen}
+        onClose={() => setMetaModalOpen(false)}
+        size="lg"
+        title={initialData ? 'Éditer les infos du scénario' : 'Nouveau scénario'}
+      >
+        <form
+          onSubmit={(e) => { e.preventDefault(); setMetaModalOpen(false) }}
+          style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+        >
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+            Renseignez les informations principales du scénario. Vous pourrez toujours les modifier par la suite depuis la barre latérale.
+          </p>
+
+          <div>
+            <label style={metaModalLabelStyle}>
+              TITRE (FR) <span style={{ color: 'var(--red)' }}>*</span>
+            </label>
+            <input
+              className="input-dark"
+              value={meta.titleFr}
+              onChange={(e) => updateMeta('titleFr', e.target.value)}
+              placeholder="Ex. Bureau Compromis"
+              required
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label style={metaModalLabelStyle}>TITLE (EN)</label>
+            <input
+              className="input-dark"
+              value={meta.titleEn}
+              onChange={(e) => updateMeta('titleEn', e.target.value)}
+              placeholder="Ex. Compromised Desktop"
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div>
+              <label style={metaModalLabelStyle}>CATÉGORIE</label>
+              <select
+                value={meta.category}
+                onChange={(e) => updateMeta('category', e.target.value)}
+                style={metaModalSelectStyle}
+              >
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={metaModalLabelStyle}>NIVEAU</label>
+              <select
+                value={meta.difficulty}
+                onChange={(e) => updateMeta('difficulty', e.target.value)}
+                style={metaModalSelectStyle}
+              >
+                {DIFFICULTIES.map(d => <option key={d.v} value={d.v}>{d.l}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label style={metaModalLabelStyle}>DURÉE (minutes)</label>
+            <input
+              className="input-dark"
+              type="number"
+              min="1"
+              max="120"
+              value={meta.duration}
+              onChange={(e) => updateMeta('duration', e.target.value)}
+              style={{ maxWidth: '200px' }}
+            />
+          </div>
+
+          <div>
+            <label style={metaModalLabelStyle}>DESCRIPTION</label>
+            <textarea
+              className="input-dark"
+              rows={4}
+              value={meta.description}
+              onChange={(e) => updateMeta('description', e.target.value)}
+              placeholder="Décrivez le scénario en quelques phrases…"
+              style={{ resize: 'vertical', minHeight: '100px', fontFamily: 'var(--font-body)' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', marginTop: '4px' }}>
+            <button
+              type="button"
+              onClick={() => setMetaModalOpen(false)}
+              className="btn-secondary"
+              style={{ padding: '10px 20px', justifyContent: 'center' }}
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+              style={{ flex: 1, justifyContent: 'center' }}
+            >
+              ✓ Enregistrer les infos
+            </button>
+          </div>
+        </form>
+      </Modal>
+
     </div>
   )
 }

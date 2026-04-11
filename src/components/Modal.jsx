@@ -1,7 +1,15 @@
 import { useEffect } from 'react'
 
-export default function Modal({ isOpen, onClose, title, children, closeButton = true }) {
+const MODAL_SIZES = {
+  sm: '480px',
+  md: '600px',
+  lg: '760px',
+  xl: '920px',
+}
+
+export default function Modal({ isOpen, onClose, title, children, closeButton = true, size = 'md' }) {
   const isCompact = typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  const desktopMaxWidth = MODAL_SIZES[size] || MODAL_SIZES.md
   useEffect(() => {
     if (!isOpen) return
 
@@ -39,17 +47,17 @@ export default function Modal({ isOpen, onClose, title, children, closeButton = 
           background: 'var(--bg-card)',
           border: '1px solid var(--border)',
           borderRadius: '4px',
-          maxWidth: isCompact ? '96vw' : '600px',
-          width: isCompact ? '96vw' : '90%',
-          maxHeight: isCompact ? '92vh' : '80vh',
-          overflow: 'auto',
-          padding: isCompact ? '16px' : '32px',
+          maxWidth: isCompact ? '96vw' : desktopMaxWidth,
+          width: isCompact ? '96vw' : '92%',
+          maxHeight: isCompact ? '92vh' : '90vh',
+          display: 'flex',
+          flexDirection: 'column',
           position: 'relative',
           animation: 'fadeIn 0.2s ease'
         }}
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isCompact ? '16px' : '22px 32px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
           <h2 id="modal-title" style={{ fontFamily: 'var(--font-title)', fontSize: '20px', margin: 0 }}>{title}</h2>
           {closeButton && (
             <button
@@ -76,7 +84,7 @@ export default function Modal({ isOpen, onClose, title, children, closeButton = 
             </button>
           )}
         </div>
-        <div style={{ color: 'var(--text-secondary)' }}>
+        <div style={{ color: 'var(--text-secondary)', padding: isCompact ? '16px' : '24px 32px 28px', overflow: 'auto', flex: 1 }}>
           {children}
         </div>
       </div>
