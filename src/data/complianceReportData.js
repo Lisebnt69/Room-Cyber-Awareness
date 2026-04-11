@@ -560,7 +560,7 @@ export const PDF_REPORT_STRUCTURE = {
   styling: {
     primaryColor: 'var(--cyan)',
     fontFamily: 'Roboto, sans-serif',
-    headerFont: 'Monda, sans-serif',
+    headerFont: 'Roboto, sans-serif',
     watermark: 'ROOMCA — Document confidentiel',
     footer: 'Généré automatiquement par ROOMCA · Hébergement souverain France'
   }

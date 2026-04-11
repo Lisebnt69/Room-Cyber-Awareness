@@ -1,5 +1,124 @@
 import { useEffect, useRef, useState } from 'react'
 import Modal from '../components/Modal'
+import ThemeToggle from '../components/ThemeToggle'
+
+// ─── Crossword layout helper — places words so they intersect where possible ──
+
+function buildCrosswordPreview(rawWords) {
+  const words = (rawWords || []).filter(w => w.word && w.word.length > 0).map(w => ({ ...w, word: w.word.toUpperCase().replace(/\s+/g, '') }))
+  if (words.length === 0) return { cells: {}, placements: [], width: 0, height: 0 }
+
+  const cells = {}
+  const placements = []
+
+  const setCell = (x, y, letter, wordIdx, letterIdx) => {
+    const key = `${x},${y}`
+    if (!cells[key]) cells[key] = { letter, words: [] }
+    cells[key].words.push({ wordIdx, letterIdx })
+  }
+
+  // Place first word horizontally
+  const first = words[0].word
+  for (let i = 0; i < first.length; i++) setCell(i, 0, first[i], 0, i)
+  placements.push({ wordIdx: 0, dir: 'h', x: 0, y: 0, length: first.length })
+
+  const neighborsFree = (x, y, dir) => {
+    // Check that cells perpendicular to the word aren't occupied at (x,y)
+    if (dir === 'h') {
+      return !cells[`${x},${y - 1}`] && !cells[`${x},${y + 1}`]
+    }
+    return !cells[`${x - 1},${y}`] && !cells[`${x + 1},${y}`]
+  }
+
+  const tryPlace = (w, wi) => {
+    const word = w.word
+    for (let li = 0; li < word.length; li++) {
+      const ch = word[li]
+      for (const [key, cell] of Object.entries(cells)) {
+        if (cell.letter !== ch) continue
+        const [cx, cy] = key.split(',').map(Number)
+        const existingDirs = cell.words.map(ww => placements.find(p => p.wordIdx === ww.wordIdx)?.dir)
+        const dir = existingDirs.includes('h') ? 'v' : 'h'
+        const x0 = dir === 'h' ? cx - li : cx
+        const y0 = dir === 'v' ? cy - li : cy
+
+        // Validate placement
+        let ok = true
+        for (let k = 0; k < word.length; k++) {
+          const nx = dir === 'h' ? x0 + k : x0
+          const ny = dir === 'v' ? y0 + k : y0
+          const existing = cells[`${nx},${ny}`]
+          if (existing) {
+            if (existing.letter !== word[k]) { ok = false; break }
+            // Cell reused — must already be in the same dir (a crossing)
+          } else {
+            // Empty cell — check perpendicular neighbors are free
+            if (!neighborsFree(nx, ny, dir)) { ok = false; break }
+          }
+        }
+        // Check cell just before start and just after end are empty
+        if (ok) {
+          const bx = dir === 'h' ? x0 - 1 : x0
+          const by = dir === 'v' ? y0 - 1 : y0
+          const ax = dir === 'h' ? x0 + word.length : x0
+          const ay = dir === 'v' ? y0 + word.length : y0
+          if (cells[`${bx},${by}`] || cells[`${ax},${ay}`]) ok = false
+        }
+        if (ok) {
+          for (let k = 0; k < word.length; k++) {
+            const nx = dir === 'h' ? x0 + k : x0
+            const ny = dir === 'v' ? y0 + k : y0
+            setCell(nx, ny, word[k], wi, k)
+          }
+          placements.push({ wordIdx: wi, dir, x: x0, y: y0, length: word.length })
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  for (let wi = 1; wi < words.length; wi++) {
+    if (!tryPlace(words[wi], wi)) {
+      // Fallback: place horizontally below everything
+      const ys = Object.keys(cells).map(k => Number(k.split(',')[1]))
+      const maxY = ys.length ? Math.max(...ys) : 0
+      const y = maxY + 2
+      const word = words[wi].word
+      for (let k = 0; k < word.length; k++) setCell(k, y, word[k], wi, k)
+      placements.push({ wordIdx: wi, dir: 'h', x: 0, y, length: word.length })
+    }
+  }
+
+  // Normalize to 0,0
+  const keys = Object.keys(cells).map(k => k.split(',').map(Number))
+  const minX = Math.min(...keys.map(k => k[0]))
+  const minY = Math.min(...keys.map(k => k[1]))
+  const maxX = Math.max(...keys.map(k => k[0]))
+  const maxY = Math.max(...keys.map(k => k[1]))
+
+  const shiftedCells = {}
+  for (const [key, cell] of Object.entries(cells)) {
+    const [x, y] = key.split(',').map(Number)
+    shiftedCells[`${x - minX},${y - minY}`] = { ...cell }
+  }
+  const shiftedPlacements = placements.map(p => ({ ...p, x: p.x - minX, y: p.y - minY }))
+
+  // Number the starting cells in placement order
+  shiftedPlacements.forEach((p, i) => {
+    const k = `${p.x},${p.y}`
+    if (shiftedCells[k] && !shiftedCells[k].number) {
+      shiftedCells[k].number = i + 1
+    }
+  })
+
+  return {
+    cells: shiftedCells,
+    placements: shiftedPlacements,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+  }
+}
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────────
 
@@ -20,7 +139,7 @@ const TYPE_COLORS = {
   quiz:     '#f59e0b',
   puzzle:   '#10b981',
   text:     '#6b7280',
-  decision: '#eb2828',
+  decision: 'var(--red)',
 }
 
 // ─── MAKE BLOCK ────────────────────────────────────────────────────────────────
@@ -78,7 +197,7 @@ function makeBlock(type) {
 
 function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDown, onDelete, onDuplicate }) {
   const [hovered, setHovered] = useState(false)
-  const color = TYPE_COLORS[block.type] || '#888'
+  const color = TYPE_COLORS[block.type] || 'var(--text-muted)'
   const bt = BLOCK_TYPES.find(b => b.type === block.type)
 
   const renderPreview = () => {
@@ -93,9 +212,9 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
             </div>
             <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', alignItems: 'baseline' }}>
               <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', minWidth: '32px' }}>Objet :</span>
-              <span style={{ color: 'var(--text-light)', fontWeight: 500 }}>{block.subject}</span>
+              <span style={{ color: 'var(--text)', fontWeight: 500 }}>{block.subject}</span>
             </div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '4px 6px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '4px 6px', background: 'var(--bg-muted)', borderRadius: '3px' }}>
               {block.body}
             </div>
             {block.link?.text && (
@@ -129,12 +248,12 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
       case 'quiz':
         return (
           <div>
-            <div style={{ fontSize: '12px', marginBottom: '6px', fontStyle: block.question ? 'normal' : 'italic', color: block.question ? 'var(--text-light)' : 'var(--text-muted)' }}>
+            <div style={{ fontSize: '12px', marginBottom: '6px', fontStyle: block.question ? 'normal' : 'italic', color: block.question ? 'var(--text)' : 'var(--text-muted)' }}>
               {block.question || 'Aucune question'}
             </div>
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
               {(block.options || []).map((o, i) => (
-                <span key={i} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '10px', background: o.correct ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${o.correct ? '#22c55e40' : '#ffffff15'}`, color: o.correct ? '#22c55e' : 'var(--text-muted)' }}>
+                <span key={i} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '10px', background: o.correct ? 'rgba(34,197,94,0.12)' : 'var(--bg-muted)', border: `1px solid ${o.correct ? '#22c55e40' : '#ffffff15'}`, color: o.correct ? '#22c55e' : 'var(--text-muted)' }}>
                   {o.correct ? '✓ ' : ''}{o.text}
                 </span>
               ))}
@@ -142,8 +261,8 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
           </div>
         )
       case 'puzzle': {
-        const pIcons = { reorder: '🔀', memory: '🃏', crossword: '📐' }
-        const pLabels = { reorder: 'Réordonner', memory: 'Mémory', crossword: 'Mots croisés' }
+        const pIcons = { reorder: '🔀', memory: '🔗', crossword: '📐' }
+        const pLabels = { reorder: 'Réordonner', memory: 'Relier les mots', crossword: 'Mots croisés' }
         const pCount = block.puzzleType === 'memory'
           ? `${(block.pairs || []).length} paire(s)`
           : block.puzzleType === 'crossword'
@@ -164,7 +283,7 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
       case 'text':
         return (
           <div>
-            {block.heading && <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-light)', marginBottom: '3px' }}>{block.heading}</div>}
+            {block.heading && <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', marginBottom: '3px' }}>{block.heading}</div>}
             <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {block.content || <em>Aucun contenu</em>}
             </div>
@@ -173,12 +292,12 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
       case 'decision':
         return (
           <div>
-            <div style={{ fontSize: '12px', color: block.question ? 'var(--text-light)' : 'var(--text-muted)', fontStyle: block.question ? 'normal' : 'italic', marginBottom: '6px' }}>
+            <div style={{ fontSize: '12px', color: block.question ? 'var(--text)' : 'var(--text-muted)', fontStyle: block.question ? 'normal' : 'italic', marginBottom: '6px' }}>
               {block.question || 'Aucune question'}
             </div>
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
               {(block.choices || []).map((c, i) => (
-                <span key={i} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '10px', background: c.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.08)', border: `1px solid ${c.correct ? '#22c55e40' : 'rgba(235,40,40,0.25)'}`, color: c.correct ? '#22c55e' : '#eb282880' }}>
+                <span key={i} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '10px', background: c.correct ? 'rgba(34,197,94,0.12)' : 'var(--violet-tint)', border: `1px solid ${c.correct ? '#22c55e40' : 'rgba(235,40,40,0.25)'}`, color: c.correct ? '#22c55e' : 'var(--red)80' }}>
                   {c.correct ? '✓ ' : ''}{c.text}
                 </span>
               ))}
@@ -189,6 +308,21 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
     }
   }
 
+  const iconBtnStyle = (disabled = false) => ({
+    background: 'transparent',
+    border: '1px solid var(--border)',
+    color: disabled ? 'var(--text-disabled)' : 'var(--text-muted)',
+    width: '26px',
+    height: '26px',
+    cursor: disabled ? 'default' : 'pointer',
+    borderRadius: 'var(--r-xs)',
+    fontSize: '11px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.15s var(--ease-quick)',
+  })
+
   return (
     <div
       onClick={onClick}
@@ -196,58 +330,121 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'relative',
-        background: selected ? '#0c0c0c' : hovered ? '#0a0a0a' : '#070707',
-        border: `1px solid ${selected ? color + '60' : hovered ? '#222' : '#141414'}`,
-        borderLeft: `3px solid ${selected ? color : hovered ? color + '60' : color + '25'}`,
-        borderRadius: '8px',
-        padding: '12px 12px 12px 14px',
+        background: 'var(--bg-card)',
+        border: `1.5px solid ${selected ? 'transparent' : hovered ? 'var(--border-hover)' : 'var(--border)'}`,
+        borderRadius: 'var(--r-lg)',
+        padding: '16px 16px 16px 20px',
         cursor: 'pointer',
-        transition: 'all 0.15s',
-        boxShadow: selected ? `0 0 0 1px ${color}15, 0 2px 12px ${color}10` : 'none',
+        transition: 'all 0.25s var(--ease)',
+        boxShadow: selected
+          ? `0 0 0 2px ${color}, 0 12px 32px ${color}22, 0 4px 12px ${color}18`
+          : hovered ? 'var(--shadow-md)' : 'var(--shadow-xs)',
+        transform: selected ? 'translateY(-2px)' : 'translateY(0)',
+        overflow: 'hidden',
       }}
     >
+      {/* Aurora accent strip on the left */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: '4px',
+        background: selected
+          ? color
+          : `linear-gradient(180deg, ${color}, ${color}40)`,
+        opacity: selected ? 1 : hovered ? 0.7 : 0.4,
+        transition: 'opacity 0.25s var(--ease)',
+      }} />
+
+      {/* Soft aurora glow when selected */}
+      {selected && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: `radial-gradient(ellipse 70% 60% at 0% 50%, ${color}10, transparent 70%)`,
+          pointerEvents: 'none',
+        }} />
+      )}
+
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-        <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: color + '18', border: `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontFamily: 'var(--mono)', color, flexShrink: 0, fontWeight: 600 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', position: 'relative' }}>
+        <div style={{
+          width: '26px',
+          height: '26px',
+          borderRadius: 'var(--r-full)',
+          background: `color-mix(in srgb, ${color} 14%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${color} 40%, transparent)`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '11px',
+          fontFamily: 'var(--font-title)',
+          color,
+          flexShrink: 0,
+          fontWeight: 700,
+        }}>
           {index + 1}
         </div>
-        <span style={{ fontSize: '15px', lineHeight: 1 }}>{bt?.icon}</span>
-        <span style={{ fontSize: '10px', fontFamily: 'var(--mono)', color, textTransform: 'uppercase', letterSpacing: '0.1em', flex: 1, fontWeight: 500 }}>
+        <span style={{ fontSize: '17px', lineHeight: 1 }}>{bt?.icon}</span>
+        <span style={{
+          fontSize: '11px',
+          fontFamily: 'var(--font-title)',
+          color,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          flex: 1,
+          fontWeight: 700,
+        }}>
           {bt?.label}
         </span>
-        {block.audioUrl && <span title="Audio de fond actif" style={{ fontSize: '11px' }}>🎵</span>}
+        {block.audioUrl && <span title="Audio de fond actif" style={{ fontSize: '12px' }}>🎵</span>}
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '2px', opacity: hovered || selected ? 1 : 0.3, transition: 'opacity 0.15s' }} onClick={e => e.stopPropagation()}>
-          <button type="button" onClick={onDuplicate} title="Dupliquer"
-            style={{ background: 'transparent', border: '1px solid #ffffff15', color: '#ffffff50', width: '22px', height: '22px', cursor: 'pointer', borderRadius: '3px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            ⧉
-          </button>
-          <button type="button" onClick={onMoveUp} disabled={index === 0}
-            style={{ background: 'transparent', border: '1px solid #ffffff15', color: index === 0 ? '#ffffff20' : '#ffffff50', width: '22px', height: '22px', cursor: index === 0 ? 'default' : 'pointer', borderRadius: '3px', fontSize: '10px' }}>
-            ↑
-          </button>
-          <button type="button" onClick={onMoveDown} disabled={index === total - 1}
-            style={{ background: 'transparent', border: '1px solid #ffffff15', color: index === total - 1 ? '#ffffff20' : '#ffffff50', width: '22px', height: '22px', cursor: index === total - 1 ? 'default' : 'pointer', borderRadius: '3px', fontSize: '10px' }}>
-            ↓
-          </button>
-          <button type="button" onClick={onDelete} title="Supprimer"
-            style={{ background: 'transparent', border: '1px solid rgba(235,40,40,0.25)', color: 'rgba(235,40,40,0.5)', width: '22px', height: '22px', cursor: 'pointer', borderRadius: '3px', fontSize: '10px' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '4px',
+            opacity: hovered || selected ? 1 : 0,
+            transition: 'opacity 0.2s var(--ease-quick)',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <button type="button" onClick={onDuplicate} title="Dupliquer" style={iconBtnStyle()}>⧉</button>
+          <button type="button" onClick={onMoveUp} disabled={index === 0} title="Monter" style={iconBtnStyle(index === 0)}>↑</button>
+          <button type="button" onClick={onMoveDown} disabled={index === total - 1} title="Descendre" style={iconBtnStyle(index === total - 1)}>↓</button>
+          <button
+            type="button"
+            onClick={onDelete}
+            title="Supprimer"
+            style={{
+              ...iconBtnStyle(),
+              border: '1px solid rgba(239, 62, 71, 0.30)',
+              color: 'var(--red)',
+            }}
+          >
             ✕
           </button>
         </div>
       </div>
 
       {/* Content preview */}
-      <div style={{ paddingLeft: '30px' }}>
+      <div style={{ paddingLeft: '36px', position: 'relative' }}>
         {renderPreview()}
       </div>
 
-      {/* Connector line */}
+      {/* Connector line to next block */}
       {index < total - 1 && (
-        <div style={{ position: 'absolute', bottom: '-16px', left: '23px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '16px', zIndex: 1 }}>
-          <div style={{ width: '1px', flex: 1, background: 'linear-gradient(to bottom, #1f1f1f, #141414)' }} />
-        </div>
+        <div style={{
+          position: 'absolute',
+          bottom: '-18px',
+          left: '32px',
+          width: '2px',
+          height: '18px',
+          background: `linear-gradient(to bottom, ${color}50, transparent)`,
+          borderRadius: 'var(--r-full)',
+          zIndex: 1,
+        }} />
       )}
     </div>
   )
@@ -268,9 +465,9 @@ const labelStyle = {
 const inputBase = {
   width: '100%',
   padding: '11px 14px',
-  background: '#0d0d0d',
+  background: 'var(--bg-input)',
   border: '1px solid var(--border)',
-  color: 'var(--text-light)',
+  color: 'var(--text)',
   fontSize: '14px',
   borderRadius: '6px',
   boxSizing: 'border-box',
@@ -293,7 +490,7 @@ const metaModalSelectStyle = {
   background: 'rgba(4, 15, 32, 0.70)',
   border: '1px solid var(--border)',
   borderRadius: 'var(--r-sm)',
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
   fontSize: '14px',
   boxSizing: 'border-box',
 }
@@ -313,6 +510,412 @@ function Field({ label, value, onChange, placeholder, type = 'text' }) {
   )
 }
 
+// ─── AUDIO PANEL — shared (scenario ambient OR per-block SFX) ─────────────────
+
+function AudioPanel({
+  label = 'AUDIO',
+  url,
+  onUrlChange,
+  volume,
+  onVolumeChange,
+  accept = 'audio/*',
+  maxSizeMB = 8,
+  help,
+  accent = 'var(--red)',
+}) {
+  const fileRef = useRef(null)
+  const [err, setErr] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const previewRef = useRef(null)
+  const [playing, setPlaying] = useState(false)
+
+  const isLocal = url && url.startsWith('data:')
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setErr(null)
+    if (!file.type.startsWith('audio/')) { setErr('Le fichier doit être un audio.'); return }
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      setErr(`Fichier trop lourd (${(file.size / 1024 / 1024).toFixed(1)} MB). Max : ${maxSizeMB} MB.`)
+      return
+    }
+    setUploading(true)
+    const reader = new FileReader()
+    reader.onload = () => { onUrlChange(reader.result); setUploading(false) }
+    reader.onerror = () => { setErr('Erreur lecture fichier.'); setUploading(false) }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const togglePlay = () => {
+    if (!previewRef.current) return
+    if (playing) {
+      previewRef.current.pause()
+      setPlaying(false)
+    } else {
+      previewRef.current.volume = (volume ?? 50) / 100
+      previewRef.current.play().catch(() => {})
+      setPlaying(true)
+    }
+  }
+
+  return (
+    <div style={{
+      padding: '16px 18px',
+      background: 'rgba(235, 40, 40, 0.04)',
+      border: '1px solid rgba(235, 40, 40, 0.18)',
+      borderRadius: '8px',
+      display: 'flex', flexDirection: 'column', gap: '12px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '14px' }}>🎵</span>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: accent, letterSpacing: '0.14em', fontWeight: 700 }}>
+            {label}
+          </span>
+        </div>
+        {url && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button type="button" onClick={togglePlay}
+              style={{ background: 'transparent', border: `1px solid ${accent}55`, color: accent, padding: '4px 10px', cursor: 'pointer', fontSize: '10px', borderRadius: '3px', fontFamily: 'var(--mono)', letterSpacing: '0.08em' }}>
+              {playing ? '⏸ PAUSE' : '▶ APERÇU'}
+            </button>
+            <button type="button" onClick={() => { onUrlChange(''); setErr(null); setPlaying(false) }}
+              title="Retirer"
+              style={{ background: 'transparent', border: '1px solid #333', color: 'var(--text-muted)', padding: '4px 8px', cursor: 'pointer', fontSize: '10px', borderRadius: '3px' }}>
+              ✕
+            </button>
+            <audio ref={previewRef} src={url} onEnded={() => setPlaying(false)} style={{ display: 'none' }} />
+          </div>
+        )}
+      </div>
+
+      {/* URL / upload */}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
+        <input
+          type="text"
+          value={isLocal ? '' : (url || '')}
+          onChange={(e) => onUrlChange(e.target.value)}
+          placeholder={isLocal ? '💾 Fichier local chargé' : 'https://... (mp3, ogg, wav) ou uploadez un fichier →'}
+          disabled={isLocal}
+          style={{ ...inputBase, fontSize: '12px', fontFamily: 'var(--mono)' }}
+        />
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+          style={{
+            padding: '0 14px',
+            background: isLocal ? 'rgba(235,40,40,0.15)' : 'var(--violet-tint)',
+            border: `1px solid ${isLocal ? accent : 'rgba(235,40,40,0.35)'}`,
+            color: accent, cursor: uploading ? 'default' : 'pointer',
+            fontFamily: 'var(--mono)', fontSize: '10px', letterSpacing: '0.08em',
+            borderRadius: '4px', fontWeight: 700, whiteSpace: 'nowrap',
+          }}>
+          {uploading ? '⏳' : '📁 FICHIER'}
+        </button>
+        <input ref={fileRef} type="file" accept={accept} onChange={handleFile} style={{ display: 'none' }} />
+      </div>
+
+      {/* Volume slider */}
+      {onVolumeChange && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.12em', minWidth: '50px' }}>
+            VOLUME
+          </span>
+          <input
+            type="range"
+            min="0" max="100"
+            value={volume ?? 50}
+            onChange={(e) => onVolumeChange(Number(e.target.value))}
+            style={{ flex: 1, accentColor: accent, cursor: 'pointer' }}
+          />
+          <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: accent, fontWeight: 700, minWidth: '32px', textAlign: 'right' }}>
+            {volume ?? 50}%
+          </span>
+        </div>
+      )}
+
+      {err && (
+        <div style={{ padding: '6px 10px', background: 'var(--violet-tint)', border: '1px solid rgba(235,40,40,0.35)', borderRadius: '3px', fontSize: '10px', color: 'var(--red)', fontFamily: 'var(--mono)' }}>
+          ⚠ {err}
+        </div>
+      )}
+      {help && !err && (
+        <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          {help}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── CHAPTER INFO EDITOR (common to all blocks) ───────────────────────────────
+
+function ChapterInfoEditor({ block, onChange, defaultIcon, defaultLabel }) {
+  const fileRef = useRef(null)
+  const update = (k, v) => onChange({ ...block, [k]: v })
+  const icon = block.chapterIcon || ''
+  const isImage = icon && (icon.startsWith('http') || icon.startsWith('data:') || icon.startsWith('/'))
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const compressed = await compressImage(file, 256, 0.85)
+      update('chapterIcon', compressed)
+    } catch {
+      // Fallback: raw base64
+      const reader = new FileReader()
+      reader.onload = () => update('chapterIcon', reader.result)
+      reader.readAsDataURL(file)
+    }
+    e.target.value = ''
+  }
+
+  return (
+    <div style={{
+      padding: '16px 18px',
+      background: 'rgba(99,102,241,0.05)',
+      border: '1px solid rgba(99,102,241,0.18)',
+      borderRadius: '8px',
+      display: 'flex', flexDirection: 'column', gap: '14px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ fontSize: '15px' }}>🎬</span>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#6366f1', letterSpacing: '0.14em', fontWeight: 700 }}>
+          APPARENCE DU CHAPITRE
+        </span>
+        <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+          (vu par le joueur sur l'écran d'intro et la carte chapitre)
+        </span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '14px', alignItems: 'start' }}>
+        {/* Icon preview / picker */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
+          <label style={{ ...labelStyle, marginBottom: '0', textAlign: 'center' }}>ICÔNE</label>
+          <div style={{
+            width: '72px', height: '72px', borderRadius: '10px',
+            background: 'var(--bg-elevated)', border: '1.5px dashed rgba(99,102,241,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden', position: 'relative',
+          }}>
+            {isImage ? (
+              <img src={icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span style={{ fontSize: '38px', lineHeight: 1 }}>{icon || defaultIcon || '▪'}</span>
+            )}
+            {!icon && (
+              <div style={{ position: 'absolute', bottom: '4px', fontFamily: 'var(--mono)', fontSize: '8px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
+                DÉFAUT
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <button type="button" onClick={() => fileRef.current?.click()}
+              title="Téléverser une image"
+              style={{ background: 'transparent', border: '1px solid #333', color: 'var(--text-muted)', padding: '4px 8px', cursor: 'pointer', fontSize: '10px', borderRadius: '3px', fontFamily: 'var(--mono)' }}>
+              📁
+            </button>
+            {icon && (
+              <button type="button" onClick={() => update('chapterIcon', '')}
+                title="Réinitialiser"
+                style={{ background: 'transparent', border: '1px solid #333', color: 'var(--text-muted)', padding: '4px 8px', cursor: 'pointer', fontSize: '10px', borderRadius: '3px', fontFamily: 'var(--mono)' }}>
+                ✕
+              </button>
+            )}
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
+        </div>
+
+        {/* Title + emoji input */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: 0 }}>
+          <div>
+            <label style={labelStyle}>TITRE DU CHAPITRE</label>
+            <input
+              value={block.chapterTitle || ''}
+              onChange={(e) => update('chapterTitle', e.target.value)}
+              placeholder={defaultLabel || 'Titre personnalisé...'}
+              style={inputBase}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>OU ENTRER UN EMOJI</label>
+            <input
+              value={isImage ? '' : icon}
+              onChange={(e) => update('chapterIcon', e.target.value)}
+              placeholder={defaultIcon || '📧'}
+              maxLength={4}
+              style={{ ...inputBase, fontSize: '16px', textAlign: 'center', maxWidth: '120px', letterSpacing: '0' }}
+              disabled={isImage}
+            />
+            {isImage && (
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', fontStyle: 'italic' }}>
+                Une image est chargée — cliquez sur ✕ pour utiliser un emoji à la place.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Block Explanation Editor (common to all blocks) ─────────────────────────
+// Lets the admin write a rich explanation that the player will see
+// once the block is completed (success) or after a wrong answer (failure).
+
+function BlockExplanationEditor({ block, onChange }) {
+  const update = (k, v) => onChange({ ...block, [k]: v })
+  return (
+    <div style={{
+      padding: '16px 18px',
+      background: 'rgba(34, 197, 94, 0.05)',
+      border: '1px solid rgba(34, 197, 94, 0.22)',
+      borderRadius: '8px',
+      display: 'flex', flexDirection: 'column', gap: '14px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ fontSize: '15px' }}>💡</span>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#22c55e', letterSpacing: '0.14em', fontWeight: 700 }}>
+          EXPLICATIONS APRÈS RÉPONSE
+        </span>
+        <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+          (affichées au joueur dans la carte feedback du bloc)
+        </span>
+      </div>
+
+      <div>
+        <label style={{ ...labelStyle, color: '#22c55e' }}>
+          ✓ APRÈS RÉUSSITE — POURQUOI C'EST LA BONNE RÉPONSE
+        </label>
+        <textarea
+          value={block.successExplanation || ''}
+          onChange={(e) => update('successExplanation', e.target.value)}
+          rows={4}
+          placeholder="Ex: Cet email était bien un phishing. Le domaine 'paypaI.com' contenait un i majuscule à la place du L minuscule, et le ton urgent (« compte suspendu sous 24h ») est typique du social engineering. À l'avenir, vérifiez toujours le domaine en survolant le lien."
+          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.6, minHeight: '90px' }}
+        />
+        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
+          Apparaît dans la carte de feedback verte une fois le bloc complété. Vous pouvez utiliser les balises dynamiques <code style={{ color: '#10b981' }}>{'{{employee}}'}</code>, <code style={{ color: '#10b981' }}>{'{{company}}'}</code>, etc.
+        </div>
+      </div>
+
+      <div>
+        <label style={{ ...labelStyle, color: '#eb2828' }}>
+          ✗ APRÈS ÉCHEC — POURQUOI C'ÉTAIT FAUX (OPTIONNEL)
+        </label>
+        <textarea
+          value={block.failureExplanation || ''}
+          onChange={(e) => update('failureExplanation', e.target.value)}
+          rows={3}
+          placeholder="Ex: Vous avez fait confiance à cet email, c'est une erreur classique. Les attaquants imitent souvent des marques connues. Toujours vérifier l'URL réelle avant de cliquer."
+          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.6, minHeight: '70px' }}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ─── Dynamic tags reference panel (shown in email/text/quiz editors) ──────────
+
+const AVAILABLE_TAGS = [
+  { tag: '{{employee}}',           desc: 'Nom complet du joueur' },
+  { tag: '{{employee.firstName}}', desc: 'Prénom' },
+  { tag: '{{employee.lastName}}',  desc: 'Nom de famille' },
+  { tag: '{{employee.email}}',     desc: 'Email du joueur' },
+  { tag: '{{employee.initials}}',  desc: 'Initiales (ex: AM)' },
+  { tag: '{{company}}',            desc: 'Nom du client / de l\'entreprise' },
+  { tag: '{{company.sector}}',     desc: 'Secteur d\'activité' },
+  { tag: '{{company.domain}}',     desc: 'Domaine email (ex: acme.com)' },
+  { tag: '{{sector}}',             desc: 'Alias de company.sector' },
+  { tag: '{{date}}',               desc: 'Date courante (11 avril 2026)' },
+  { tag: '{{time}}',               desc: 'Heure courante (14:32)' },
+  { tag: '{{year}}',               desc: 'Année courante (2026)' },
+]
+
+function TagsHelpPanel() {
+  const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(null)
+
+  const copy = (tag) => {
+    navigator.clipboard?.writeText(tag).catch(() => {})
+    setCopied(tag)
+    setTimeout(() => setCopied(null), 1200)
+  }
+
+  return (
+    <div style={{
+      background: 'rgba(16,185,129,0.06)',
+      border: '1px solid rgba(16,185,129,0.25)',
+      borderRadius: '8px',
+      overflow: 'hidden',
+    }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+          padding: '12px 16px', background: 'transparent', border: 'none',
+          color: '#10b981', fontFamily: 'var(--mono)', fontSize: '11px',
+          fontWeight: 700, letterSpacing: '0.12em', cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        <span style={{ fontSize: '14px' }}>🏷</span>
+        <span style={{ flex: 1 }}>
+          BALISES DYNAMIQUES {open ? '— cliquez pour refermer' : '— cliquez pour afficher'}
+        </span>
+        <span>{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div style={{ padding: '4px 14px 14px 14px' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '10px', lineHeight: 1.5 }}>
+            Insérez ces balises n'importe où dans les champs (objet, message, titre, options…). Elles seront remplacées par les vraies données du joueur (prénom, entreprise, secteur) au moment où il joue le scénario.
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
+            {AVAILABLE_TAGS.map(({ tag, desc }) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => copy(tag)}
+                title="Cliquez pour copier"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '7px 10px',
+                  background: copied === tag ? 'rgba(34,197,94,0.15)' : 'rgba(0,0,0,0.35)',
+                  border: `1px solid ${copied === tag ? '#22c55e' : 'var(--bg-muted)'}`,
+                  borderRadius: '4px', cursor: 'pointer',
+                  textAlign: 'left', minWidth: 0,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <code style={{
+                  fontFamily: 'var(--mono)', fontSize: '11px',
+                  color: copied === tag ? '#22c55e' : '#10b981',
+                  fontWeight: 700, whiteSpace: 'nowrap',
+                }}>
+                  {copied === tag ? '✓ copié' : tag}
+                </code>
+                <span style={{
+                  fontSize: '10px', color: 'var(--text-muted)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  flex: 1,
+                }}>
+                  {desc}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '4px', fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            💡 <b style={{ color: 'var(--text-secondary)' }}>HTML autorisé</b> dans le corps du mail : <code style={{ color: '#10b981' }}>&lt;b&gt;</code> <code style={{ color: '#10b981' }}>&lt;p&gt;</code> <code style={{ color: '#10b981' }}>&lt;a&gt;</code> <code style={{ color: '#10b981' }}>&lt;br/&gt;</code> <code style={{ color: '#10b981' }}>&lt;ul&gt;</code> etc. Détection automatique.
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── EMAIL EDITOR ──────────────────────────────────────────────────────────────
 
 function EmailEditor({ block, onChange }) {
@@ -322,20 +925,29 @@ function EmailEditor({ block, onChange }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      {/* Dynamic tags help panel */}
+      <TagsHelpPanel />
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
         <Field label="NOM EXPÉDITEUR" value={block.senderName} onChange={(v) => update('senderName', v)} />
         <Field label="EMAIL EXPÉDITEUR" value={block.from} onChange={(v) => update('from', v)} />
       </div>
       <Field label="DESTINATAIRE" value={block.to} onChange={(v) => update('to', v)} placeholder="{{employee}}" />
-      <Field label="OBJET" value={block.subject} onChange={(v) => update('subject', v)} />
+      <Field label="OBJET" value={block.subject} onChange={(v) => update('subject', v)} placeholder="Bonjour {{employee.firstName}}, ..." />
 
       <div>
-        <label style={labelStyle}>MESSAGE</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+          <label style={{ ...labelStyle, marginBottom: 0 }}>MESSAGE (texte ou HTML)</label>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+            HTML auto-détecté si balises présentes
+          </span>
+        </div>
         <textarea
           value={block.body}
           onChange={(e) => update('body', e.target.value)}
-          rows={5}
-          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.6, minHeight: '120px' }}
+          rows={7}
+          placeholder={'Bonjour {{employee.firstName}},\n\nEn raison d\'un incident sur votre compte {{company}}, merci de...\n\nOu utiliser du HTML :\n<p>Bonjour <b>{{employee}}</b>,</p>\n<p>Cordialement,<br/>Service {{sector}}</p>'}
+          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--mono)', fontSize: '12px', lineHeight: 1.6, minHeight: '160px' }}
         />
       </div>
 
@@ -347,7 +959,7 @@ function EmailEditor({ block, onChange }) {
         </div>
         <Field label="URL RÉELLE (destination)" value={block.link.real} onChange={(v) => updateLink('real', v)} />
 
-        <div style={{ marginTop: '14px', padding: '14px', background: '#0a0a0a', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px' }}>
+        <div style={{ marginTop: '14px', padding: '14px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px' }}>
           <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginRight: '10px', letterSpacing: '0.08em' }}>APERÇU :</span>
           <span
             style={{ color: '#60a5fa', textDecoration: 'underline', cursor: 'pointer' }}
@@ -357,7 +969,7 @@ function EmailEditor({ block, onChange }) {
             {block.link.text}
           </span>
           {linkHovered && (
-            <div style={{ display: 'inline-block', marginLeft: '10px', background: '#1a1a1a', padding: '3px 10px', fontSize: '10px', color: '#22c55e', borderRadius: '4px', fontFamily: 'var(--mono)' }}>
+            <div style={{ display: 'inline-block', marginLeft: '10px', background: 'var(--border)', padding: '3px 10px', fontSize: '10px', color: '#22c55e', borderRadius: '4px', fontFamily: 'var(--mono)' }}>
               🔗 {block.link.hover}
             </div>
           )}
@@ -574,7 +1186,7 @@ function PhotoEditor({ block, onChange }) {
             display: 'block',
             maxWidth: '100%',
             maxHeight: containerMaxHeight,
-            border: `2px solid ${interaction?.type === 'drawing' ? '#8b5cf6' : 'var(--border-subtle)'}`,
+            border: `2px solid ${interaction?.type === 'drawing' ? '#8b5cf6' : 'var(--border)'}`,
             borderRadius: '8px',
             cursor: interaction ? (interaction.type === 'drawing' ? 'crosshair' : 'grabbing') : 'crosshair',
           }}
@@ -681,7 +1293,7 @@ function PhotoEditor({ block, onChange }) {
         )}
         {block.src && !loading && (
           <button type="button" onClick={() => { update('src', ''); update('zones', []) }}
-            style={{ padding: '10px 14px', background: 'transparent', border: '1px solid rgba(235,40,40,0.3)', color: 'var(--red)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px' }}>
+            style={{ padding: '10px 14px', background: 'transparent', border: '1px solid var(--border-strong)', color: 'var(--red)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px' }}>
             ✕ Retirer
           </button>
         )}
@@ -708,9 +1320,9 @@ function PhotoEditor({ block, onChange }) {
       )}
 
       {!loading && !block.src && (
-        <div onClick={() => fileRef.current?.click()} style={{ padding: '50px 20px', border: '2px dashed var(--border-subtle)', borderRadius: '8px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', cursor: 'pointer', transition: 'all 0.15s' }}
+        <div onClick={() => fileRef.current?.click()} style={{ padding: '50px 20px', border: '2px dashed var(--border)', borderRadius: '8px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', cursor: 'pointer', transition: 'all 0.15s' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.background = 'rgba(139,92,246,0.03)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'transparent' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'transparent' }}
         >
           <div style={{ fontSize: '36px', marginBottom: '10px', opacity: 0.5 }}>🖼️</div>
           <div style={{ fontWeight: 500 }}>Cliquez pour choisir une image</div>
@@ -740,7 +1352,7 @@ function PhotoEditor({ block, onChange }) {
                   {Math.round(z.w)}×{Math.round(z.h)}
                 </span>
                 <button type="button" onClick={(e) => { e.stopPropagation(); updateZone(z.id, 'correct', !z.correct) }}
-                  style={{ padding: '9px 14px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.1)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                  style={{ padding: '9px 14px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'var(--violet-tint)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', whiteSpace: 'nowrap', fontWeight: 500 }}>
                   {z.correct ? '✓ Correct' : '✕ Faux'}
                 </button>
                 <button type="button" onClick={(e) => { e.stopPropagation(); removeZone(z.id) }}
@@ -768,7 +1380,7 @@ function PhotoEditor({ block, onChange }) {
             display: 'flex', alignItems: 'center', gap: '16px',
             borderBottom: '1px solid rgba(255,255,255,0.08)',
           }}>
-            <div style={{ fontFamily: 'var(--font-title)', fontSize: '16px', fontWeight: 600, color: 'var(--text-light)' }}>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '16px', fontWeight: 600, color: 'var(--text)' }}>
               🖼️ Mapping plein écran
             </div>
             <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
@@ -779,9 +1391,9 @@ function PhotoEditor({ block, onChange }) {
               <span>💡 Glisser = dessiner · Cliquer = sélectionner · Poignées = redimensionner</span>
             </div>
             <button type="button" onClick={() => setFullscreen(false)}
-              style={{ padding: '10px 18px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-light)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', fontFamily: 'var(--mono)', letterSpacing: '0.05em' }}
+              style={{ padding: '10px 18px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', fontFamily: 'var(--mono)', letterSpacing: '0.05em' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-light)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
             >
               ✕ Fermer (Esc)
             </button>
@@ -813,7 +1425,7 @@ function PhotoEditor({ block, onChange }) {
                   {Math.round(z.x)},{Math.round(z.y)} · {Math.round(z.w)}×{Math.round(z.h)}
                 </span>
                 <button type="button" onClick={() => updateZone(z.id, 'correct', !z.correct)}
-                  style={{ padding: '11px 18px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.1)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                  style={{ padding: '11px 18px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'var(--violet-tint)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', whiteSpace: 'nowrap', fontWeight: 500 }}>
                   {z.correct ? '✓ Bonne zone' : '✕ Fausse zone'}
                 </button>
                 <button type="button" onClick={() => removeZone(z.id)}
@@ -836,13 +1448,153 @@ function PhotoEditor({ block, onChange }) {
 
 function VideoEditor({ block, onChange }) {
   const update = (k, v) => onChange({ ...block, [k]: v })
+  const fileRef = useRef(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
+
+  const MAX_SIZE = 20 * 1024 * 1024 // 20 MB
+
+  const isDataUrl = block.url && block.url.startsWith('data:')
+  const isYoutube = block.url && (block.url.includes('youtube.com') || block.url.includes('youtu.be'))
+  const isVimeo = block.url && block.url.includes('vimeo.com')
+  const sourceLabel = isDataUrl ? '💾 Fichier local' : isYoutube ? '▶ YouTube' : isVimeo ? '▶ Vimeo' : block.url ? '🔗 URL externe' : null
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadError(null)
+    if (!file.type.startsWith('video/')) {
+      setUploadError('Le fichier doit être une vidéo.')
+      return
+    }
+    if (file.size > MAX_SIZE) {
+      setUploadError(`Fichier trop lourd (${(file.size / 1024 / 1024).toFixed(1)} MB). Max : 20 MB — utilisez plutôt une URL.`)
+      return
+    }
+    setUploading(true)
+    const reader = new FileReader()
+    reader.onload = () => {
+      update('url', reader.result)
+      setUploading(false)
+    }
+    reader.onerror = () => {
+      setUploadError('Erreur lors de la lecture du fichier.')
+      setUploading(false)
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-      <Field label="URL VIDÉO (YouTube, Vimeo...)" value={block.url} onChange={(v) => update('url', v)} placeholder="https://youtube.com/watch?v=..." />
-      <Field label="LÉGENDE" value={block.caption} onChange={(v) => update('caption', v)} placeholder="Description affichée sous la vidéo" />
-      {block.url && (
-        <div style={{ padding: '14px 18px', background: 'rgba(236,72,153,0.06)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: '6px', fontSize: '13px', color: '#ec4899', fontWeight: 500 }}>
-          🎬 Vidéo configurée
+      <TagsHelpPanel />
+
+      {/* Source selection — URL or local upload */}
+      <div>
+        <label style={labelStyle}>SOURCE DE LA VIDÉO</label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '12px', alignItems: 'stretch' }}>
+          {/* URL input */}
+          <div style={{
+            padding: '14px',
+            background: isDataUrl ? 'transparent' : 'rgba(236,72,153,0.05)',
+            border: `1px solid ${isDataUrl ? 'var(--border)' : 'rgba(236,72,153,0.3)'}`,
+            borderRadius: '6px',
+          }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: isDataUrl ? 'var(--text-muted)' : '#ec4899', letterSpacing: '0.14em', marginBottom: '8px', fontWeight: 700 }}>
+              🔗 URL EXTERNE
+            </div>
+            <input
+              type="text"
+              value={isDataUrl ? '' : (block.url || '')}
+              onChange={(e) => update('url', e.target.value)}
+              placeholder="https://youtube.com/watch?v=... ou https://..."
+              disabled={isDataUrl}
+              style={{ ...inputBase, fontSize: '12px' }}
+            />
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: 1.4 }}>
+              YouTube, Vimeo, ou n'importe quel lien direct (.mp4, .webm)
+            </div>
+          </div>
+
+          {/* Separator */}
+          <div style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)', fontFamily: 'var(--mono)', fontSize: '10px', letterSpacing: '0.1em' }}>
+            OU
+          </div>
+
+          {/* Local upload */}
+          <div style={{
+            padding: '14px',
+            background: isDataUrl ? 'rgba(236,72,153,0.08)' : 'rgba(0,0,0,0.25)',
+            border: `1px solid ${isDataUrl ? 'rgba(236,72,153,0.4)' : 'var(--border)'}`,
+            borderRadius: '6px',
+            display: 'flex', flexDirection: 'column', gap: '8px',
+          }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: isDataUrl ? '#ec4899' : 'var(--text-muted)', letterSpacing: '0.14em', fontWeight: 700 }}>
+              💾 FICHIER LOCAL
+            </div>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              style={{
+                padding: '10px 14px',
+                background: uploading ? 'var(--border)' : 'rgba(236,72,153,0.12)',
+                border: '1px dashed rgba(236,72,153,0.5)',
+                color: '#ec4899', cursor: uploading ? 'default' : 'pointer',
+                fontFamily: 'var(--mono)', fontSize: '11px', letterSpacing: '0.08em',
+                borderRadius: '4px', fontWeight: 700,
+              }}
+            >
+              {uploading ? '⏳ Lecture...' : '📁 CHOISIR UN FICHIER'}
+            </button>
+            <input ref={fileRef} type="file" accept="video/*" onChange={handleFile} style={{ display: 'none' }} />
+            {isDataUrl && (
+              <button type="button" onClick={() => { update('url', ''); setUploadError(null) }}
+                style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #333', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', borderRadius: '3px', fontFamily: 'var(--mono)' }}>
+                ✕ Retirer
+              </button>
+            )}
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+              Formats : MP4, WebM, OGG · Max 20 MB
+            </div>
+          </div>
+        </div>
+
+        {uploadError && (
+          <div style={{ marginTop: '10px', padding: '10px 14px', background: 'var(--violet-tint)', border: '1px solid rgba(235,40,40,0.35)', borderRadius: '4px', fontSize: '11px', color: 'var(--red)', fontFamily: 'var(--mono)' }}>
+            ⚠ {uploadError}
+          </div>
+        )}
+      </div>
+
+      <Field
+        label="LÉGENDE"
+        value={block.caption}
+        onChange={(v) => update('caption', v)}
+        placeholder="Ex: Bonjour {{employee.firstName}}, voici la consigne du jour..."
+      />
+
+      {sourceLabel && (
+        <div style={{
+          padding: '12px 16px',
+          background: 'rgba(236,72,153,0.08)',
+          border: '1px solid rgba(236,72,153,0.3)',
+          borderRadius: '6px',
+          display: 'flex', alignItems: 'center', gap: '10px',
+        }}>
+          <span style={{ fontSize: '16px' }}>🎬</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '12px', color: '#ec4899', fontWeight: 700 }}>{sourceLabel}</div>
+            {isDataUrl ? (
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                Vidéo encodée directement dans le scénario (~{Math.round((block.url.length * 0.75) / 1024)} KB)
+              </div>
+            ) : (
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '400px' }}>
+                {block.url}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -871,11 +1623,11 @@ function QuizEditor({ block, onChange }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {block.options.map((o, i) => (
             <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <button type="button" onClick={() => toggleCorrect(i)} style={{ width: '36px', height: '36px', background: o.correct ? 'rgba(34,197,94,0.18)' : '#0d0d0d', border: `2px solid ${o.correct ? '#22c55e' : 'var(--border)'}`, color: o.correct ? '#22c55e' : 'transparent', cursor: 'pointer', borderRadius: '50%', fontSize: '16px', flexShrink: 0, fontWeight: 600 }}>
+              <button type="button" onClick={() => toggleCorrect(i)} style={{ width: '36px', height: '36px', background: o.correct ? 'rgba(34,197,94,0.18)' : 'var(--bg-input)', border: `2px solid ${o.correct ? '#22c55e' : 'var(--border)'}`, color: o.correct ? '#22c55e' : 'transparent', cursor: 'pointer', borderRadius: '50%', fontSize: '16px', flexShrink: 0, fontWeight: 600 }}>
                 {o.correct ? '✓' : ''}
               </button>
               <input value={o.text} onChange={(e) => updateOption(i, 'text', e.target.value)} placeholder={`Option ${i + 1}`}
-                style={{ ...inputBase, background: o.correct ? 'rgba(34,197,94,0.05)' : '#0d0d0d', border: `1px solid ${o.correct ? '#22c55e50' : 'var(--border)'}` }} />
+                style={{ ...inputBase, background: o.correct ? 'rgba(34,197,94,0.05)' : 'var(--bg-input)', border: `1px solid ${o.correct ? '#22c55e50' : 'var(--border)'}` }} />
               <button type="button" onClick={() => removeOption(i)} disabled={block.options.length <= 2}
                 style={{ width: '36px', height: '36px', background: 'transparent', border: '1px solid var(--border)', color: block.options.length <= 2 ? 'var(--border)' : 'var(--red)', cursor: block.options.length <= 2 ? 'default' : 'pointer', borderRadius: '6px', fontSize: '14px', flexShrink: 0 }}>
                 ×
@@ -903,9 +1655,9 @@ function QuizEditor({ block, onChange }) {
 // ─── PUZZLE EDITOR ─────────────────────────────────────────────────────────────
 
 const PUZZLE_TYPES = [
-  { value: 'reorder',   label: '🔀 Réordonner',  desc: 'Remettre dans l\'ordre' },
-  { value: 'memory',    label: '🃏 Mémory',       desc: 'Associer des paires' },
-  { value: 'crossword', label: '📐 Mots croisés', desc: 'Compléter la grille' },
+  { value: 'reorder',   label: '🔀 Réordonner',      desc: 'Remettre dans l\'ordre' },
+  { value: 'memory',    label: '🔗 Relier les mots',  desc: 'Relier un terme à sa définition' },
+  { value: 'crossword', label: '📐 Mots croisés',     desc: 'Grille entrecroisée' },
 ]
 
 function PuzzleEditor({ 
@@ -978,14 +1730,14 @@ function PuzzleEditor({
 
       {block.puzzleType === 'memory' && (
         <div>
-          <label style={labelStyle}>PAIRES DE CARTES — Carte A ↔ Carte B</label>
+          <label style={labelStyle}>PAIRES À RELIER — Terme ↔ Définition</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {pairs.map((p, i) => (
               <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)', width: '24px', textAlign: 'center', flexShrink: 0, fontWeight: 500 }}>{i + 1}</span>
-                <input value={p.a} onChange={(e) => updatePair(i, 'a', e.target.value)} placeholder="Carte A" style={{ ...iStyle, borderColor: 'rgba(99,102,241,0.4)' }} />
+                <input value={p.a} onChange={(e) => updatePair(i, 'a', e.target.value)} placeholder="Terme" style={{ ...iStyle, borderColor: 'rgba(99,102,241,0.4)' }} />
                 <span style={{ color: 'var(--text-muted)', fontSize: '16px', flexShrink: 0 }}>↔</span>
-                <input value={p.b} onChange={(e) => updatePair(i, 'b', e.target.value)} placeholder="Carte B" style={{ ...iStyle, borderColor: 'rgba(99,102,241,0.25)' }} />
+                <input value={p.b} onChange={(e) => updatePair(i, 'b', e.target.value)} placeholder="Définition" style={{ ...iStyle, borderColor: 'rgba(99,102,241,0.25)' }} />
                 {rmBtn(pairs.length <= 1, () => removePair(i))}
               </div>
             ))}
@@ -1053,7 +1805,7 @@ function DecisionEditor({ block, onChange }) {
             <div key={i} style={{ padding: '14px', background: c.correct ? 'rgba(34,197,94,0.04)' : 'rgba(235,40,40,0.04)', border: `1px solid ${c.correct ? 'rgba(34,197,94,0.25)' : 'rgba(235,40,40,0.15)'}`, borderRadius: '8px' }}>
               <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
                 <button type="button" onClick={() => updateChoice(i, 'correct', !c.correct)}
-                  style={{ width: '36px', height: '36px', background: c.correct ? 'rgba(34,197,94,0.18)' : 'rgba(235,40,40,0.1)', border: `2px solid ${c.correct ? '#22c55e' : 'var(--red)'}`, color: c.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', borderRadius: '6px', fontSize: '15px', flexShrink: 0, fontWeight: 600 }}>
+                  style={{ width: '36px', height: '36px', background: c.correct ? 'rgba(34,197,94,0.18)' : 'var(--violet-tint)', border: `2px solid ${c.correct ? '#22c55e' : 'var(--red)'}`, color: c.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', borderRadius: '6px', fontSize: '15px', flexShrink: 0, fontWeight: 600 }}>
                   {c.correct ? '✓' : '✕'}
                 </button>
                 <input value={c.text} onChange={(e) => updateChoice(i, 'text', e.target.value)} placeholder={`Choix ${i + 1}`}
@@ -1064,7 +1816,7 @@ function DecisionEditor({ block, onChange }) {
                 </button>
               </div>
               <input value={c.feedback} onChange={(e) => updateChoice(i, 'feedback', e.target.value)} placeholder="Feedback affiché après ce choix..."
-                style={{ ...inputBase, padding: '10px 14px', fontSize: '13px', background: '#0a0a0a' }} />
+                style={{ ...inputBase, padding: '10px 14px', fontSize: '13px', background: 'var(--bg-elevated)' }} />
             </div>
           ))}
         </div>
@@ -1096,7 +1848,9 @@ export default function ScenarioBuilder({
     difficulty:  initialData.difficulty || 'intermediate',
     duration:    String(initialData.duration || '15'),
     description: initialData.description || '',
-  } : { titleFr: '', titleEn: '', category: 'Phishing', difficulty: 'intermediate', duration: '15', description: '' })
+    audioUrl:    initialData.audio_url || initialData.audioUrl || '',
+    audioVolume: initialData.audioVolume ?? 50,
+  } : { titleFr: '', titleEn: '', category: 'Phishing', difficulty: 'intermediate', duration: '15', description: '', audioUrl: '', audioVolume: 50 })
 
   const [blocks, setBlocks] = useState(
     initialData?.blocks?.map((b, i) => ({ ...b, id: b.id ?? (Date.now() + i) })) || []
@@ -1114,6 +1868,8 @@ export default function ScenarioBuilder({
       difficulty:  initialData.difficulty || 'intermediate',
       duration:    String(initialData.duration || '15'),
       description: initialData.description || '',
+      audioUrl:    initialData.audio_url || initialData.audioUrl || '',
+      audioVolume: initialData.audioVolume ?? 50,
     })
     const b = Array.isArray(initialData.blocks) ? initialData.blocks : []
     setBlocks(b)
@@ -1160,7 +1916,14 @@ export default function ScenarioBuilder({
   }
 
   const handleSave = (status = 'draft') => {
-    onSave({ ...meta, blocks, status, id: initialData?.id || Date.now() })
+    // Normalize audio_url key for backend persistence
+    onSave({
+      ...meta,
+      audio_url: meta.audioUrl || null,
+      blocks,
+      status,
+      id: initialData?.id || Date.now(),
+    })
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -1175,19 +1938,17 @@ export default function ScenarioBuilder({
     const [quizDone, setQuizDone] = useState(false)
     const [decChoice, setDecChoice] = useState(null)
     const [emailHover, setEmailHover] = useState(false)
-    const [memFlipped, setMemFlipped] = useState([])
-    const [memMatched, setMemMatched] = useState([])
 
     const previewBox = {
-      background: '#060606',
+      background: 'var(--bg-elevated)',
       border: '1px solid #1a1a1a',
       borderRadius: '8px',
       overflow: 'hidden',
       fontSize: '13px',
-      color: 'var(--text-light)',
+      color: 'var(--text)',
     }
-    const label = (txt, color = '#555') => (
-      <div style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color, letterSpacing: '0.1em', padding: '8px 14px', borderBottom: '1px solid #111', background: '#080808' }}>
+    const label = (txt, color = 'var(--text-muted)') => (
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color, letterSpacing: '0.1em', padding: '8px 14px', borderBottom: '1px solid #111', background: 'var(--bg-elevated)' }}>
         {txt}
       </div>
     )
@@ -1200,12 +1961,12 @@ export default function ScenarioBuilder({
             {label('📧 APERÇU EMAIL JOUEUR')}
             <div style={{ padding: '18px 20px' }}>
               <div style={{ marginBottom: '4px', fontSize: '12px' }}>
-                <span style={{ color: '#555' }}>De : </span>
+                <span style={{ color: 'var(--text-muted)' }}>De : </span>
                 <span style={{ color: '#ddd' }}>{b.senderName}</span>
-                <span style={{ color: '#333', marginLeft: '6px' }}>&lt;{b.from}&gt;</span>
+                <span style={{ color: 'var(--border-strong)', marginLeft: '6px' }}>&lt;{b.from}&gt;</span>
               </div>
               <div style={{ marginBottom: '14px', fontSize: '12px' }}>
-                <span style={{ color: '#555' }}>Objet : </span>
+                <span style={{ color: 'var(--text-muted)' }}>Objet : </span>
                 <span style={{ color: '#fff', fontWeight: 600 }}>{b.subject}</span>
               </div>
               <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: '14px', color: '#ccc', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{b.body}</div>
@@ -1219,7 +1980,7 @@ export default function ScenarioBuilder({
                     {link.text}
                   </span>
                   {emailHover && (
-                    <span style={{ marginLeft: '10px', background: '#1a1a1a', border: '1px solid #333', padding: '2px 8px', fontSize: '10px', color: '#22c55e', borderRadius: '3px' }}>
+                    <span style={{ marginLeft: '10px', background: 'var(--border)', border: '1px solid #333', padding: '2px 8px', fontSize: '10px', color: '#22c55e', borderRadius: '3px' }}>
                       🔗 {link.hover}
                     </span>
                   )}
@@ -1244,14 +2005,14 @@ export default function ScenarioBuilder({
                   return (
                     <button key={i} type="button"
                       onClick={() => { if (!quizDone) { setQuizSel(i); setQuizDone(true) } }}
-                      style={{ padding: '10px 14px', textAlign: 'left', border: `1px solid ${showResult && o.correct ? '#22c55e' : showResult && isSelected && !o.correct ? 'var(--red)' : '#222'}`, background: showResult && o.correct ? 'rgba(34,197,94,0.12)' : showResult && isSelected && !o.correct ? 'rgba(235,40,40,0.1)' : isSelected ? '#111' : 'transparent', color: showResult && o.correct ? '#22c55e' : showResult && isSelected && !o.correct ? '#ef4444' : '#ddd', borderRadius: '5px', cursor: quizDone ? 'default' : 'pointer', fontSize: '13px' }}>
+                      style={{ padding: '10px 14px', textAlign: 'left', border: `1px solid ${showResult && o.correct ? '#22c55e' : showResult && isSelected && !o.correct ? 'var(--red)' : 'var(--border)'}`, background: showResult && o.correct ? 'rgba(34,197,94,0.12)' : showResult && isSelected && !o.correct ? 'var(--violet-tint)' : isSelected ? 'var(--border)' : 'transparent', color: showResult && o.correct ? '#22c55e' : showResult && isSelected && !o.correct ? '#ef4444' : '#ddd', borderRadius: '5px', cursor: quizDone ? 'default' : 'pointer', fontSize: '13px' }}>
                       {showResult && o.correct ? '✓ ' : showResult && isSelected && !o.correct ? '✕ ' : ''}{o.text}
                     </button>
                   )
                 })}
               </div>
               {quizDone && b.explanation && (
-                <div style={{ marginTop: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid #222', borderRadius: '5px', fontSize: '12px', color: '#aaa', lineHeight: 1.6 }}>
+                <div style={{ marginTop: '12px', padding: '10px 12px', background: 'var(--bg-muted)', border: '1px solid #222', borderRadius: '5px', fontSize: '12px', color: '#aaa', lineHeight: 1.6 }}>
                   💡 {b.explanation}
                 </div>
               )}
@@ -1284,7 +2045,7 @@ export default function ScenarioBuilder({
                 </div>
               ) : (
                 <div>
-                  <div style={{ padding: '12px 14px', background: decChoice.correct ? 'rgba(34,197,94,0.1)' : 'rgba(235,40,40,0.08)', border: `1px solid ${decChoice.correct ? '#22c55e40' : 'rgba(235,40,40,0.3)'}`, borderRadius: '5px', marginBottom: '10px' }}>
+                  <div style={{ padding: '12px 14px', background: decChoice.correct ? 'rgba(34,197,94,0.1)' : 'var(--violet-tint)', border: `1px solid ${decChoice.correct ? '#22c55e40' : 'var(--border-strong)'}`, borderRadius: '5px', marginBottom: '10px' }}>
                     <div style={{ fontWeight: 600, color: decChoice.correct ? '#22c55e' : '#ef4444', marginBottom: '4px' }}>
                       {decChoice.correct ? '✓ Bonne réaction' : '✕ Mauvais choix'}
                     </div>
@@ -1304,66 +2065,87 @@ export default function ScenarioBuilder({
       case 'puzzle': {
         if (b.puzzleType === 'memory') {
           const pairs = b.pairs || []
-          const cards = [...pairs.map((p, i) => ({ id: `a${i}`, pairIdx: i, face: p.a })), ...pairs.map((p, i) => ({ id: `b${i}`, pairIdx: i, face: p.b }))]
-          const shuffled = [...cards].sort(() => Math.random() - 0.5)
           return (
             <div style={previewBox}>
-              {label(`🃏 APERÇU MÉMORY JOUEUR`)}
+              {label('🔗 APERÇU JEU DE LIAISON — JOUEUR')}
               <div style={{ padding: '14px' }}>
-                <div style={{ fontSize: '11px', color: '#555', marginBottom: '10px' }}>{b.instruction}</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                  {shuffled.map((card) => {
-                    const isFlipped = memFlipped.includes(card.id) || memMatched.includes(card.pairIdx)
-                    return (
-                      <div key={card.id}
-                        onClick={() => {
-                          if (memMatched.includes(card.pairIdx) || memFlipped.includes(card.id)) return
-                          const newFlipped = [...memFlipped, card.id]
-                          if (newFlipped.length === 2) {
-                            const [a, bCard] = newFlipped.map(id => shuffled.find(c => c.id === id))
-                            if (a && bCard && a.pairIdx === bCard.pairIdx) {
-                              setMemMatched(prev => [...prev, a.pairIdx])
-                              setMemFlipped([])
-                            } else {
-                              setMemFlipped(newFlipped)
-                              setTimeout(() => setMemFlipped([]), 900)
-                            }
-                          } else {
-                            setMemFlipped(newFlipped)
-                          }
-                        }}
-                        style={{ height: '44px', borderRadius: '5px', cursor: 'pointer', border: `1px solid ${memMatched.includes(card.pairIdx) ? '#22c55e50' : '#222'}`, background: isFlipped ? (memMatched.includes(card.pairIdx) ? 'rgba(34,197,94,0.15)' : '#111') : '#0d0d0d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: isFlipped ? '#ddd' : 'transparent', textAlign: 'center', padding: '4px', transition: 'all 0.2s', userSelect: 'none' }}>
-                        {isFlipped ? card.face : '?'}
-                      </div>
-                    )
-                  })}
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                  {b.instruction || 'Reliez chaque terme à sa définition'}
                 </div>
-                <button type="button" onClick={() => { setMemFlipped([]); setMemMatched([]) }}
-                  style={{ marginTop: '8px', padding: '4px 10px', background: 'transparent', border: '1px solid #333', color: '#666', cursor: 'pointer', fontSize: '10px', borderRadius: '4px' }}>
-                  ↺ Réinitialiser
-                </button>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 24px 1fr', gap: '10px', alignItems: 'center' }}>
+                  {pairs.map((p, i) => (
+                    <>
+                      <div key={`a${i}`} style={{ padding: '9px 12px', background: 'var(--bg-input)', border: '1px solid #1f1f1f', borderLeft: '2px solid rgba(99,102,241,0.5)', borderRadius: '3px', fontSize: '12px', color: '#ddd' }}>
+                        {p.a || '(vide)'}
+                      </div>
+                      <div key={`l${i}`} style={{ textAlign: 'center', color: 'var(--border-strong)', fontSize: '14px' }}>⋯</div>
+                      <div key={`b${i}`} style={{ padding: '9px 12px', background: 'var(--bg-input)', border: '1px solid #1f1f1f', borderRight: '2px solid rgba(99,102,241,0.5)', borderRadius: '3px', fontSize: '12px', color: '#ccc' }}>
+                        {p.b || '(vide)'}
+                      </div>
+                    </>
+                  ))}
+                </div>
+                <div style={{ marginTop: '10px', fontSize: '10px', color: '#444', fontStyle: 'italic' }}>
+                  (les définitions seront mélangées côté joueur — des traits apparaîtront au clic)
+                </div>
               </div>
             </div>
           )
         }
         if (b.puzzleType === 'crossword') {
-          const words = b.words || []
+          const words = (b.words || []).filter(w => w.word)
+          const grid = buildCrosswordPreview(words)
           return (
             <div style={previewBox}>
-              {label('📐 APERÇU MOTS CROISÉS JOUEUR')}
+              {label('📐 APERÇU MOTS CROISÉS — GRILLE')}
               <div style={{ padding: '14px' }}>
-                <div style={{ fontSize: '11px', color: '#555', marginBottom: '10px' }}>{b.instruction}</div>
-                {words.map((w, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#555', minWidth: '18px' }}>{i + 1}.</span>
-                    <span style={{ fontSize: '12px', color: '#bbb', flex: 1 }}>{w.clue}</span>
-                    <div style={{ display: 'flex', gap: '2px' }}>
-                      {(w.word || '').split('').map((_, ci) => (
-                        <div key={ci} style={{ width: '22px', height: '26px', border: '1px solid #333', borderRadius: '2px', background: '#0a0a0a' }} />
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>{b.instruction}</div>
+                {grid && grid.width > 0 ? (
+                  <div style={{ display: 'flex', gap: '18px', alignItems: 'flex-start' }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: `repeat(${grid.width}, 26px)`,
+                      gridAutoRows: '26px',
+                      gap: '2px',
+                      padding: '8px',
+                      background: 'var(--bg-soft)',
+                      border: '1px solid #1a1a1a',
+                      borderRadius: '3px',
+                    }}>
+                      {Array.from({ length: grid.height }).map((_, y) =>
+                        Array.from({ length: grid.width }).map((_, x) => {
+                          const cell = grid.cells[`${x},${y}`]
+                          if (!cell) return <div key={`${x}-${y}`} style={{ background: 'transparent' }} />
+                          return (
+                            <div key={`${x}-${y}`} style={{
+                              position: 'relative',
+                              background: 'var(--bg-elevated)',
+                              border: '1px solid #2a2a2a',
+                              borderRadius: '1px',
+                            }}>
+                              {cell.number && (
+                                <span style={{ position: 'absolute', top: '0px', left: '1px', fontSize: '7px', color: '#666', fontFamily: 'var(--mono)', lineHeight: 1 }}>
+                                  {cell.number}
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: '#666', letterSpacing: '0.12em', marginBottom: '6px' }}>INDICES</div>
+                      {words.map((w, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '6px', fontSize: '11px', color: '#888', marginBottom: '4px', lineHeight: 1.5 }}>
+                          <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', minWidth: '18px' }}>{i + 1}.</span>
+                          <span style={{ flex: 1 }}>{w.clue} <span style={{ color: '#444' }}>({w.word.length})</span></span>
+                        </div>
                       ))}
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Ajoutez des mots pour générer la grille.</div>
+                )}
               </div>
             </div>
           )
@@ -1375,11 +2157,11 @@ export default function ScenarioBuilder({
           <div style={previewBox}>
             {label('🔀 APERÇU RÉORDONNER JOUEUR')}
             <div style={{ padding: '14px' }}>
-              <div style={{ fontSize: '11px', color: '#555', marginBottom: '10px' }}>{b.instruction}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '10px' }}>{b.instruction}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {shuffled.map((item, i) => (
-                  <div key={i} style={{ padding: '8px 12px', background: '#0d0d0d', border: '1px solid #222', borderRadius: '5px', fontSize: '12px', color: '#ddd', cursor: 'grab', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: '#333', fontSize: '11px' }}>⠿</span>
+                  <div key={i} style={{ padding: '8px 12px', background: 'var(--bg-input)', border: '1px solid #222', borderRadius: '5px', fontSize: '12px', color: '#ddd', cursor: 'grab', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: 'var(--border-strong)', fontSize: '11px' }}>⠿</span>
                     {item}
                   </div>
                 ))}
@@ -1409,9 +2191,9 @@ export default function ScenarioBuilder({
             {label('🎬 APERÇU VIDÉO JOUEUR')}
             <div style={{ padding: '18px 20px' }}>
               {b.url ? (
-                <div style={{ aspectRatio: '16/9', background: '#0a0a0a', border: '1px solid #222', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ aspectRatio: '16/9', background: 'var(--bg-elevated)', border: '1px solid #222', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ fontSize: '28px' }}>▶</div>
-                  <div style={{ fontSize: '11px', color: '#555', maxWidth: '200px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.url}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', maxWidth: '200px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.url}</div>
                 </div>
               ) : (
                 <div style={{ color: '#444', fontSize: '12px', fontStyle: 'italic' }}>Aucune URL configurée</div>
@@ -1459,7 +2241,7 @@ export default function ScenarioBuilder({
     }
 
     const props = { block: selectedBlock, onChange: (u) => updateBlock(selectedBlock.id, u) }
-    const color = TYPE_COLORS[selectedBlock.type] || '#888'
+    const color = TYPE_COLORS[selectedBlock.type] || 'var(--text-muted)'
     const bt = BLOCK_TYPES.find(b => b.type === selectedBlock.type)
     const blockIndex = blocks.findIndex(b => b.id === selectedId) + 1
 
@@ -1478,13 +2260,13 @@ export default function ScenarioBuilder({
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {/* Editor header */}
-        <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', background: `linear-gradient(135deg, ${color}10, transparent)`, display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border)', background: `linear-gradient(135deg, ${color}10, transparent)`, display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: color + '18', border: `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>
             {bt?.icon}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '2px' }}>
-              <span style={{ fontFamily: 'var(--font-title)', fontSize: '17px', color: 'var(--text-light)', fontWeight: 600 }}>{bt?.label}</span>
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '17px', color: 'var(--text)', fontWeight: 600 }}>{bt?.label}</span>
               <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
                 BLOC #{blockIndex}
               </span>
@@ -1494,17 +2276,69 @@ export default function ScenarioBuilder({
         </div>
 
         <div style={{ padding: '24px 28px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Chapter info — common to all block types */}
+          <ChapterInfoEditor block={selectedBlock} onChange={(u) => updateBlock(selectedBlock.id, u)} defaultIcon={bt?.icon} defaultLabel={bt?.label} />
+
+          <div style={{ height: '1px', background: 'var(--border)' }} />
+
           {specificEditor}
 
-          {/* Audio */}
-          <div style={{ marginTop: '8px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
-            <label style={labelStyle}>🎵 AUDIO DE FOND (URL .mp3 / .ogg)</label>
-            <input
-              value={selectedBlock.audioUrl || ''}
-              onChange={(e) => updateBlock(selectedBlock.id, { ...selectedBlock, audioUrl: e.target.value })}
-              placeholder="https://exemple.com/audio.mp3"
-              style={inputBase}
+          {/* Explanations shown to the player after they answer */}
+          <BlockExplanationEditor block={selectedBlock} onChange={(u) => updateBlock(selectedBlock.id, u)} />
+
+          {/* Block-specific audio (SFX / voice-over played during this chapter) */}
+          <div style={{ marginTop: '12px', paddingTop: '20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <AudioPanel
+              label="🔊 AUDIO DU BLOC (SFX / VOIX-OFF)"
+              url={selectedBlock.audioUrl}
+              onUrlChange={(v) => updateBlock(selectedBlock.id, { ...selectedBlock, audioUrl: v })}
+              volume={selectedBlock.audioVolume ?? 80}
+              onVolumeChange={(v) => updateBlock(selectedBlock.id, { ...selectedBlock, audioVolume: v })}
+              help="Joué pendant ce chapitre uniquement. Idéal pour une voix-off ou un effet sonore."
+              maxSizeMB={8}
             />
+
+            {/* Ambient override — reduce/mute the scenario general ambient on this block */}
+            <div style={{
+              padding: '14px 16px',
+              background: 'rgba(37, 99, 235, 0.04)',
+              border: '1px solid rgba(37, 99, 235, 0.18)',
+              borderRadius: '8px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '14px' }}>🎚</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#60a5fa', letterSpacing: '0.14em', fontWeight: 700, flex: 1 }}>
+                  AMBIANCE GÉNÉRALE SUR CE BLOC
+                </span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'var(--mono)', letterSpacing: '0.08em' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedBlock.ambientMuted === true}
+                    onChange={(e) => updateBlock(selectedBlock.id, { ...selectedBlock, ambientMuted: e.target.checked })}
+                    style={{ accentColor: 'var(--red)', cursor: 'pointer' }}
+                  />
+                  COUPER
+                </label>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: selectedBlock.ambientMuted ? 0.35 : 1, pointerEvents: selectedBlock.ambientMuted ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.1em', minWidth: '50px' }}>
+                  VOLUME
+                </span>
+                <input
+                  type="range"
+                  min="0" max="100"
+                  value={selectedBlock.ambientVolume ?? 100}
+                  onChange={(e) => updateBlock(selectedBlock.id, { ...selectedBlock, ambientVolume: Number(e.target.value) })}
+                  style={{ flex: 1, accentColor: '#60a5fa', cursor: 'pointer' }}
+                />
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#60a5fa', fontWeight: 700, minWidth: '32px', textAlign: 'right' }}>
+                  {selectedBlock.ambientVolume ?? 100}%
+                </span>
+              </div>
+              <div style={{ marginTop: '8px', fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                100% = son normal · 30% = ambiance discrète · 0% ou "Couper" = silence complet pendant ce chapitre.
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1514,11 +2348,12 @@ export default function ScenarioBuilder({
   const diffLabel = DIFFICULTIES.find(d => d.v === meta.difficulty)?.l || meta.difficulty
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#000', color: 'var(--text-light)' }}>
+    <div className="scenario-builder-page" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', color: 'var(--text)', position: 'relative' }}>
+      <div className="aurora-bg" style={{ opacity: 0.35 }} />
 
       {/* ── TOP BAR ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 20px', background: '#060606', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
-        <button type="button" onClick={onBack} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', padding: '5px 12px', cursor: 'pointer', fontSize: '11px', borderRadius: '4px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 24px', background: 'var(--glass-bg-strong)', backdropFilter: 'var(--glass-blur)', WebkitBackdropFilter: 'var(--glass-blur)', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <button type="button" onClick={onBack} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', padding: '5px 12px', cursor: 'pointer', fontSize: '11px', borderRadius: '4px', flexShrink: 0 }}>
           ← Retour
         </button>
 
@@ -1527,24 +2362,30 @@ export default function ScenarioBuilder({
             value={meta.titleFr}
             onChange={(e) => updateMeta('titleFr', e.target.value)}
             placeholder="Titre du scénario..."
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-light)', fontFamily: 'var(--font-title)', fontSize: '16px', width: '100%', outline: 'none', padding: 0 }}
+            style={{ background: 'transparent', border: 'none', color: 'var(--text)', fontFamily: 'var(--font-title)', fontSize: '16px', width: '100%', outline: 'none', padding: 0 }}
           />
           <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '1px 6px', borderRadius: '3px' }}>{meta.category}</span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '1px 6px', borderRadius: '3px' }}>{diffLabel}</span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '1px 6px', borderRadius: '3px' }}>{meta.duration}min</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'var(--bg-muted)', color: 'var(--text-muted)', padding: '1px 6px', borderRadius: '3px' }}>{meta.category}</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'var(--bg-muted)', color: 'var(--text-muted)', padding: '1px 6px', borderRadius: '3px' }}>{diffLabel}</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'var(--bg-muted)', color: 'var(--text-muted)', padding: '1px 6px', borderRadius: '3px' }}>{meta.duration}min</span>
             <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', opacity: 0.5 }}>{blocks.length} bloc{blocks.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
 
-        {saved && <span style={{ fontSize: '10px', color: '#22c55e', fontFamily: 'var(--mono)' }}>✓ Sauvegardé</span>}
+        {saved && (
+          <span className="tag tag-success" style={{ fontSize: '11px' }}>
+            ✓ Sauvegardé
+          </span>
+        )}
 
-        <button type="button" onClick={() => handleSave('draft')}
-          style={{ padding: '6px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px', borderRadius: '4px', flexShrink: 0 }}>
+        <ThemeToggle />
+
+        <button type="button" onClick={() => handleSave('draft')} className="btn-secondary"
+          style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0 }}>
           💾 Brouillon
         </button>
         <button type="button" onClick={() => handleSave('published')} className="btn-primary"
-          style={{ padding: '6px 14px', fontSize: '11px', flexShrink: 0 }}>
+          style={{ padding: '8px 18px', fontSize: '12px', flexShrink: 0 }}>
           🚀 Publier
         </button>
       </div>
@@ -1553,16 +2394,16 @@ export default function ScenarioBuilder({
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
         {/* ── LEFT: META + PALETTE ── */}
-        <div style={{ width: '280px', flexShrink: 0, background: '#070707', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ width: '280px', flexShrink: 0, background: 'var(--bg-elevated)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
           {/* Meta summary card */}
-          <div style={{ flexShrink: 0, padding: '18px 18px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ flexShrink: 0, padding: '18px 18px 16px', borderBottom: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em' }}>⚙ INFOS SCÉNARIO</span>
               <button type="button" onClick={() => setMetaModalOpen(true)}
-                style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-light)', cursor: 'pointer', fontSize: '10px', fontFamily: 'var(--mono)', padding: '4px 10px', borderRadius: '4px', letterSpacing: '0.05em', transition: 'all 0.15s' }}
+                style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer', fontSize: '10px', fontFamily: 'var(--mono)', padding: '4px 10px', borderRadius: '4px', letterSpacing: '0.05em', transition: 'all 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-light)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
               >
                 ✏ ÉDITER
               </button>
@@ -1570,7 +2411,7 @@ export default function ScenarioBuilder({
             <button type="button" onClick={() => setMetaModalOpen(true)}
               style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'left', padding: 0, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
-              <div style={{ fontSize: '15px', color: meta.titleFr ? 'var(--text-light)' : 'var(--text-muted)', fontWeight: 600, lineHeight: 1.3, wordBreak: 'break-word', fontFamily: 'var(--font-title)' }}>
+              <div style={{ fontSize: '15px', color: meta.titleFr ? 'var(--text)' : 'var(--text-muted)', fontWeight: 600, lineHeight: 1.3, wordBreak: 'break-word', fontFamily: 'var(--font-title)' }}>
                 {meta.titleFr || 'Titre non défini'}
               </div>
               {meta.description && (
@@ -1579,9 +2420,9 @@ export default function ScenarioBuilder({
                 </div>
               )}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '4px' }}>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{meta.category}</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{DIFFICULTIES.find(d => d.v === meta.difficulty)?.l || meta.difficulty}</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{meta.duration} min</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'var(--bg-muted)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{meta.category}</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'var(--bg-muted)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{DIFFICULTIES.find(d => d.v === meta.difficulty)?.l || meta.difficulty}</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'var(--bg-muted)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{meta.duration} min</span>
               </div>
             </button>
           </div>
@@ -1595,8 +2436,8 @@ export default function ScenarioBuilder({
                 return (
                   <button key={bt.type} type="button" onClick={() => addBlock(bt.type)}
                     style={{ padding: '12px 14px', background: 'transparent', border: `1px solid #181818`, color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '8px', textAlign: 'left', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '12px' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = color + '60'; e.currentTarget.style.background = color + '08'; e.currentTarget.style.color = 'var(--text-light)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#181818'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = color + '60'; e.currentTarget.style.background = color + '08'; e.currentTarget.style.color = 'var(--text)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
                   >
                     <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: color + '15', border: `1px solid ${color}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>{bt.icon}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -1611,7 +2452,7 @@ export default function ScenarioBuilder({
         </div>
 
         {/* ── CENTER: CANVAS ── */}
-        <div style={{ flex: 1, overflow: 'auto', background: '#040404', padding: '20px' }}>
+        <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg)', padding: '20px' }}>
           {blocks.length === 0 ? (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--text-muted)' }}>
               <div style={{ fontSize: '40px', opacity: 0.2 }}>🧱</div>
@@ -1622,7 +2463,7 @@ export default function ScenarioBuilder({
               <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
                 {BLOCK_TYPES.map(bt => (
                   <button key={bt.type} type="button" onClick={() => addBlock(bt.type)}
-                    style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid #1a1a1a', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px', borderRadius: '5px' }}>
+                    style={{ padding: '6px 12px', background: 'var(--bg-muted)', border: '1px solid #1a1a1a', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px', borderRadius: '5px' }}>
                     {bt.icon} {bt.label}
                   </button>
                 ))}
@@ -1633,7 +2474,7 @@ export default function ScenarioBuilder({
               {/* Flow header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>FLUX DU SCÉNARIO</div>
-                <div style={{ flex: 1, height: '1px', background: '#111' }} />
+                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)' }}>{blocks.length} bloc{blocks.length !== 1 ? 's' : ''}</div>
               </div>
 
@@ -1659,8 +2500,8 @@ export default function ScenarioBuilder({
                   {BLOCK_TYPES.map(bt => (
                     <button key={bt.type} type="button" onClick={() => addBlock(bt.type)}
                       style={{ padding: '5px 10px', background: 'transparent', border: '1px dashed #1f1f1f', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', borderRadius: '4px', transition: 'all 0.15s' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = TYPE_COLORS[bt.type] + '50'; e.currentTarget.style.color = 'var(--text-light)' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#1f1f1f'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = TYPE_COLORS[bt.type] + '50'; e.currentTarget.style.color = 'var(--text)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
                       {bt.icon} {bt.label}
                     </button>
                   ))}
@@ -1671,17 +2512,17 @@ export default function ScenarioBuilder({
         </div>
 
         {/* ── RIGHT: EDITOR / PREVIEW ── */}
-        <div style={{ width: 'min(640px, 45vw)', minWidth: '480px', flexShrink: 0, background: '#070707', borderLeft: '1px solid var(--border-subtle)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: 'min(640px, 45vw)', minWidth: '480px', flexShrink: 0, background: 'var(--bg-elevated)', borderLeft: '1px solid var(--border)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
           {/* Tab toggle */}
           {selectedBlock && (
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0, background: '#060606' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', flexShrink: 0, background: 'var(--bg-elevated)' }}>
               <button
                 type="button"
                 onClick={() => setPanelTab('edit')}
                 style={{
                   flex: 1, padding: '16px 0', background: 'transparent', border: 'none', cursor: 'pointer',
                   fontSize: '12px', fontFamily: 'var(--mono)', letterSpacing: '0.1em', fontWeight: 500,
-                  color: panelTab === 'edit' ? 'var(--text-light)' : 'var(--text-muted)',
+                  color: panelTab === 'edit' ? 'var(--text)' : 'var(--text-muted)',
                   borderBottom: panelTab === 'edit' ? '2px solid var(--red)' : '2px solid transparent',
                   transition: 'all 0.15s'
                 }}
@@ -1694,7 +2535,7 @@ export default function ScenarioBuilder({
                 style={{
                   flex: 1, padding: '16px 0', background: 'transparent', border: 'none', cursor: 'pointer',
                   fontSize: '12px', fontFamily: 'var(--mono)', letterSpacing: '0.1em', fontWeight: 500,
-                  color: panelTab === 'preview' ? 'var(--text-light)' : 'var(--text-muted)',
+                  color: panelTab === 'preview' ? 'var(--text)' : 'var(--text-muted)',
                   borderBottom: panelTab === 'preview' ? '2px solid #3b82f6' : '2px solid transparent',
                   transition: 'all 0.15s'
                 }}
@@ -1704,7 +2545,11 @@ export default function ScenarioBuilder({
             </div>
           )}
           {panelTab === 'preview' && selectedBlock
-            ? <BlockPlayerPreview block={selectedBlock} />
+            ? (
+              <div className="force-dark" style={{ background: 'var(--bg)', flex: 1, overflow: 'auto' }}>
+                <BlockPlayerPreview block={selectedBlock} />
+              </div>
+            )
             : renderEditor()
           }
         </div>
@@ -1798,7 +2643,18 @@ export default function ScenarioBuilder({
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', marginTop: '4px' }}>
+          {/* Scenario-level ambient audio */}
+          <AudioPanel
+            label="🎼 AMBIANCE GÉNÉRALE DU SCÉNARIO (OPTIONNEL)"
+            url={meta.audioUrl}
+            onUrlChange={(v) => updateMeta('audioUrl', v)}
+            volume={meta.audioVolume}
+            onVolumeChange={(v) => updateMeta('audioVolume', v)}
+            help="Joué en continu pendant tout le scénario. Chaque bloc peut réduire ou couper ce son."
+            maxSizeMB={8}
+          />
+
+          <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid var(--border)', marginTop: '4px' }}>
             <button
               type="button"
               onClick={() => setMetaModalOpen(false)}

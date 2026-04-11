@@ -33,7 +33,7 @@ export const webhookService = {
   listWebhooks() {
     return [
       { id: 'wh_1', url: 'https://hooks.slack.com/services/T00/B00/XXX', events: ['user.phishing_clicked', 'risk.high_detected'], active: true, successRate: 98 },
-      { id: 'wh_2', url: 'https://acme.com/api/roomca-webhook', events: ['campaign.completed', 'report.generated'], active: true, successRate: 100 },
+      { id: 'wh_2', url: 'https://roomca.com/api/roomca-webhook', events: ['campaign.completed', 'report.generated'], active: true, successRate: 100 },
       { id: 'wh_3', url: 'https://zapier.com/hooks/catch/123/abc', events: ['certification.passed'], active: true, successRate: 95 }
     ]
   },

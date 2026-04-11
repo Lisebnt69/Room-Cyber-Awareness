@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import Logo from '/roomca-logo.png'
-import LangToggle from '../components/LangToggle'
+import PageHeader from '../components/PageHeader'
 
 const employees = [
   { id: 1, name: 'Marie Dupont', dept: 'Finance', score: 92, risk: 'low', lastTraining: '2 days ago', incidents: 0 },
@@ -27,32 +24,16 @@ const departments = [
 
 const riskColor = (risk) => ({ low: '#22c55e', medium: '#f59e0b', high: '#eb2828', critical: '#7c0a0a' }[risk])
 
-export default function RiskScore() {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
+export default function RiskScore({ embedded = false }) {
   const [view, setView] = useState('employees')
 
-  const handleLogout = () => { logout(); navigate('/login') }
   const avgScore = Math.round(employees.reduce((s, e) => s + e.score, 0) / employees.length)
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
-      <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <img
-  src={Logo}
-  alt="ROOMCA"
-  style={{ height: '32px', width: 'auto', display: 'block' }}
-/>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <LangToggle />
-          <button onClick={() => navigate('/admin')} style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}>← Dashboard</button>
-          <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>Logout</button>
-        </div>
-      </nav>
-
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', position: 'relative' }}>
+      {!embedded && <div className="aurora-bg" style={{ opacity: 0.4 }} />}
+      {!embedded && <PageHeader title="⚠ Risk Score" subtitle="Profil de risque par employé & département" />}
       <div style={{ padding: '40px' }}>
-        <h1 style={{ fontSize: '36px', color: 'var(--text-primary)', marginBottom: '8px' }}>⚠️ Risk Score Dashboard</h1>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Score de risque par employé/département. Détection comportementale.</p>
 
         {/* KPIs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>

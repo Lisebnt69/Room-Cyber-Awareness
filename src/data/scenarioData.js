@@ -10,7 +10,7 @@ export const scenario = {
 // French emails
 export const emails = [
   {
-    id: 'e1', from: 'Support IT <it-support@acme-corp.com>', fromName: 'Support IT', fromDomain: 'acme-corp.com',
+    id: 'e1', from: 'Support IT <it-support@roomca-corp.com>', fromName: 'Support IT', fromDomain: 'roomca-corp.com',
     subject: 'Rapport T3 — Consolidation budgétaire',
     preview: 'Veuillez trouver ci-joint le rapport financier T3 pour votre examen...',
     body: "Bonjour Sophie,\n\nVeuillez trouver ci-joint le rapport financier T3. Faites-nous savoir si des ajustements sont nécessaires avant la réunion du conseil.\n\nCordialement,\nL'équipe Finance",
@@ -30,7 +30,7 @@ export const emails = [
     ],
   },
   {
-    id: 'e3', from: 'RH <hr@acme-corp.com>', fromName: 'Équipe RH', fromDomain: 'acme-corp.com',
+    id: 'e3', from: 'RH <hr@roomca-corp.com>', fromName: 'Équipe RH', fromDomain: 'roomca-corp.com',
     subject: 'Demande de congés approuvée ✓',
     preview: 'Votre demande de congés du 23 au 26 décembre a été approuvée...',
     body: "Bonjour Sophie,\n\nVotre demande de congés du 23 au 26 décembre a été approuvée.\n\nBonnes fêtes !\n\nLe service RH",
@@ -61,7 +61,7 @@ export const emails = [
 // English emails
 export const emailsEn = [
   {
-    id: 'e1', from: 'IT Support <it-support@acme-corp.com>', fromName: 'IT Support', fromDomain: 'acme-corp.com',
+    id: 'e1', from: 'IT Support <it-support@roomca-corp.com>', fromName: 'IT Support', fromDomain: 'roomca-corp.com',
     subject: 'Q3 Report — Budget Consolidation',
     preview: 'Please find attached the Q3 financial report for your review...',
     body: "Hi Sophie,\n\nPlease find attached the Q3 financial report. Let us know if any adjustments are needed before the board meeting.\n\nBest regards,\nThe Finance Team",
@@ -81,7 +81,7 @@ export const emailsEn = [
     ],
   },
   {
-    id: 'e3', from: 'HR <hr@acme-corp.com>', fromName: 'HR Team', fromDomain: 'acme-corp.com',
+    id: 'e3', from: 'HR <hr@roomca-corp.com>', fromName: 'HR Team', fromDomain: 'roomca-corp.com',
     subject: 'Leave request approved ✓',
     preview: 'Your leave request for December 23-26 has been approved...',
     body: "Hi Sophie,\n\nYour leave request for December 23-26 has been approved.\n\nHappy holidays!\n\nHR Department",
@@ -110,23 +110,23 @@ export const emailsEn = [
 ]
 
 export const logLines = [
-  { time: '11:32:04', level: 'WARN', msg: "L'utilisateur sophieb@acme-corp.com a reçu un e-mail externe de microsofft.com" },
+  { time: '11:32:04', level: 'WARN', msg: "L'utilisateur sophieb@roomca-corp.com a reçu un e-mail externe de microsofft.com" },
   { time: '11:47:19', level: 'ALERT', msg: 'Événement de clic détecté : URL sortante microsofft.com → redirection externe' },
   { time: '11:47:21', level: 'CRITICAL', msg: "Soumission de formulaire d'identifiants détectée sur le site externe microsoft-account-verify.net" },
   { time: '11:47:22', level: 'CRITICAL', msg: "POST /api/auth — origine inconnue — possible exfiltration d'identifiants" },
-  { time: '11:47:25', level: 'WARN', msg: 'Jeton de session invalidé pour sophieb@acme-corp.com — réauthentification forcée' },
-  { time: '12:03:41', level: 'INFO', msg: 'Tentative de connexion échouée x3 — sophieb@acme-corp.com' },
-  { time: '12:03:55', level: 'ALERT', msg: 'Verrouillage du compte déclenché — sophieb@acme-corp.com' },
+  { time: '11:47:25', level: 'WARN', msg: 'Jeton de session invalidé pour sophieb@roomca-corp.com — réauthentification forcée' },
+  { time: '12:03:41', level: 'INFO', msg: 'Tentative de connexion échouée x3 — sophieb@roomca-corp.com' },
+  { time: '12:03:55', level: 'ALERT', msg: 'Verrouillage du compte déclenché — sophieb@roomca-corp.com' },
   { time: '14:47:08', level: 'WARN', msg: "L'utilisateur a reçu un 2ème e-mail externe de dhl-delivery-tracking.info" },
 ]
 
 export const logLinesEn = [
-  { time: '11:32:04', level: 'WARN', msg: 'User sophieb@acme-corp.com received external email from microsofft.com' },
+  { time: '11:32:04', level: 'WARN', msg: 'User sophieb@roomca-corp.com received external email from microsofft.com' },
   { time: '11:47:19', level: 'ALERT', msg: 'Click event detected: outbound URL microsofft.com → external redirect' },
   { time: '11:47:21', level: 'CRITICAL', msg: 'Credential form submission detected on external site microsoft-account-verify.net' },
   { time: '11:47:22', level: 'CRITICAL', msg: 'POST /api/auth — unknown origin — possible credential exfiltration' },
-  { time: '11:47:25', level: 'WARN', msg: 'Session token invalidated for sophieb@acme-corp.com — forced re-authentication' },
-  { time: '12:03:41', level: 'INFO', msg: 'Failed login attempt x3 — sophieb@acme-corp.com' },
-  { time: '12:03:55', level: 'ALERT', msg: 'Account lockout triggered — sophieb@acme-corp.com' },
+  { time: '11:47:25', level: 'WARN', msg: 'Session token invalidated for sophieb@roomca-corp.com — forced re-authentication' },
+  { time: '12:03:41', level: 'INFO', msg: 'Failed login attempt x3 — sophieb@roomca-corp.com' },
+  { time: '12:03:55', level: 'ALERT', msg: 'Account lockout triggered — sophieb@roomca-corp.com' },
   { time: '14:47:08', level: 'WARN', msg: 'User received 2nd external email from dhl-delivery-tracking.info' },
 ]

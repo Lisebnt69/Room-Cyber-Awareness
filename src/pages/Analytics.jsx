@@ -1,10 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import Logo from '/roomca-logo.png'
-import LangToggle from '../components/LangToggle'
-import './Analytics.css'
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import PageHeader from '../components/PageHeader'
+import { generateReportPDF } from '../services/pdfGenerator'
 
 const heatmapData = [
   { scenario: 'Inbox Zero', easy: 95, medium: 87, hard: 42 },
@@ -29,38 +26,60 @@ const vulnerabilityData = [
 
 const COLORS = ['#eb2828', '#f59e0b', '#22c55e', '#3b82f6']
 
-const scoreClass = (value) => {
-  if (value > 80) return 'high'
-  if (value > 60) return 'medium'
-  return 'low'
-}
-
-export default function Analytics() {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
+export default function Analytics({ embedded = false }) {
   const [dateRange, setDateRange] = useState('month')
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
-  const handleExportPDF = () => {
-    alert('PDF export feature coming soon!')
+  const [exporting, setExporting] = useState(false)
+  const handleExportPDF = async () => {
+    setExporting(true)
+    try {
+      await generateReportPDF(
+        { id: 'exec', name: 'Rapport Analytics — Cybersécurité' },
+        { period: dateRange === 'week' ? 'Cette semaine' : dateRange === 'month' ? 'Ce mois' : 'Ce trimestre', org: 'Mon Entreprise' }
+      )
+    } finally {
+      setExporting(false)
+    }
   }
 
   return (
-    <div className="analytics-page">
-      <div className="analytics-shell">
-        <nav className="analytics-nav">
-          <img src={Logo} alt="ROOMCA" style={{ height: '32px', width: 'auto', display: 'block' }} />
-          <div className="analytics-nav-actions">
-            <LangToggle />
-            <button onClick={() => navigate('/admin')} className="analytics-link-btn">
-              ← Dashboard
-            </button>
-            <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>
-              Logout
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', position: 'relative' }}>
+      {!embedded && <div className="aurora-bg" style={{ opacity: 0.4 }} />}
+      {!embedded && <PageHeader title="📊 Analytics" subtitle="Vulnérabilités & tendances de sécurité" />}
+
+      {/* Content */}
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '32px', marginBottom: '8px' }}>
+              📊 Analytics
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+              Analysez les vulnérabilités et tendances de sécurité
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {['week', 'month', 'quarter'].map(range => (
+              <button
+                key={range}
+                onClick={() => setDateRange(range)}
+                style={{
+                  padding: '8px 16px',
+                  background: dateRange === range ? 'var(--red)' : 'var(--bg-card)',
+                  border: `1px solid ${dateRange === range ? 'var(--red)' : 'var(--border)'}`,
+                  color: 'var(--text-light)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-title)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {range === 'week' ? 'Week' : range === 'month' ? 'Month' : 'Quarter'}
+              </button>
+            ))}
+            <button onClick={handleExportPDF} disabled={exporting} className="btn-primary" style={{ padding: '8px 16px', fontSize: '12px', opacity: exporting ? 0.7 : 1 }}>
+              {exporting ? '⏳ Génération...' : '📥 Export PDF'}
             </button>
           </div>
         </nav>
@@ -180,6 +199,63 @@ export default function Analytics() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Trends Chart */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '24px', borderRadius: '4px', marginBottom: '24px' }}>
+          <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '16px', marginBottom: '20px' }}>
+            📈 Weekly Trends
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(84,84,84,0.2)" />
+              <XAxis dataKey="week" tick={{ fill: '#828080', fontSize: '11px' }} />
+              <YAxis tick={{ fill: '#828080', fontSize: '11px' }} />
+              <Tooltip contentStyle={{ background: '#0d0d0d', border: '1px solid #333' }} />
+              <Legend />
+              <Line type="monotone" dataKey="avg_score" stroke="#eb2828" strokeWidth={2} name="Avg Score" />
+              <Line type="monotone" dataKey="completion" stroke="#22c55e" strokeWidth={2} name="Completion %" />
+              <Line type="monotone" dataKey="accuracy" stroke="#3b82f6" strokeWidth={2} name="Accuracy %" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Scenario Difficulty Heatmap */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '24px', borderRadius: '4px' }}>
+          <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '16px', marginBottom: '20px' }}>
+            🔥 Success Rate by Difficulty
+          </h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>Scenario</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>Easy</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>Medium</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>Hard</th>
+              </tr>
+            </thead>
+            <tbody>
+              {heatmapData.map(row => (
+                <tr key={row.scenario} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '12px 16px', fontSize: '13px' }}>{row.scenario}</td>
+                  {['easy', 'medium', 'hard'].map(difficulty => (
+                    <td key={difficulty} style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <div style={{
+                        background: row[difficulty] > 80 ? 'rgba(34,197,94,0.2)' : row[difficulty] > 60 ? 'rgba(245,158,11,0.2)' : 'rgba(235,40,40,0.2)',
+                        padding: '8px 12px',
+                        borderRadius: '2px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: row[difficulty] > 80 ? '#22c55e' : row[difficulty] > 60 ? '#f59e0b' : 'var(--red)'
+                      }}>
+                        {row[difficulty]}%
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

@@ -236,7 +236,7 @@ export default {
   playerLine1: 'ROOMCA — SECURITY OPERATIONS CENTER',
   playerLine2: 'Initializing incident response protocol...',
   playerLine3: 'ALERT: Suspicious credential activity detected',
-  playerLine4: 'Targeted user: sophieb@acme-corp.com',
+  playerLine4: 'Targeted user: sophieb@roomca-corp.com',
   playerLine5: 'Status: ACCOUNT COMPROMISED — investigation required',
   playerLine6: 'Mission: identify the phishing vector in her inbox',
   playerLine7: 'Time limit: 15:00 minutes',
@@ -306,4 +306,19 @@ export default {
   certOperation: 'OPERATION: INBOX ZERO',
   certScore: 'Score:',
   certPts: 'pts',
+
+  // Hacking error overlay
+  hackErrTitle: '⚠ ERROR · INTRUSION DETECTED',
+  hackErrLine1: '> SYSTEM BREACH DETECTED',
+  hackErrLine2: '> SIGNATURE MISMATCH · 0x7F3A',
+  hackErrLine3: '> UNAUTHORIZED ACTION',
+  hackErrLine4: '> ROLLING BACK SECTOR...',
+  hackErrLine5: '> KERNEL PANIC — REBOOT FAILSAFE',
+  hackErrFooter: '█ RESTORING INTERFACE...',
+
+  // Link-click warning overlay (lesson, not hacking glitch)
+  linkWarnTag: 'SECURITY RULE',
+  linkWarnTitle: 'Never click a link without verifying it first',
+  linkWarnBody: 'Before clicking, always hover over the link with your mouse to see its real destination. If the displayed text and the actual URL don\'t match, it\'s a trap.',
+  linkWarnHint: '💡 Tip: the URL shown on hover is the real destination.',
 }

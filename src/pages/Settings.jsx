@@ -1,26 +1,18 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { twoFactorAuth } from '../services/multitenancy'
 import { gdprCompliance, dataExport, complianceChecklist } from '../services/audit'
-import Logo from '/roomca-logo.png'
-import LangToggle from '../components/LangToggle'
+import PageHeader from '../components/PageHeader'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
 
 export default function Settings() {
-  const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('security')
   const [show2FA, setShow2FA] = useState(false)
   const [, setShowExport] = useState(false)
   const [toast, setToast] = useState(null)
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   const handleEnable2FA = async () => {
     await twoFactorAuth.generateSecret(user?.id)
@@ -56,24 +48,9 @@ export default function Settings() {
   const compliance = complianceChecklist.getStatus()
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
-      {/* Navigation */}
-      <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <img
-  src={Logo}
-  alt="ROOMCA"
-  style={{ height: '32px', width: 'auto', display: 'block' }}
-/>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <LangToggle />
-          <button onClick={() => navigate('/admin')} style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
-            ← Dashboard
-          </button>
-          <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>
-            Logout
-          </button>
-        </div>
-      </nav>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', position: 'relative' }}>
+      <div className="aurora-bg" style={{ opacity: 0.4 }} />
+      <PageHeader title="⚙ Paramètres" subtitle="Sécurité, données, conformité" />
 
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px' }}>
         <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '32px', marginBottom: '40px' }}>⚙️ Settings</h1>

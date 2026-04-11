@@ -69,7 +69,40 @@ db.exec(`
     assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     completed_at DATETIME
   );
+
+  CREATE TABLE IF NOT EXISTS departments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS players (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    department_id INTEGER,
+    email TEXT NOT NULL,
+    name TEXT NOT NULL,
+    status TEXT DEFAULT 'active',
+    license INTEGER DEFAULT 1,
+    score REAL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS department_scenarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    department_id INTEGER NOT NULL,
+    scenario_id INTEGER NOT NULL,
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(department_id, scenario_id)
+  );
 `)
+
+// Migrations: add columns that don't exist yet (SQLite has no IF NOT EXISTS on ADD COLUMN)
+const tryAlter = (sql) => { try { db.exec(sql) } catch { /* column already exists */ } }
+tryAlter('ALTER TABLE scenarios ADD COLUMN audio_url TEXT')
+tryAlter('ALTER TABLE scenarios ADD COLUMN audio_volume INTEGER DEFAULT 50')
+tryAlter('ALTER TABLE scenario_blocks ADD COLUMN data_json TEXT')
 
 // Seed if empty
 const companyCount = db.prepare('SELECT COUNT(*) as n FROM companies').get().n
@@ -77,7 +110,7 @@ if (companyCount === 0) {
   const insertCompany = db.prepare(
     'INSERT INTO companies (name, email, plan, sector, users, active, scenarios, licenses, expire, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   )
-  insertCompany.run('ACME Corp', 'admin@acme.com', 'Business', 'Finance', 161, 142, 6, 200, '31/12/2025', 'active')
+  insertCompany.run('ROOMCA Corp', 'admin@roomca.com', 'Business', 'Finance', 161, 142, 6, 200, '31/12/2025', 'active')
   insertCompany.run('BNP Finance', 'security@bnp.fr', 'Enterprise', 'Finance', 892, 814, 12, 1000, '30/06/2025', 'active')
   insertCompany.run('Mairie de Lyon', 'dsi@mairie-lyon.fr', 'Starter', 'Administration', 24, 18, 3, 25, '15/05/2025', 'expiring')
   insertCompany.run('StartupTech SAS', 'cto@startuptech.io', 'Starter', 'Tech', 12, 8, 2, 25, '01/09/2025', 'active')
@@ -129,7 +162,7 @@ if (scenarioCount === 0) {
 const companyScenarioCount = db.prepare('SELECT COUNT(*) as n FROM company_scenarios').get().n
 if (companyScenarioCount === 0) {
   const insCS = db.prepare('INSERT OR IGNORE INTO company_scenarios (company_id, scenario_id) VALUES (?, ?)')
-  // ACME Corp (id=1): scenarios 1,2,3
+  // ROOMCA Corp (id=1): scenarios 1,2,3
   insCS.run(1, 1); insCS.run(1, 2); insCS.run(1, 3)
   // BNP Finance (id=2): scenarios 1,3
   insCS.run(2, 1); insCS.run(2, 3)

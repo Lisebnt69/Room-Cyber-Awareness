@@ -9,7 +9,7 @@ const SCENARIOS_CONTENT = [
     blocks: [
       {
         type: 'text',
-        content: "Vous êtes Sophie Bernard, comptable chez ACME Corp. Il est 9h15, vous venez d'arriver au bureau et vous ouvrez votre boîte mail. Parmi vos nouveaux messages, certains semblent urgents — mais sont-ils vraiment légitimes ?\n\nVotre mission : analyser les emails reçus et identifier les tentatives de phishing avant qu'il ne soit trop tard.",
+        content: "Vous êtes Sophie Bernard, comptable chez ROOMCA Corp. Il est 9h15, vous venez d'arriver au bureau et vous ouvrez votre boîte mail. Parmi vos nouveaux messages, certains semblent urgents — mais sont-ils vraiment légitimes ?\n\nVotre mission : analyser les emails reçus et identifier les tentatives de phishing avant qu'il ne soit trop tard.",
       },
       {
         type: 'email',
@@ -65,13 +65,13 @@ const SCENARIOS_CONTENT = [
     blocks: [
       {
         type: 'text',
-        content: "Vous êtes Thomas Keller, responsable informatique chez ACME Corp. Il est 17h30 un vendredi soir. Vous recevez un email urgent de votre PDG Jean-Michel Durand — du moins c'est ce que vous croyez.\n\nLisez attentivement cet email et identifiez les signaux d'alarme avant d'agir.",
+        content: "Vous êtes Thomas Keller, responsable informatique chez ROOMCA Corp. Il est 17h30 un vendredi soir. Vous recevez un email urgent de votre PDG Jean-Michel Durand — du moins c'est ce que vous croyez.\n\nLisez attentivement cet email et identifiez les signaux d'alarme avant d'agir.",
       },
       {
         type: 'email',
-        from: 'jm.durand@acme-corp.com.mailpro.net',
+        from: 'jm.durand@roomca-corp.com.mailpro.net',
         subject: 'Confidentiel — Virement urgent requis avant ce soir',
-        body: "Thomas,\n\nJe suis actuellement en déplacement à Dubai pour finaliser une acquisition stratégique hautement confidentielle. J'ai besoin d'un virement urgent de 47 800 € vers notre partenaire local avant la clôture des marchés ce soir à 18h.\n\nC'est absolument confidentiel — n'en parlez à personne, pas même à vos collègues ni à la DAF. Notre avocat maître Garnier vous contactera dans les prochaines minutes avec les coordonnées bancaires exactes.\n\nJe compte sur votre discrétion et votre rapidité.\n\nJean-Michel Durand\nPDG, ACME Corp\n+33 6 XX XX XX XX",
+        body: "Thomas,\n\nJe suis actuellement en déplacement à Dubai pour finaliser une acquisition stratégique hautement confidentielle. J'ai besoin d'un virement urgent de 47 800 € vers notre partenaire local avant la clôture des marchés ce soir à 18h.\n\nC'est absolument confidentiel — n'en parlez à personne, pas même à vos collègues ni à la DAF. Notre avocat maître Garnier vous contactera dans les prochaines minutes avec les coordonnées bancaires exactes.\n\nJe compte sur votre discrétion et votre rapidité.\n\nJean-Michel Durand\nPDG, ROOMCA Corp\n+33 6 XX XX XX XX",
         linkText: '',
         link: '',
       },
@@ -89,10 +89,10 @@ const SCENARIOS_CONTENT = [
         type: 'quiz',
         questions: [
           {
-            question: "Le domaine 'acme-corp.com.mailpro.net' — pourquoi est-il suspect ?",
+            question: "Le domaine 'roomca-corp.com.mailpro.net' — pourquoi est-il suspect ?",
             options: [
               { text: "Il contient un tiret", correct: false },
-              { text: "Le vrai domaine 'acme-corp.com' est suivi d'autres sous-domaines trompeurs", correct: true },
+              { text: "Le vrai domaine 'roomca-corp.com' est suivi d'autres sous-domaines trompeurs", correct: true },
               { text: "Il est trop long", correct: false },
               { text: "Il ne contient pas de chiffres", correct: false },
             ],
@@ -177,7 +177,7 @@ const SCENARIOS_CONTENT = [
     blocks: [
       {
         type: 'text',
-        content: "Vous êtes à la réception d'ACME Corp. Un homme bien habillé, l'air pressé, s'approche du badge reader. Il ne semble pas avoir de badge.\n\n— « Bonjour ! Je suis Martin Leblanc, consultant chez McKinsey. J'ai un meeting avec Mme Dupont dans 5 minutes et mon badge invité est en cours d'activation à l'accueil principal. Vous pouvez me laisser passer ? J'ai vraiment les mains prises avec tous ces documents. »\n\nIl tient effectivement une pile de dossiers et une mallette de présentation. Il sourit, semble pressé et professionnel.",
+        content: "Vous êtes à la réception d'ROOMCA Corp. Un homme bien habillé, l'air pressé, s'approche du badge reader. Il ne semble pas avoir de badge.\n\n— « Bonjour ! Je suis Martin Leblanc, consultant chez McKinsey. J'ai un meeting avec Mme Dupont dans 5 minutes et mon badge invité est en cours d'activation à l'accueil principal. Vous pouvez me laisser passer ? J'ai vraiment les mains prises avec tous ces documents. »\n\nIl tient effectivement une pile de dossiers et une mallette de présentation. Il sourit, semble pressé et professionnel.",
       },
       {
         type: 'decision',
@@ -235,11 +235,11 @@ const SCENARIOS_CONTENT = [
     blocks: [
       {
         type: 'text',
-        content: "Vous venez de finaliser un rapport financier hautement confidentiel pour la direction d'ACME Corp. Le document contient les projections de fusion-acquisition pour les 18 prochains mois.\n\nVous souhaitez l'envoyer à votre directrice Marie Dupont (marie.dupont@acme-corp.com). Pressé(e), vous tapez 'marie' dans le champ destinataire et sélectionnez la première suggestion qui apparaît dans votre liste de contacts...",
+        content: "Vous venez de finaliser un rapport financier hautement confidentiel pour la direction d'ROOMCA Corp. Le document contient les projections de fusion-acquisition pour les 18 prochains mois.\n\nVous souhaitez l'envoyer à votre directrice Marie Dupont (marie.dupont@roomca-corp.com). Pressé(e), vous tapez 'marie' dans le champ destinataire et sélectionnez la première suggestion qui apparaît dans votre liste de contacts...",
       },
       {
         type: 'email',
-        from: 'vous@acme-corp.com',
+        from: 'vous@roomca-corp.com',
         subject: 'Rapport financier Q1 2026 — STRICTEMENT CONFIDENTIEL',
         body: "Bonjour Marie,\n\nVeuillez trouver ci-joint le rapport financier confidentiel Q1 2026 incluant les projections de fusion-acquisition pour les 18 prochains mois, les valorisations des cibles potentielles, et la stratégie de communication associée.\n\nCe document est strictement confidentiel et ne doit pas être partagé en dehors de la direction.\n\nCordialement",
         linkText: '📎 Rapport_Financier_Q1_2026_FA_CONFIDENTIEL.pdf (2,4 MB)',
@@ -247,7 +247,7 @@ const SCENARIOS_CONTENT = [
       },
       {
         type: 'decision',
-        question: "Vous venez d'envoyer l'email et réalisez immédiatement que vous l'avez envoyé à 'marie.dupont@gmail.com' (contact personnel) au lieu de 'marie.dupont@acme-corp.com'. Que faites-vous ?",
+        question: "Vous venez d'envoyer l'email et réalisez immédiatement que vous l'avez envoyé à 'marie.dupont@gmail.com' (contact personnel) au lieu de 'marie.dupont@roomca-corp.com'. Que faites-vous ?",
         options: [
           { text: "Rien — c'est peut-être son adresse personnelle correcte de toute façon", correct: false, feedback: "Non ! Tout document confidentiel envoyé en dehors du domaine de l'entreprise constitue une violation de données, peu importe le destinataire." },
           { text: "Signaler immédiatement l'incident à la DSI et à votre manager", correct: true, feedback: "Oui ! Signaler rapidement permet de déclencher la procédure de gestion des incidents : contacter Gmail pour suppression, notifier le DPO, évaluer l'impact RGPD." },
