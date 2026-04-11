@@ -55,8 +55,8 @@
   --info:     var(--cyan);
 
   /* ---- Typo ---- */
-  --mono:       'Share Tech Mono', monospace;
-  --font-title: 'Monda', sans-serif;
+  --mono:       'Roboto', sans-serif;
+  --font-title: 'Roboto', sans-serif;
   --font-body:  'Roboto', sans-serif;
 
   /* ---- Radius ---- */
@@ -135,6 +135,12 @@ body::before {
 }
 
 h1, h2, h3, h4, h5 { font-family: var(--font-title); letter-spacing: 0.02em; }
+
+/* ── Landing page : restaure les fontes originales ── */
+.landing-page {
+  --mono:       'Share Tech Mono', monospace;
+  --font-title: 'Monda', sans-serif;
+}
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; font-family: var(--font-body); border: none; outline: none; }
 input, textarea, select { font-family: var(--font-body); outline: none; }

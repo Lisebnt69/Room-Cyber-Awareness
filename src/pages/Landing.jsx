@@ -858,7 +858,7 @@ export default function Landing() {
   const onStart = () => navigate('/login')
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
+    <div className="landing-page" style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
       <Navbar onLogin={onLogin} />
       <HeroSection onStart={onStart} setModal={setModal} />
       <ProblemsSection />
