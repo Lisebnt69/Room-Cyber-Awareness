@@ -390,11 +390,42 @@ function compressImage(file, maxWidth = 1200, quality = 0.78) {
 
 function PhotoEditor({ block, onChange }) {
   const imgRef = useRef(null)
+  const fsImgRef = useRef(null)
   const fileRef = useRef(null)
-  const [addingZone, setAddingZone] = useState(false)
+  const [fullscreen, setFullscreen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [selectedZoneId, setSelectedZoneId] = useState(null)
+  const [interaction, setInteraction] = useState(null)
+  // interaction shapes:
+  //  { type: 'drawing',  startX, startY, x, y, w, h }
+  //  { type: 'moving',   id, offsetX, offsetY }
+  //  { type: 'resizing', id, corner, start: {x,y,w,h} }
 
   const update = (k, v) => onChange({ ...block, [k]: v })
+  const zones = block.zones || []
+
+  // Refs to always access latest state inside window event handlers
+  const blockRef = useRef(block)
+  blockRef.current = block
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+  const fullscreenRef = useRef(fullscreen)
+  fullscreenRef.current = fullscreen
+
+  const writeZones = (newZones) => onChangeRef.current({ ...blockRef.current, zones: newZones })
+  const getActiveImgEl = () => (fullscreenRef.current ? fsImgRef : imgRef).current
+
+  const getPercentFromEvent = (e) => {
+    const img = getActiveImgEl()
+    if (!img) return null
+    const rect = img.getBoundingClientRect()
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    }
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0]
@@ -409,18 +440,231 @@ function PhotoEditor({ block, onChange }) {
     }
   }
 
-  const handleImageClick = (e) => {
-    if (!addingZone || !imgRef.current) return
-    const rect = imgRef.current.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 100
-    const y = ((e.clientY - rect.top) / rect.height) * 100
-    const zones = block.zones || []
-    update('zones', [...zones, { id: Date.now(), x: x - 5, y: y - 5, w: 12, h: 12, label: 'Zone', correct: true }])
-    setAddingZone(false)
+  const startDrawing = (e) => {
+    if (e.button !== 0) return
+    const pos = getPercentFromEvent(e)
+    if (!pos) return
+    e.preventDefault()
+    setSelectedZoneId(null)
+    setInteraction({ type: 'drawing', startX: pos.x, startY: pos.y, x: pos.x, y: pos.y, w: 0, h: 0 })
   }
 
-  const updateZone = (id, k, v) => update('zones', (block.zones || []).map((z) => (z.id === id ? { ...z, [k]: v } : z)))
-  const removeZone = (id) => update('zones', (block.zones || []).filter((z) => z.id !== id))
+  const startMoving = (e, zone) => {
+    if (e.button !== 0) return
+    e.stopPropagation()
+    e.preventDefault()
+    const pos = getPercentFromEvent(e)
+    if (!pos) return
+    setSelectedZoneId(zone.id)
+    setInteraction({ type: 'moving', id: zone.id, offsetX: pos.x - zone.x, offsetY: pos.y - zone.y })
+  }
+
+  const startResizing = (e, zone, corner) => {
+    if (e.button !== 0) return
+    e.stopPropagation()
+    e.preventDefault()
+    setSelectedZoneId(zone.id)
+    setInteraction({ type: 'resizing', id: zone.id, corner, start: { x: zone.x, y: zone.y, w: zone.w, h: zone.h } })
+  }
+
+  // Drag handling — single window listener, re-registered when interaction changes
+  useEffect(() => {
+    if (!interaction) return
+
+    const handleMove = (e) => {
+      const pos = getPercentFromEvent(e)
+      if (!pos) return
+      const cx = clamp(pos.x, 0, 100)
+      const cy = clamp(pos.y, 0, 100)
+
+      if (interaction.type === 'drawing') {
+        const nx = Math.min(interaction.startX, cx)
+        const ny = Math.min(interaction.startY, cy)
+        const nw = Math.abs(cx - interaction.startX)
+        const nh = Math.abs(cy - interaction.startY)
+        setInteraction({ ...interaction, x: nx, y: ny, w: nw, h: nh })
+      } else if (interaction.type === 'moving') {
+        const current = blockRef.current.zones || []
+        const z = current.find(zz => zz.id === interaction.id)
+        if (!z) return
+        const nx = clamp(cx - interaction.offsetX, 0, 100 - z.w)
+        const ny = clamp(cy - interaction.offsetY, 0, 100 - z.h)
+        writeZones(current.map(zz => (zz.id === interaction.id ? { ...zz, x: nx, y: ny } : zz)))
+      } else if (interaction.type === 'resizing') {
+        const start = interaction.start
+        const corner = interaction.corner
+        const left   = corner.includes('w') ? clamp(cx, 0, 100) : start.x
+        const top    = corner.includes('n') ? clamp(cy, 0, 100) : start.y
+        const right  = corner.includes('e') ? clamp(cx, 0, 100) : start.x + start.w
+        const bottom = corner.includes('s') ? clamp(cy, 0, 100) : start.y + start.h
+        const nx = Math.min(left, right)
+        const ny = Math.min(top, bottom)
+        const nw = Math.max(2, Math.abs(right - left))
+        const nh = Math.max(2, Math.abs(bottom - top))
+        const current = blockRef.current.zones || []
+        writeZones(current.map(zz => (zz.id === interaction.id ? { ...zz, x: nx, y: ny, w: nw, h: nh } : zz)))
+      }
+    }
+
+    const handleUp = () => {
+      if (interaction.type === 'drawing' && interaction.w >= 3 && interaction.h >= 3) {
+        const current = blockRef.current.zones || []
+        const newZone = {
+          id: Date.now(),
+          x: interaction.x,
+          y: interaction.y,
+          w: interaction.w,
+          h: interaction.h,
+          label: `Zone ${current.length + 1}`,
+          correct: true,
+        }
+        writeZones([...current, newZone])
+        setSelectedZoneId(newZone.id)
+      }
+      setInteraction(null)
+    }
+
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mouseup', handleUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleUp)
+    }
+    // getPercentFromEvent reads from refs only — safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interaction])
+
+  // Escape closes fullscreen
+  useEffect(() => {
+    if (!fullscreen) return
+    const handleKey = (e) => { if (e.key === 'Escape') setFullscreen(false) }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [fullscreen])
+
+  const updateZone = (id, k, v) => update('zones', zones.map((z) => (z.id === id ? { ...z, [k]: v } : z)))
+  const removeZone = (id) => {
+    update('zones', zones.filter((z) => z.id !== id))
+    if (selectedZoneId === id) setSelectedZoneId(null)
+  }
+
+  // Renders the interactive image canvas — used in both normal & fullscreen mode
+  const renderImageCanvas = ({ isFullscreen }) => {
+    const activeRef = isFullscreen ? fsImgRef : imgRef
+    const containerMaxHeight = isFullscreen ? 'calc(100vh - 180px)' : '60vh'
+
+    return (
+      <div style={{
+        position: 'relative',
+        display: 'inline-block',
+        maxWidth: '100%',
+        lineHeight: 0,
+        userSelect: 'none',
+        boxShadow: isFullscreen ? '0 20px 60px rgba(0,0,0,0.6)' : 'none',
+        borderRadius: '8px',
+        overflow: 'visible',
+      }}>
+        <img
+          ref={activeRef}
+          src={block.src}
+          alt="preview"
+          draggable={false}
+          onMouseDown={startDrawing}
+          style={{
+            display: 'block',
+            maxWidth: '100%',
+            maxHeight: containerMaxHeight,
+            border: `2px solid ${interaction?.type === 'drawing' ? '#8b5cf6' : 'var(--border-subtle)'}`,
+            borderRadius: '8px',
+            cursor: interaction ? (interaction.type === 'drawing' ? 'crosshair' : 'grabbing') : 'crosshair',
+          }}
+        />
+
+        {/* Existing zones */}
+        {zones.map((z) => {
+          const isSel = selectedZoneId === z.id
+          const col = z.correct ? '#22c55e' : 'var(--red)'
+          const colRaw = z.correct ? '34,197,94' : '235,40,40'
+          return (
+            <div
+              key={z.id}
+              onMouseDown={(e) => startMoving(e, z)}
+              style={{
+                position: 'absolute',
+                left: `${z.x}%`, top: `${z.y}%`,
+                width: `${z.w}%`, height: `${z.h}%`,
+                border: `2px solid ${col}`,
+                background: `rgba(${colRaw}, ${isSel ? 0.22 : 0.15})`,
+                borderRadius: '4px',
+                cursor: interaction?.type === 'moving' && interaction.id === z.id ? 'grabbing' : 'grab',
+                boxShadow: isSel ? `0 0 0 2px rgba(${colRaw},0.35)` : 'none',
+                transition: interaction?.id === z.id ? 'none' : 'box-shadow 0.15s',
+              }}
+            >
+              {/* Label */}
+              <span style={{
+                position: 'absolute', top: '-24px', left: 0,
+                fontSize: '11px', background: col,
+                color: '#fff', padding: '3px 8px', borderRadius: '4px',
+                whiteSpace: 'nowrap', fontWeight: 500, pointerEvents: 'none',
+              }}>{z.label}</span>
+
+              {/* Size badge (bottom-right) */}
+              {isSel && (
+                <span style={{
+                  position: 'absolute', bottom: '-24px', right: 0,
+                  fontSize: '10px', fontFamily: 'var(--mono)',
+                  background: 'rgba(0,0,0,0.75)', color: '#fff',
+                  padding: '3px 7px', borderRadius: '4px',
+                  whiteSpace: 'nowrap', pointerEvents: 'none',
+                }}>{Math.round(z.w)}×{Math.round(z.h)}</span>
+              )}
+
+              {/* Resize handles — only on selected zone */}
+              {isSel && ['nw', 'ne', 'sw', 'se'].map(corner => (
+                <div
+                  key={corner}
+                  onMouseDown={(e) => startResizing(e, z, corner)}
+                  style={{
+                    position: 'absolute',
+                    width: '14px', height: '14px',
+                    background: '#fff',
+                    border: `2px solid ${col}`,
+                    borderRadius: '50%',
+                    ...(corner.includes('n') ? { top: '-8px' } : { bottom: '-8px' }),
+                    ...(corner.includes('w') ? { left: '-8px' } : { right: '-8px' }),
+                    cursor: `${corner}-resize`,
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                  }}
+                />
+              ))}
+            </div>
+          )
+        })}
+
+        {/* Draft rectangle being drawn */}
+        {interaction?.type === 'drawing' && interaction.w > 0.2 && interaction.h > 0.2 && (
+          <div style={{
+            position: 'absolute',
+            left: `${interaction.x}%`, top: `${interaction.y}%`,
+            width: `${interaction.w}%`, height: `${interaction.h}%`,
+            border: '2px dashed #8b5cf6',
+            background: 'rgba(139,92,246,0.15)',
+            borderRadius: '4px',
+            pointerEvents: 'none',
+          }}>
+            <span style={{
+              position: 'absolute', bottom: '-24px', right: 0,
+              fontSize: '10px', fontFamily: 'var(--mono)',
+              background: '#8b5cf6', color: '#fff',
+              padding: '3px 7px', borderRadius: '4px',
+              whiteSpace: 'nowrap',
+            }}>{Math.round(interaction.w)}×{Math.round(interaction.h)}</span>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -430,20 +674,26 @@ function PhotoEditor({ block, onChange }) {
           {loading ? '⏳ Compression...' : '📂 Choisir une image'}
         </button>
         {block.src && !loading && (
-          <button type="button" onClick={() => setAddingZone(!addingZone)}
-            style={{ padding: '10px 18px', background: addingZone ? 'rgba(139,92,246,0.2)' : 'transparent', border: `1px solid ${addingZone ? '#8b5cf6' : 'var(--border-subtle)'}`, color: addingZone ? '#8b5cf6' : 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px' }}>
-            {addingZone ? '✕ Annuler' : '+ Ajouter zone'}
+          <button type="button" onClick={() => setFullscreen(true)}
+            style={{ padding: '10px 18px', background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.35)', color: '#8b5cf6', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', fontWeight: 500 }}>
+            ⛶ Plein écran
           </button>
         )}
         {block.src && !loading && (
-          <button type="button" onClick={() => update('src', '')}
+          <button type="button" onClick={() => { update('src', ''); update('zones', []) }}
             style={{ padding: '10px 14px', background: 'transparent', border: '1px solid rgba(235,40,40,0.3)', color: 'var(--red)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px' }}>
             ✕ Retirer
           </button>
         )}
-        {addingZone && <span style={{ fontSize: '12px', color: '#8b5cf6', fontStyle: 'italic' }}>Cliquez sur l'image pour poser une zone</span>}
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
       </div>
+
+      {block.src && !loading && (
+        <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, padding: '10px 14px', background: 'rgba(139,92,246,0.05)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '6px' }}>
+          💡 <strong style={{ color: '#8b5cf6' }}>Cliquez-glissez</strong> sur l'image pour dessiner une zone.
+          Cliquez une zone pour la sélectionner, glissez-la pour la déplacer, et utilisez les poignées des coins pour la redimensionner.
+        </div>
+      )}
 
       {loading && (
         <div style={{ padding: '20px', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '8px', textAlign: 'center', fontSize: '13px', color: '#8b5cf6', background: 'rgba(139,92,246,0.05)' }}>
@@ -452,13 +702,8 @@ function PhotoEditor({ block, onChange }) {
       )}
 
       {!loading && block.src && (
-        <div style={{ position: 'relative', border: `2px solid ${addingZone ? '#8b5cf6' : 'var(--border-subtle)'}`, borderRadius: '8px', overflow: 'hidden', cursor: addingZone ? 'crosshair' : 'default' }} onClick={handleImageClick}>
-          <img ref={imgRef} src={block.src} alt="preview" style={{ width: '100%', display: 'block', maxHeight: '360px', objectFit: 'cover' }} />
-          {(block.zones || []).map((z) => (
-            <div key={z.id} style={{ position: 'absolute', left: `${z.x}%`, top: `${z.y}%`, width: `${z.w}%`, height: `${z.h}%`, border: `2px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, background: z.correct ? 'rgba(34,197,94,0.18)' : 'rgba(235,40,40,0.18)', borderRadius: '4px' }}>
-              <span style={{ position: 'absolute', top: '-18px', left: 0, fontSize: '10px', background: z.correct ? '#22c55e' : 'var(--red)', color: '#fff', padding: '2px 6px', borderRadius: '3px', whiteSpace: 'nowrap', fontWeight: 500 }}>{z.label}</span>
-            </div>
-          ))}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 28px' }}>
+          {renderImageCanvas({ isFullscreen: false })}
         </div>
       )}
 
@@ -473,18 +718,114 @@ function PhotoEditor({ block, onChange }) {
         </div>
       )}
 
-      {(block.zones || []).length > 0 && (
+      {zones.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={labelStyle}>ZONES DÉFINIES ({(block.zones || []).length})</div>
-          {(block.zones || []).map((z) => (
-            <div key={z.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <input value={z.label} onChange={(e) => updateZone(z.id, 'label', e.target.value)} style={{ ...inputBase, flex: 1, padding: '9px 12px', fontSize: '13px' }} />
-              <button type="button" onClick={() => updateZone(z.id, 'correct', !z.correct)} style={{ padding: '9px 14px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.1)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', whiteSpace: 'nowrap', fontWeight: 500 }}>
-                {z.correct ? '✓ Correct' : '✕ Faux'}
-              </button>
-              <button type="button" onClick={() => removeZone(z.id)} style={{ width: '36px', height: '36px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '14px', borderRadius: '6px', flexShrink: 0 }}>✕</button>
+          <div style={labelStyle}>ZONES DÉFINIES ({zones.length})</div>
+          {zones.map((z) => {
+            const isSel = selectedZoneId === z.id
+            return (
+              <div key={z.id}
+                onClick={() => setSelectedZoneId(z.id)}
+                style={{
+                  display: 'flex', gap: '8px', alignItems: 'center',
+                  padding: '8px', borderRadius: '6px', cursor: 'pointer',
+                  background: isSel ? 'rgba(139,92,246,0.08)' : 'transparent',
+                  border: `1px solid ${isSel ? 'rgba(139,92,246,0.4)' : 'transparent'}`,
+                  transition: 'all 0.12s',
+                }}
+              >
+                <input value={z.label} onClick={(e) => e.stopPropagation()} onChange={(e) => updateZone(z.id, 'label', e.target.value)}
+                  style={{ ...inputBase, flex: 1, padding: '9px 12px', fontSize: '13px' }} />
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', minWidth: '56px', textAlign: 'right' }}>
+                  {Math.round(z.w)}×{Math.round(z.h)}
+                </span>
+                <button type="button" onClick={(e) => { e.stopPropagation(); updateZone(z.id, 'correct', !z.correct) }}
+                  style={{ padding: '9px 14px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.1)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                  {z.correct ? '✓ Correct' : '✕ Faux'}
+                </button>
+                <button type="button" onClick={(e) => { e.stopPropagation(); removeZone(z.id) }}
+                  style={{ width: '36px', height: '36px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '14px', borderRadius: '6px', flexShrink: 0 }}>✕</button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* ── FULLSCREEN MAPPING OVERLAY ── */}
+      {fullscreen && block.src && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.94)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex', flexDirection: 'column',
+            animation: 'fadeIn 0.2s ease',
+          }}
+        >
+          {/* Fullscreen header */}
+          <div style={{
+            flexShrink: 0, padding: '18px 28px',
+            display: 'flex', alignItems: 'center', gap: '16px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+          }}>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '16px', fontWeight: 600, color: 'var(--text-light)' }}>
+              🖼️ Mapping plein écran
             </div>
-          ))}
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+              {zones.length} zone{zones.length !== 1 ? 's' : ''}
+            </span>
+            <div style={{ flex: 1 }} />
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span>💡 Glisser = dessiner · Cliquer = sélectionner · Poignées = redimensionner</span>
+            </div>
+            <button type="button" onClick={() => setFullscreen(false)}
+              style={{ padding: '10px 18px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-light)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', fontFamily: 'var(--mono)', letterSpacing: '0.05em' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-light)' }}
+            >
+              ✕ Fermer (Esc)
+            </button>
+          </div>
+
+          {/* Fullscreen canvas */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 60px', overflow: 'hidden' }}>
+            {renderImageCanvas({ isFullscreen: true })}
+          </div>
+
+          {/* Fullscreen footer — selected zone controls */}
+          {selectedZoneId && (() => {
+            const z = zones.find(zz => zz.id === selectedZoneId)
+            if (!z) return null
+            return (
+              <div style={{
+                flexShrink: 0, padding: '18px 28px',
+                borderTop: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex', gap: '12px', alignItems: 'center',
+                background: 'rgba(0,0,0,0.5)',
+              }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+                  ZONE SÉLECTIONNÉE
+                </span>
+                <input value={z.label} onChange={(e) => updateZone(z.id, 'label', e.target.value)}
+                  placeholder="Nom de la zone"
+                  style={{ ...inputBase, flex: 1, maxWidth: '360px' }} />
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  {Math.round(z.x)},{Math.round(z.y)} · {Math.round(z.w)}×{Math.round(z.h)}
+                </span>
+                <button type="button" onClick={() => updateZone(z.id, 'correct', !z.correct)}
+                  style={{ padding: '11px 18px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.1)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                  {z.correct ? '✓ Bonne zone' : '✕ Fausse zone'}
+                </button>
+                <button type="button" onClick={() => removeZone(z.id)}
+                  style={{ padding: '11px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                >
+                  🗑 Supprimer
+                </button>
+              </div>
+            )
+          })()}
         </div>
       )}
     </div>
