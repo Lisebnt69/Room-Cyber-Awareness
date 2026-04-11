@@ -39,7 +39,7 @@ export const webhookService = {
   },
 
   // Test webhook delivery
-  async testWebhook(webhookId, event) {
+  async testWebhook(_webhookId, _event) {
     return {
       success: true,
       statusCode: 200,
@@ -68,7 +68,7 @@ export const webhookService = {
   },
 
   // Get delivery logs
-  getDeliveryLogs(webhookId, limit = 50) {
+  getDeliveryLogs(webhookId, _limit = 50) {
     return Array(20).fill(0).map((_, i) => ({
       id: `del_${i}`,
       webhookId,

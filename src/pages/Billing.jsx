@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLang } from '../context/LangContext'
 import { PLANS, createPaymentIntent } from '../services/stripe'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
@@ -10,8 +9,7 @@ import Toast from '../components/Toast'
 
 export default function Billing() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
-  const { t } = useLang()
+  const { logout } = useAuth()
   const [currentPlan, setCurrentPlan] = useState('free')
   const [showUpgrade, setShowUpgrade] = useState(null)
   const [toast, setToast] = useState(null)
@@ -58,7 +56,7 @@ export default function Billing() {
         setToast({ msg: 'Upgrade successful! Welcome to ' + PLANS[showUpgrade.toUpperCase()]?.name, type: 'success' })
         setLoading(false)
       }, 1500)
-    } catch (error) {
+    } catch {
       setToast({ msg: 'Payment failed', type: 'error' })
       setLoading(false)
     }

@@ -1,8 +1,6 @@
 import { calculateLevel, pointsToNextLevel, getLevelPercentage, BADGES } from '../data/gamificationData'
-import { useLang } from '../context/LangContext'
 
 export default function GamificationWidget({ userStats = {} }) {
-  const { t } = useLang()
   const {
     points = 0,
     badges = [],

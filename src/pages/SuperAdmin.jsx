@@ -261,190 +261,6 @@ export default function SuperAdmin() {
     )
   }
 
-  const toggleScenarioModule = (moduleKey) => {
-    setEditScenarioForm(prev => {
-      const current = prev || {}
-      const currentModules = Array.isArray(current.modules) ? current.modules : []
-      const modules = currentModules.includes(moduleKey)
-        ? currentModules.filter(m => m !== moduleKey)
-        : [...currentModules, moduleKey]
-      return { ...current, modules }
-    })
-  }
-
-  const onScenarioPhotoUpload = (file) => {
-    if (!file) return
-    const localUrl = URL.createObjectURL(file)
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      coverImage: localUrl,
-      coverImageName: file.name,
-    }))
-    if (!((editScenarioForm?.modules || []).includes('photo'))) toggleScenarioModule('photo')
-  }
-
-  const addHotspotFromImageClick = (e) => {
-    if (!editScenarioForm?.coverImage) return
-    const rect = e.currentTarget.getBoundingClientRect()
-    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100))
-    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100))
-    setEditScenarioForm(prev => {
-      const current = prev || {}
-      const photoHotspots = Array.isArray(current.photoHotspots) ? current.photoHotspots : []
-      return {
-        ...current,
-        modules: Array.from(new Set([...(current.modules || []), 'mapping'])),
-        photoHotspots: [...photoHotspots, { id: createId(), x: Math.round(x), y: Math.round(y), label: lang === 'fr' ? 'Indice' : 'Clue', action: 'clue' }],
-      }
-    })
-  }
-
-  const updateHotspot = (id, patch) => {
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      photoHotspots: (prev?.photoHotspots || []).map(h => h.id === id ? { ...h, ...patch } : h),
-    }))
-  }
-
-  const removeHotspot = (id) => {
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      photoHotspots: (prev?.photoHotspots || []).filter(h => h.id !== id),
-    }))
-  }
-
-  const addQuizQuestion = () => {
-    setEditScenarioForm(prev => {
-      const current = prev || {}
-      const quizQuestions = Array.isArray(current.quizQuestions) ? current.quizQuestions : []
-      const newQuestion = {
-        id: createId(),
-        prompt: '',
-        design: 'cards',
-        options: [
-          { id: createId(), text: '', isCorrect: true },
-          { id: createId(), text: '', isCorrect: false },
-        ],
-      }
-      return {
-        ...current,
-        modules: Array.from(new Set([...(current.modules || []), 'quiz'])),
-        quizQuestions: [...quizQuestions, newQuestion],
-      }
-    })
-  }
-
-  const updateQuizQuestion = (questionId, patch) => {
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      quizQuestions: (prev?.quizQuestions || []).map(q => q.id === questionId ? { ...q, ...patch } : q),
-    }))
-  }
-
-  const updateQuizOption = (questionId, optionId, patch) => {
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      quizQuestions: (prev?.quizQuestions || []).map(q => q.id === questionId
-        ? { ...q, options: (q.options || []).map(o => o.id === optionId ? { ...o, ...patch } : o) }
-        : q),
-    }))
-  }
-
-  const toggleScenarioModule = (moduleKey) => {
-    setEditScenarioForm(prev => {
-      const current = prev || {}
-      const currentModules = Array.isArray(current.modules) ? current.modules : []
-      const modules = currentModules.includes(moduleKey)
-        ? currentModules.filter(m => m !== moduleKey)
-        : [...currentModules, moduleKey]
-      return { ...current, modules }
-    })
-  }
-
-  const onScenarioPhotoUpload = (file) => {
-    if (!file) return
-    const localUrl = URL.createObjectURL(file)
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      coverImage: localUrl,
-      coverImageName: file.name,
-    }))
-    if (!((editScenarioForm?.modules || []).includes('photo'))) toggleScenarioModule('photo')
-  }
-
-  const addHotspotFromImageClick = (e) => {
-    if (!editScenarioForm?.coverImage) return
-    const rect = e.currentTarget.getBoundingClientRect()
-    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100))
-    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100))
-    setEditScenarioForm(prev => {
-      const current = prev || {}
-      const photoHotspots = Array.isArray(current.photoHotspots) ? current.photoHotspots : []
-      return {
-        ...current,
-        modules: Array.from(new Set([...(current.modules || []), 'mapping'])),
-        photoHotspots: [...photoHotspots, { id: createId(), x: Math.round(x), y: Math.round(y), label: lang === 'fr' ? 'Indice' : 'Clue', action: 'clue' }],
-      }
-    })
-  }
-
-  const updateHotspot = (id, patch) => {
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      photoHotspots: (prev?.photoHotspots || []).map(h => h.id === id ? { ...h, ...patch } : h),
-    }))
-  }
-
-  const removeHotspot = (id) => {
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      photoHotspots: (prev?.photoHotspots || []).filter(h => h.id !== id),
-    }))
-  }
-
-  const addQuizQuestion = () => {
-    setEditScenarioForm(prev => {
-      const current = prev || {}
-      const quizQuestions = Array.isArray(current.quizQuestions) ? current.quizQuestions : []
-      const newQuestion = {
-        id: createId(),
-        prompt: '',
-        design: 'cards',
-        options: [
-          { id: createId(), text: '', isCorrect: true },
-          { id: createId(), text: '', isCorrect: false },
-        ],
-      }
-      return {
-        ...current,
-        modules: Array.from(new Set([...(current.modules || []), 'quiz'])),
-        quizQuestions: [...quizQuestions, newQuestion],
-      }
-    })
-  }
-
-  const updateQuizQuestion = (questionId, patch) => {
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      quizQuestions: (prev?.quizQuestions || []).map(q => q.id === questionId ? { ...q, ...patch } : q),
-    }))
-  }
-
-  const updateQuizOption = (questionId, optionId, patch) => {
-    setEditScenarioForm(prev => ({
-      ...(prev || {}),
-      quizQuestions: (prev?.quizQuestions || []).map(q => q.id === questionId
-        ? { ...q, options: (q.options || []).map(o => o.id === optionId ? { ...o, ...patch } : o) }
-        : q),
-    }))
-  }
-
-  const getScenarioModulesLabel = (scenario) => {
-    const modules = Array.isArray(scenario.modules) ? scenario.modules : []
-    if (!modules.length) return lang === 'fr' ? 'Aucun module' : 'No modules'
-    return modules.map(m => moduleLabels[m]?.[lang] || m).join(' · ')
-  }
-
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#000', color: 'var(--text-light)' }}>
       {toast && <Toast message={toast} type="success" />}
@@ -1057,7 +873,6 @@ export default function SuperAdmin() {
                   ))}
                 </tbody>
               </table>
-              </div>
             </div>
           )}
 
@@ -1200,7 +1015,6 @@ export default function SuperAdmin() {
                   ))}
                 </tbody>
               </table>
-              </div>
             </div>
           )}
 
@@ -1263,7 +1077,6 @@ export default function SuperAdmin() {
                   ))}
                 </tbody>
               </table>
-              </div>
             </div>
           )}
 

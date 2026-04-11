@@ -129,7 +129,7 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
       case 'quiz':
         return (
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-light)', marginBottom: '6px', fontStyle: block.question ? 'normal' : 'italic', color: block.question ? 'var(--text-light)' : 'var(--text-muted)' }}>
+            <div style={{ fontSize: '12px', marginBottom: '6px', fontStyle: block.question ? 'normal' : 'italic', color: block.question ? 'var(--text-light)' : 'var(--text-muted)' }}>
               {block.question || 'Aucune question'}
             </div>
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
@@ -936,7 +936,6 @@ export default function ScenarioBuilder({
       }
 
       case 'puzzle': {
-        const pLabels = { reorder: '🔀 RÉORDONNER', memory: '🃏 MÉMORY', crossword: '📐 MOTS CROISÉS' }
         if (b.puzzleType === 'memory') {
           const pairs = b.pairs || []
           const cards = [...pairs.map((p, i) => ({ id: `a${i}`, pairIdx: i, face: p.a })), ...pairs.map((p, i) => ({ id: `b${i}`, pairIdx: i, face: p.b }))]

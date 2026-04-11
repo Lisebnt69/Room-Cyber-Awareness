@@ -102,24 +102,8 @@ export const teamsIntegration = {
 
   async sendCard(title, content) {
     try {
-      // Adaptive Card format
-      const card = {
-        type: 'message',
-        attachments: [{
-          contentType: 'application/vnd.microsoft.card.adaptive',
-          contentUrl: null,
-          content: {
-            $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-            type: 'AdaptiveCard',
-            version: '1.4',
-            body: [
-              { type: 'TextBlock', text: title, weight: 'bolder', size: 'large' },
-              { type: 'TextBlock', text: content, wrap: true }
-            ]
-          }
-        }]
-      }
-      console.log('[Teams] Card sent:', title)
+      // Adaptive Card format (mock: we just log the payload)
+      console.log('[Teams] Card sent:', title, content)
       return { success: true }
     } catch (error) {
       return { error: error.message }
@@ -131,7 +115,7 @@ export const teamsIntegration = {
 export const emailIntegration = {
   async configureSmtp(config) {
     try {
-      const { host, port, user, password } = config
+      const { host, port, user } = config
       if (!host || !port || !user) {
         throw new Error('Missing SMTP configuration')
       }
@@ -142,7 +126,7 @@ export const emailIntegration = {
     }
   },
 
-  async sendEmail(to, subject, html) {
+  async sendEmail(to, subject, _html) {
     try {
       // In production: Use nodemailer or similar
       console.log(`[Email] To: ${to}\nSubject: ${subject}`)

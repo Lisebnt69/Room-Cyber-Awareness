@@ -25,7 +25,7 @@ const mockUsers = [
 export default function Leaderboards() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const { t, lang } = useLang()
+  const { t } = useLang()
   const [activeTab, setActiveTab] = useState('global')
 
   const handleLogout = () => {

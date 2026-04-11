@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLang } from '../context/LangContext'
 import { complianceService } from '../services/compliance'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
@@ -9,7 +8,6 @@ import LangToggle from '../components/LangToggle'
 export default function Compliance() {
   const navigate = useNavigate()
   const { logout } = useAuth()
-  const { t } = useLang()
   const [selectedFramework, setSelectedFramework] = useState(null)
   const [filter, setFilter] = useState('all')
 

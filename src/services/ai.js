@@ -92,7 +92,7 @@ export const aiRecommendations = {
 
   // Anomaly detection
   detectAnomalies(userBehavior = {}) {
-    const { successRate, avgSessionTime, clickPattern, loginFrequency } = userBehavior
+    const { successRate, avgSessionTime } = userBehavior
 
     const anomalies = []
 
@@ -117,7 +117,7 @@ export const aiRecommendations = {
 
   // Churn prediction
   predictChurn(userHistory = {}) {
-    const { daysSinceLastActivity = 0, engagementScore = 0, streak = 0 } = userHistory
+    const { daysSinceLastActivity = 0, engagementScore = 0 } = userHistory
 
     if (daysSinceLastActivity > 30) {
       return {

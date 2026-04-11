@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const ROLES = {
   PLAYER: 'player',
   ADMIN: 'admin',
@@ -23,8 +24,9 @@ export function AuthProvider({ children }) {
     const stored = localStorage.getItem('roomca_user')
     if (stored) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUser(JSON.parse(stored))
-      } catch (e) {
+      } catch {
         localStorage.removeItem('roomca_user')
       }
     }
@@ -55,6 +57,7 @@ export function AuthProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext)
 }

@@ -420,7 +420,7 @@ function SceneRenderer({ scene, lang }) {
 // ─────────────────────────────────────────────────────────────────
 //  Hotspot overlay layer
 // ─────────────────────────────────────────────────────────────────
-function HotspotOverlay({ hotspots, foundIds, onDiscover, lang }) {
+function HotspotOverlay({ hotspots, foundIds, onDiscover }) {
   const [hovered, setHovered] = useState(null)
   return (
     <>

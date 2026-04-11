@@ -1,8 +1,6 @@
 import { calculateLevel } from '../data/gamificationData'
-import { useLang } from '../context/LangContext'
 
 export default function Leaderboard({ users = [], type = 'global', title = 'Leaderboard' }) {
-  const { t, lang } = useLang()
 
   const sortedUsers = [...users].sort((a, b) => (b.points || 0) - (a.points || 0))
   const topUsers = sortedUsers.slice(0, 10)

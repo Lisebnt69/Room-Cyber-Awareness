@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLang } from '../context/LangContext'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
@@ -80,8 +79,7 @@ function ABComparisonCard({ campaign }) {
 
 export default function Campaigns() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
-  const { t } = useLang()
+  const { logout } = useAuth()
   const [campaigns, setCampaigns] = useState(mockCampaigns)
   const [showNewCampaign, setShowNewCampaign] = useState(false)
   const [showTemplate, setShowTemplate] = useState(null)

@@ -113,7 +113,6 @@ export default function AIChatbot() {
   ])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
-  const [error, setError] = useState(null)
   const endRef = useRef(null)
   const clientRef = useRef(null)
 
@@ -132,7 +131,6 @@ export default function AIChatbot() {
     const msg = (text || input).trim()
     if (!msg || streaming) return
     setInput('')
-    setError(null)
 
     const userMessage = { role: 'user', content: msg }
     const newMessages = [...messages, userMessage]
@@ -194,7 +192,6 @@ export default function AIChatbot() {
         updated[updated.length - 1] = { role: 'assistant', content: errMsg }
         return updated
       })
-      setError(errMsg)
     } finally {
       setStreaming(false)
     }
