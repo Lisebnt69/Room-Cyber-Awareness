@@ -19,6 +19,32 @@ function useTimer(initial, running) {
   return { display: `${mm}:${ss}`, seconds }
 }
 
+function ConfirmDialog({ title, subtitle, confirmLabel, cancelLabel, onConfirm, onCancel, danger = true }) {
+  return (
+    <div
+      onClick={onCancel}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', backdropFilter: 'blur(4px)' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#0a0a0a', border: '1px solid var(--border)', borderTop: `2px solid ${danger ? 'var(--red)' : '#f59e0b'}`, maxWidth: '440px', width: '100%', padding: '32px', animation: 'fadeInUp 0.25s ease' }}
+      >
+        <div style={{ fontFamily: 'var(--font-title)', fontSize: '20px', color: 'var(--text-light)', marginBottom: '10px' }}>{title}</div>
+        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px' }}>{subtitle}</div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+          <button className="btn-secondary" onClick={onCancel} style={{ padding: '10px 20px', fontSize: '12px' }}>{cancelLabel}</button>
+          <button
+            onClick={onConfirm}
+            style={{ padding: '10px 20px', fontFamily: 'var(--font-title)', fontSize: '12px', letterSpacing: '0.08em', background: danger ? 'rgba(235,40,40,0.15)' : 'rgba(245,158,11,0.15)', border: `1px solid ${danger ? 'var(--red)' : '#f59e0b'}`, color: danger ? 'var(--red)' : '#f59e0b', cursor: 'pointer', transition: 'all 0.2s' }}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function PhaseIntro({ onStart, previewScenario }) {
   const { t } = useLang()
   const [step, setStep] = useState(0)
@@ -82,8 +108,10 @@ function PhaseIntro({ onStart, previewScenario }) {
   )
 }
 
-function PhaseInbox({ onComplete, score, setScore, previewScenario }) {
+function PhaseInbox({ onComplete, score, setScore, previewScenario, onRestart, onQuit }) {
   const { t, lang } = useLang()
+  const [paused, setPaused] = useState(false)
+  const [confirm, setConfirm] = useState(null) // 'restart' | 'quit' | null
   const defaultEmails = lang === 'en' ? emailsEn : emailsFr
   const previewEmail = previewScenario ? {
     id: 999,
@@ -110,7 +138,7 @@ function PhaseInbox({ onComplete, score, setScore, previewScenario }) {
   const [showHint, setShowHint] = useState(null)
   const [glitch, setGlitch] = useState(false)
   const [classified, setClassified] = useState({})
-  const timer = useTimer(900, true)
+  const timer = useTimer(900, !paused && !confirm)
 
   const discoverClue = (clue) => {
     if (found.includes(clue.id)) return
@@ -143,9 +171,33 @@ function PhaseInbox({ onComplete, score, setScore, previewScenario }) {
             </div>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            onClick={() => setPaused(p => !p)}
+            title={paused ? t('playerResume') : t('playerPause')}
+            style={{ padding: '8px 14px', fontFamily: 'var(--mono)', fontSize: '11px', letterSpacing: '0.08em', background: paused ? 'rgba(34,197,94,0.12)' : 'transparent', border: `1px solid ${paused ? '#22c55e' : 'var(--border-subtle)'}`, color: paused ? '#22c55e' : 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.2s' }}
+          >
+            {paused ? t('playerResume') : t('playerPause')}
+          </button>
+          <button
+            onClick={() => setConfirm('restart')}
+            title={t('playerRestart')}
+            style={{ padding: '8px 14px', fontFamily: 'var(--mono)', fontSize: '11px', letterSpacing: '0.08em', background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.2s' }}
+          >
+            {t('playerRestart')}
+          </button>
+          <button
+            onClick={() => setConfirm('quit')}
+            title={t('playerQuit')}
+            style={{ padding: '8px 14px', fontFamily: 'var(--mono)', fontSize: '11px', letterSpacing: '0.08em', background: 'transparent', border: '1px solid var(--red)', color: 'var(--red)', cursor: 'pointer', transition: 'all 0.2s' }}
+          >
+            {t('playerQuit')}
+          </button>
           <LangToggle />
-          <div className="tag"><span className="status-dot red" /> {t('playerInProgress')}</div>
+          <div className="tag">
+            <span className={`status-dot ${paused ? '' : 'red'}`} style={paused ? { background: '#f59e0b' } : undefined} />
+            {paused ? t('playerPausedTitle') : t('playerInProgress')}
+          </div>
         </div>
       </div>
 
@@ -276,6 +328,46 @@ function PhaseInbox({ onComplete, score, setScore, previewScenario }) {
           </div>
         </div>
       </div>
+
+      {/* Pause overlay */}
+      {paused && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', zIndex: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', backdropFilter: 'blur(6px)', animation: 'fadeIn 0.25s ease' }}>
+          <div style={{ textAlign: 'center', maxWidth: '460px' }}>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '56px', color: '#f59e0b', marginBottom: '16px' }}>⏸</div>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '28px', color: 'var(--text-light)', marginBottom: '10px' }}>{t('playerPausedTitle')}</div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '28px' }}>{t('playerPausedSub')}</div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button className="btn-primary" onClick={() => setPaused(false)} style={{ padding: '12px 28px' }}>{t('playerResume')}</button>
+              <button className="btn-secondary" onClick={() => setConfirm('restart')} style={{ padding: '12px 28px' }}>{t('playerRestart')}</button>
+              <button className="btn-secondary" onClick={() => setConfirm('quit')} style={{ padding: '12px 28px' }}>{t('playerQuit')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirm === 'restart' && (
+        <ConfirmDialog
+          title={t('playerConfirmRestartTitle')}
+          subtitle={t('playerConfirmRestartSub')}
+          confirmLabel={t('playerConfirmYes')}
+          cancelLabel={t('playerConfirmNo')}
+          danger={false}
+          onConfirm={() => { setConfirm(null); setPaused(false); onRestart && onRestart() }}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+
+      {confirm === 'quit' && (
+        <ConfirmDialog
+          title={t('playerConfirmQuitTitle')}
+          subtitle={t('playerConfirmQuitSub')}
+          confirmLabel={t('playerConfirmYes')}
+          cancelLabel={t('playerConfirmNo')}
+          danger={true}
+          onConfirm={() => { setConfirm(null); onQuit && onQuit() }}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
     </div>
   )
 }
@@ -355,6 +447,7 @@ export default function Player() {
   const [phase, setPhase] = useState('intro')
   const [score, setScore] = useState(0)
   const [startTime, setStartTime] = useState(null)
+  const [gameKey, setGameKey] = useState(0)
   const previewScenario = useMemo(() => {
     const params = new URLSearchParams(location.search)
     if (params.get('preview') !== '1') return null
@@ -368,6 +461,19 @@ export default function Player() {
   }, [location.search])
 
   const handleExit = () => navigate('/dashboard')
+
+  const handleRestart = () => {
+    setScore(0)
+    setStartTime(Date.now())
+    setGameKey(k => k + 1)
+    setPhase('inbox')
+  }
+
+  const handleRetryFromDebrief = () => {
+    setScore(0)
+    setGameKey(k => k + 1)
+    setPhase('intro')
+  }
 
   const handleComplete = (s) => {
     setScore(s)
@@ -387,7 +493,17 @@ export default function Player() {
     }
   }
 
-  if (phase === 'intro') return <PhaseIntro previewScenario={previewScenario} onStart={() => { setPhase('inbox'); setStartTime(Date.now()) }} />
-  if (phase === 'inbox') return <PhaseInbox previewScenario={previewScenario} onComplete={handleComplete} score={score} setScore={setScore} />
-  return <PhaseDebrief score={score} onRetry={() => { setScore(0); setPhase('intro') }} onExit={handleExit} onDashboard={() => navigate('/dashboard')} />
+  if (phase === 'intro') return <PhaseIntro key={`intro-${gameKey}`} previewScenario={previewScenario} onStart={() => { setPhase('inbox'); setStartTime(Date.now()) }} />
+  if (phase === 'inbox') return (
+    <PhaseInbox
+      key={`inbox-${gameKey}`}
+      previewScenario={previewScenario}
+      onComplete={handleComplete}
+      score={score}
+      setScore={setScore}
+      onRestart={handleRestart}
+      onQuit={handleExit}
+    />
+  )
+  return <PhaseDebrief score={score} onRetry={handleRetryFromDebrief} onExit={handleExit} onDashboard={() => navigate('/dashboard')} />
 }

@@ -267,6 +267,20 @@ export default {
   playerClickUrl: 'Real URL:',
   playerAttachment: 'Attachment',
 
+  // Player controls (pause / restart / quit)
+  playerPause: '⏸ Pause',
+  playerResume: '▶ Resume',
+  playerRestart: '↺ Restart',
+  playerQuit: '✕ Quit',
+  playerPausedTitle: 'Scenario paused',
+  playerPausedSub: 'The timer is stopped. Resume when you are ready.',
+  playerConfirmRestartTitle: 'Restart the scenario?',
+  playerConfirmRestartSub: 'Your current progress (score and clues) will be lost.',
+  playerConfirmQuitTitle: 'Quit the scenario?',
+  playerConfirmQuitSub: 'You will lose your progress and return to the dashboard.',
+  playerConfirmYes: 'Confirm',
+  playerConfirmNo: 'Cancel',
+
   // Debrief
   debriefSuccess: 'Investigation Complete',
   debriefFailure: 'Mission Failed',
