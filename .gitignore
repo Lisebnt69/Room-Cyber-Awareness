@@ -32,3 +32,8 @@ server/*.db-wal
 .env
 .env.local
 .env.*.local
+
+.mcp.json
+.env
+node_modules/
+dist/

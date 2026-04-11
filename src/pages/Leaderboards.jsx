@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '/roomca-logo.png'
+import BrandLogo from '../components/BrandLogo'
 import LangToggle from '../components/LangToggle'
 import Leaderboard from '../components/Leaderboard'
 
@@ -37,14 +37,11 @@ export default function Leaderboards() {
   const deptUsers = mockUsers.filter(u => u.dept === user?.name?.split(' ')[1] || true)
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-black)', position: 'relative' }}>
+      <div className="aurora-bg" style={{ opacity: 0.35 }} />
       {/* Navigation */}
       <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <img
-  src={Logo}
-  alt="ROOMCA"
-  style={{ height: '32px', width: 'auto', display: 'block' }}
-/>
+        <BrandLogo height={32} />
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <LangToggle />
           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>

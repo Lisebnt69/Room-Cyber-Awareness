@@ -69,7 +69,40 @@ db.exec(`
     assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     completed_at DATETIME
   );
+
+  CREATE TABLE IF NOT EXISTS departments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS players (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    department_id INTEGER,
+    email TEXT NOT NULL,
+    name TEXT NOT NULL,
+    status TEXT DEFAULT 'active',
+    license INTEGER DEFAULT 1,
+    score REAL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS department_scenarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    department_id INTEGER NOT NULL,
+    scenario_id INTEGER NOT NULL,
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(department_id, scenario_id)
+  );
 `)
+
+// Migrations: add columns that don't exist yet (SQLite has no IF NOT EXISTS on ADD COLUMN)
+const tryAlter = (sql) => { try { db.exec(sql) } catch { /* column already exists */ } }
+tryAlter('ALTER TABLE scenarios ADD COLUMN audio_url TEXT')
+tryAlter('ALTER TABLE scenarios ADD COLUMN audio_volume INTEGER DEFAULT 50')
+tryAlter('ALTER TABLE scenario_blocks ADD COLUMN data_json TEXT')
 
 // Seed if empty
 const companyCount = db.prepare('SELECT COUNT(*) as n FROM companies').get().n

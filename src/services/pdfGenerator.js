@@ -24,7 +24,7 @@ async function loadJsPDF() {
 // Load logo as base64 via fetch (avoids canvas taint issues)
 async function getLogoBase64() {
   try {
-    const res = await fetch('/roomca-logo.png')
+    const res = await fetch('/assets/roomca-logo-dark.png')
     const blob = await res.blob()
     return await new Promise((resolve) => {
       const reader = new FileReader()

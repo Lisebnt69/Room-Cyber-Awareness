@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import Logo from '/roomca-logo.png'
-import LangToggle from '../components/LangToggle'
+import PageHeader from '../components/PageHeader'
 import { generateReportPDF } from '../services/pdfGenerator'
 import { businessIntelligence } from '../services/businessIntelligence'
 
@@ -182,9 +179,7 @@ function ROICalculator({ onGenerate }) {
   )
 }
 
-export default function Reports() {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
+export default function Reports({ embedded = false }) {
   const [selected, setSelected] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [period, setPeriod] = useState('Dernier mois')
@@ -227,18 +222,10 @@ export default function Reports() {
     setGenerating(false)
   }
 
-  const handleLogout = () => { logout(); navigate('/login') }
-
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
-      <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <img src={Logo} alt="ROOMCA" style={{ height: '32px', width: 'auto', display: 'block' }} />
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <LangToggle />
-          <button onClick={() => navigate('/admin')} style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}>← Dashboard</button>
-          <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>Logout</button>
-        </div>
-      </nav>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', position: 'relative' }}>
+      {!embedded && <div className="aurora-bg" style={{ opacity: 0.4 }} />}
+      {!embedded && <PageHeader title="📑 Centre de Rapports" subtitle="Génération PDF / CSV exécutifs et conformité" />}
 
       <div style={{ padding: '40px' }}>
         <h1 style={{ fontSize: '36px', color: 'var(--text-primary)', marginBottom: '8px' }}>📑 Centre de Rapports</h1>

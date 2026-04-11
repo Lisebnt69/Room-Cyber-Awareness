@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
-import Logo from '/roomca-logo.png'
+import BrandLogo from '../components/BrandLogo'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
@@ -172,6 +172,8 @@ export default function SuperAdmin() {
       plays: data.plays || 0,
       score: data.score || 0,
       mappingContext: data.mappingContext || '',
+      audio_url: data.audio_url || data.audioUrl || null,
+      audioVolume: data.audioVolume ?? 50,
     }
 
     try {
@@ -297,7 +299,8 @@ export default function SuperAdmin() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#000', color: 'var(--text-light)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', position: 'relative' }}>
+      <div className="aurora-bg" style={{ opacity: 0.4 }} />
       {toast && <Toast message={toast} type="success" />}
 
       <Modal isOpen={modal?.type === 'addCompany'} onClose={() => setModal(null)} title={t('saAdd')}>
@@ -392,7 +395,7 @@ export default function SuperAdmin() {
                 style={{
                   width: '100%',
                   padding: '10px 12px',
-                  background: '#0d0d0d',
+                  background: 'var(--bg-input)',
                   border: '1px solid var(--border)',
                   color: 'var(--text-light)',
                   fontFamily: 'var(--font-body)',
@@ -424,7 +427,7 @@ export default function SuperAdmin() {
                 style={{
                   width: '100%',
                   padding: '10px 12px',
-                  background: '#0d0d0d',
+                  background: 'var(--bg-input)',
                   border: '1px solid var(--border)',
                   color: 'var(--text-light)',
                   fontFamily: 'var(--font-body)',
@@ -487,7 +490,7 @@ export default function SuperAdmin() {
                 <select
                   value={editCompanyForm.plan}
                   onChange={(e) => setEditCompanyForm((f) => ({ ...f, plan: e.target.value }))}
-                  style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px', background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
                 >
                   {PLANS.map((p) => (
                     <option key={p} value={p}>
@@ -504,7 +507,7 @@ export default function SuperAdmin() {
                 <select
                   value={editCompanyForm.sector}
                   onChange={(e) => setEditCompanyForm((f) => ({ ...f, sector: e.target.value }))}
-                  style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px', background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
                 >
                   {SECTORS.map((sector) => (
                     <option key={sector} value={sector}>
@@ -521,7 +524,7 @@ export default function SuperAdmin() {
                 <select
                   value={editCompanyForm.status}
                   onChange={(e) => setEditCompanyForm((f) => ({ ...f, status: e.target.value }))}
-                  style={{ width: '100%', padding: '10px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px', background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '13px' }}
                 >
                   {STATUS_OPTIONS.map((status) => (
                     <option key={status} value={status}>
@@ -575,7 +578,7 @@ export default function SuperAdmin() {
                 style={{
                   padding: '10px 16px',
                   background: 'rgba(235,40,40,0.1)',
-                  border: '1px solid rgba(235,40,40,0.3)',
+                  border: '1px solid var(--border-hover)',
                   color: 'var(--red)',
                   cursor: 'pointer',
                   fontSize: '15px',
@@ -592,10 +595,12 @@ export default function SuperAdmin() {
 
       <aside
         style={{
-          width: '240px',
+          width: '260px',
           flexShrink: 0,
-          background: '#080808',
-          borderRight: '1px solid var(--border-subtle)',
+          background: 'var(--glass-bg-strong)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          borderRight: '1px solid var(--border)',
           display: 'flex',
           flexDirection: 'column',
           position: 'fixed',
@@ -605,66 +610,77 @@ export default function SuperAdmin() {
           zIndex: 50,
         }}
       >
-        <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <img src={Logo} alt="ROOMCA" style={{ height: '32px', width: 'auto', display: 'block' }} />
+        <div style={{ padding: '28px 24px 24px', borderBottom: '1px solid var(--border)' }}>
+          <BrandLogo height={36} />
 
           <div
             style={{
-              marginTop: '12px',
-              padding: '8px 10px',
-              background: 'rgba(235,40,40,0.12)',
-              border: '1px solid rgba(235,40,40,0.3)',
+              marginTop: '14px',
+              padding: '12px 14px',
+              background: 'var(--grad-aurora-soft)',
+              border: '1px solid var(--border-hover)',
+              borderRadius: 'var(--r-md)',
             }}
           >
-            <div style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--red)', letterSpacing: '0.15em' }}>
-              SUPER ADMIN
+            <div style={{ fontSize: '11px', color: 'var(--violet)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              ⚡ Super Admin
             </div>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
               {t('saAccess')}
             </div>
           </div>
         </div>
 
         <nav style={{ flex: 1, padding: '16px 0' }} role="navigation" aria-label="Main navigation">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveNav(item.id)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 24px',
-                background: activeNav === item.id ? 'rgba(235,40,40,0.08)' : 'transparent',
-                borderLeft: activeNav === item.id ? '2px solid var(--red)' : '2px solid transparent',
-                color: activeNav === item.id ? 'var(--text-light)' : 'var(--text-muted)',
-                fontSize: '13px',
-                fontFamily: 'var(--font-body)',
-                transition: 'all 0.15s',
-                cursor: 'pointer',
-              }}
-              aria-current={activeNav === item.id ? 'page' : undefined}
-              aria-label={`Navigate to ${item.label}`}
-            >
-              <span style={{ fontSize: '16px' }} aria-hidden="true">
-                {item.icon}
-              </span>
-              {item.label}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = activeNav === item.id
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveNav(item.id)}
+                style={{
+                  width: 'calc(100% - 16px)',
+                  margin: '2px 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '11px 16px',
+                  background: isActive ? 'var(--grad-aurora-soft)' : 'transparent',
+                  border: isActive ? '1px solid var(--border-hover)' : '1px solid transparent',
+                  borderRadius: 'var(--r-md)',
+                  color: isActive ? 'var(--violet)' : 'var(--text-secondary)',
+                  fontSize: '13px',
+                  fontWeight: isActive ? 600 : 500,
+                  fontFamily: 'var(--font-body)',
+                  transition: 'all 0.2s var(--ease-quick)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'var(--bg-muted)' }}
+                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                aria-current={isActive ? 'page' : undefined}
+                aria-label={`Navigate to ${item.label}`}
+              >
+                <span style={{ fontSize: '16px', opacity: isActive ? 1 : 0.7 }} aria-hidden="true">
+                  {item.icon}
+                </span>
+                <span style={{ flex: 1 }}>{item.label}</span>
+              </button>
+            )
+          })}
         </nav>
 
-        <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border-subtle)' }}>
+        <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)' }}>
           <LangToggle style={{ marginBottom: '12px', width: '100%', justifyContent: 'center' }} />
-          <div style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '4px' }}>{user?.name}</div>
+          <div style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 600, marginBottom: '2px' }}>{user?.name}</div>
+          <div style={{ fontSize: '11px', color: 'var(--violet)', marginBottom: '12px' }}>Super Administrator</div>
           <button
             onClick={() => {
               logout()
               navigate('/login')
             }}
             className="btn-secondary"
-            style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '15px', marginTop: '8px' }}
+            style={{ width: '100%', justifyContent: 'center', padding: '10px', fontSize: '13px' }}
             aria-label="Logout"
           >
             {t('logout')}
@@ -672,15 +688,17 @@ export default function SuperAdmin() {
         </div>
       </aside>
 
-      <main style={{ marginLeft: '240px', flex: 1 }}>
+      <main style={{ marginLeft: '260px', flex: 1, position: 'relative', zIndex: 1 }}>
         <div
           style={{
-            padding: '20px 40px',
-            borderBottom: '1px solid var(--border-subtle)',
+            padding: '24px 40px',
+            borderBottom: '1px solid var(--border)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: '#080808',
+            background: 'var(--glass-bg-strong)',
+            backdropFilter: 'var(--glass-blur)',
+            WebkitBackdropFilter: 'var(--glass-blur)',
             position: 'sticky',
             top: 0,
             zIndex: 40,

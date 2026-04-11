@@ -1,12 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import Logo from '/roomca-logo.png'
-import LangToggle from '../components/LangToggle'
+import PageHeader from '../components/PageHeader'
 
 export default function WhiteLabel() {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
   const [config, setConfig] = useState({
     brandName: 'ROOMCA',
     primaryColor: '#eb2828',
@@ -19,22 +14,10 @@ export default function WhiteLabel() {
     hideRoomcaBranding: false
   })
 
-  const handleLogout = () => { logout(); navigate('/login') }
-
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
-      <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <img
-  src={Logo}
-  alt="ROOMCA"
-  style={{ height: '32px', width: 'auto', display: 'block' }}
-/>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <LangToggle />
-          <button onClick={() => navigate('/super-admin')} style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}>← Super Admin</button>
-          <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>Logout</button>
-        </div>
-      </nav>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', position: 'relative' }}>
+      <div className="aurora-bg" style={{ opacity: 0.4 }} />
+      <PageHeader title="🎨 White-Label" subtitle="Personnalisez avec votre marque" backTo="/super-admin" backLabel="← Super Admin" />
 
       <div style={{ padding: '40px', maxWidth: '1100px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '36px', color: 'var(--text-primary)', marginBottom: '8px' }}>🎨 White-Label Configurator</h1>

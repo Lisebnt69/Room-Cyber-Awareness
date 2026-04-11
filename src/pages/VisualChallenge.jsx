@@ -561,7 +561,7 @@ function PhaseInvestigate({ scenario, onComplete, score, setScore, lang }) {
     <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', flexDirection: 'column', animation: glitch ? 'glitch 0.5s linear' : 'none' }}>
       {/* Header */}
       <div style={{ background: '#080808', borderBottom: '1px solid var(--border-subtle)', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50, flexShrink: 0 }}>
-        <img src="/roomca-logo.png" alt="RoomCA" style={{ height: '28px' }} />
+        <img src="/assets/roomca-logo-dark.png" alt="RoomCA" style={{ height: '28px' }} />
         <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
           {[
             [fr ? 'SCÉNARIO' : 'SCENARIO', scenario.title[fr ? 'fr' : 'en'].split(' ').slice(0, 3).join(' '), 'var(--text-light)'],
@@ -680,9 +680,9 @@ function PhaseDebrief({ scenario, score, onRetry, onExit }) {
   const navigate = useNavigate()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+    <div className="visual-challenge-page force-dark" style={{ minHeight: '100vh', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
       <div className="cyber-grid" style={{ position: 'fixed', inset: 0, opacity: 0.3 }} />
-      <div style={{ position: 'fixed', top: '20px', right: '24px', zIndex: 10 }}><LangToggle /></div>
+      <div style={{ position: 'fixed', top: '20px', right: '24px', zIndex: 10 }}><LangToggle showTheme={false} /></div>
       <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '680px', animation: 'fadeInUp 0.6s ease' }}>
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ fontFamily: 'var(--font-title)', fontSize: '48px', color: success ? '#22c55e' : 'var(--red)', marginBottom: '8px' }}>{success ? '✓' : '✗'}</div>

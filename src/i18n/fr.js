@@ -306,4 +306,19 @@ export default {
   certOperation: 'OPÉRATION : INBOX ZERO',
   certScore: 'Score :',
   certPts: 'pts',
+
+  // Hacking error overlay
+  hackErrTitle: '⚠ ERREUR · INTRUSION DÉTECTÉE',
+  hackErrLine1: '> SYSTÈME COMPROMIS',
+  hackErrLine2: '> SIGNATURE INVALIDE · 0x7F3A',
+  hackErrLine3: '> ACTION NON AUTORISÉE',
+  hackErrLine4: '> RESTAURATION DU SECTEUR...',
+  hackErrLine5: '> NOYAU EN PANIQUE — REDÉMARRAGE',
+  hackErrFooter: '█ RESTAURATION DE L\'INTERFACE...',
+
+  // Link-click warning overlay (lesson, not hacking glitch)
+  linkWarnTag: 'RÈGLE DE SÉCURITÉ',
+  linkWarnTitle: 'Ne cliquez jamais sur un lien sans le vérifier',
+  linkWarnBody: 'Avant de cliquer, survolez toujours le lien avec votre souris pour voir sa vraie destination. Si le texte affiché et l\'URL réelle ne correspondent pas, c\'est un piège.',
+  linkWarnHint: '💡 Astuce : l\'URL qui apparaît au survol est la véritable destination.',
 }

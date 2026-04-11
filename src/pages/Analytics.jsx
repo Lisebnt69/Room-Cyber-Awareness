@@ -1,9 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import Logo from '/roomca-logo.png'
-import LangToggle from '../components/LangToggle'
+import PageHeader from '../components/PageHeader'
 import { generateReportPDF } from '../services/pdfGenerator'
 
 const heatmapData = [
@@ -29,15 +26,8 @@ const vulnerabilityData = [
 
 const COLORS = ['#eb2828', '#f59e0b', '#22c55e', '#3b82f6']
 
-export default function Analytics() {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
+export default function Analytics({ embedded = false }) {
   const [dateRange, setDateRange] = useState('month')
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   const [exporting, setExporting] = useState(false)
   const handleExportPDF = async () => {
@@ -53,24 +43,9 @@ export default function Analytics() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
-      {/* Navigation */}
-      <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <img
-  src={Logo}
-  alt="ROOMCA"
-  style={{ height: '32px', width: 'auto', display: 'block' }}
-/>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <LangToggle />
-          <button onClick={() => navigate('/admin')} style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
-            ← Dashboard
-          </button>
-          <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>
-            Logout
-          </button>
-        </div>
-      </nav>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', position: 'relative' }}>
+      {!embedded && <div className="aurora-bg" style={{ opacity: 0.4 }} />}
+      {!embedded && <PageHeader title="📊 Analytics" subtitle="Vulnérabilités & tendances de sécurité" />}
 
       {/* Content */}
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px' }}>
@@ -181,8 +156,8 @@ export default function Analytics() {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(84,84,84,0.2)" />
-              <XAxis dataKey="week" tick={{ fill: '#828080', fontSize: 11 }} />
-              <YAxis tick={{ fill: '#828080', fontSize: 11 }} />
+              <XAxis dataKey="week" tick={{ fill: '#828080', fontSize: '11px' }} />
+              <YAxis tick={{ fill: '#828080', fontSize: '11px' }} />
               <Tooltip contentStyle={{ background: '#0d0d0d', border: '1px solid #333' }} />
               <Legend />
               <Line type="monotone" dataKey="avg_score" stroke="#eb2828" strokeWidth={2} name="Avg Score" />

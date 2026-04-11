@@ -1,13 +1,8 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import { complianceService } from '../services/compliance'
-import Logo from '/roomca-logo.png'
-import LangToggle from '../components/LangToggle'
+import PageHeader from '../components/PageHeader'
 
-export default function Compliance() {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
+export default function Compliance({ embedded = false }) {
   const [selectedFramework, setSelectedFramework] = useState(null)
   const [filter, setFilter] = useState('all')
 
@@ -23,22 +18,10 @@ export default function Compliance() {
     IEC62443: 82, CCPA: 88, COPPA: 91, HDS: 79, RGS: 84
   }
 
-  const handleLogout = () => { logout(); navigate('/login') }
-
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-black)' }}>
-      <nav style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
-        <img
-  src={Logo}
-  alt="ROOMCA"
-  style={{ height: '32px', width: 'auto', display: 'block' }}
-/>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <LangToggle />
-          <button onClick={() => navigate('/admin')} style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>← Dashboard</button>
-          <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '11px' }}>Logout</button>
-        </div>
-      </nav>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', position: 'relative' }}>
+      {!embedded && <div className="aurora-bg" style={{ opacity: 0.4 }} />}
+      {!embedded && <PageHeader title="🛡️ Centre de Conformité" subtitle="15 frameworks · Audit-ready · Multi-juridictions" />}
 
       <div style={{ padding: '40px' }}>
         <div style={{ marginBottom: '40px' }}>
