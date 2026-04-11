@@ -267,6 +267,20 @@ export default {
   playerClickUrl: 'Vrai URL :',
   playerAttachment: 'Pièce jointe',
 
+  // Player controls (pause / restart / quit)
+  playerPause: '⏸ Pause',
+  playerResume: '▶ Reprendre',
+  playerRestart: '↺ Recommencer',
+  playerQuit: '✕ Quitter',
+  playerPausedTitle: 'Scénario en pause',
+  playerPausedSub: 'Le chronomètre est arrêté. Reprenez quand vous êtes prêt.',
+  playerConfirmRestartTitle: 'Recommencer le scénario ?',
+  playerConfirmRestartSub: 'Votre progression actuelle (score et indices) sera perdue.',
+  playerConfirmQuitTitle: 'Quitter le scénario ?',
+  playerConfirmQuitSub: "Vous perdrez votre progression et reviendrez au tableau de bord.",
+  playerConfirmYes: 'Confirmer',
+  playerConfirmNo: 'Annuler',
+
   // Debrief
   debriefSuccess: 'Enquête réussie',
   debriefFailure: 'Mission échouée',
