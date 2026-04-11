@@ -734,12 +734,78 @@ function Footer() {
   )
 }
 
-const HIDDEN_FLAGS = [
-  { id: 'domain',   icon: '🌐', title: 'Faux domaine détecté',       detail: '"acme-corp.io" ≠ "acme.com" — domaine cloné pour imiter le PDG',     color: '#ef4444' },
-  { id: 'urgency',  icon: '⚡', title: 'Urgence artificielle',        detail: '"immédiatement" — pression temporelle pour court-circuiter la réflexion', color: '#f59e0b' },
-  { id: 'amount',   icon: '💸', title: 'Virement non autorisé',       detail: '78 500€ sans procédure officielle — aucun transfert sans double validation', color: '#ef4444' },
-  { id: 'secret',   icon: '🤫', title: 'Demande de silence',          detail: '"N\'en parlez à personne" — isolation de la victime, technique BEC classique', color: '#f59e0b' },
-  { id: 'dnd',      icon: '📵', title: 'PDG intentionnellement injoignable', detail: '"Ne Pas Déranger" rend toute vérification impossible — tactique délibérée', color: '#ef4444' },
+const SCENARIOS = [
+  {
+    id: 'bec', icon: '💼', name: 'Arnaque au Président', tag: 'BEC', difficulty: 'Intermédiaire', diffColor: '#f59e0b',
+    desc: 'Un email urgent prétend venir du PDG. Trouvez les signaux d\'alerte avant de décider.',
+    context: 'Vous êtes Marie, assistante de direction chez ACME Corp. Il est 14h27. Votre PDG est en déplacement depuis ce matin.',
+    mission: 'Analysez cet email attentivement avant de prendre une décision. Cliquez sur chaque élément qui vous semble suspect pour le révéler.',
+    lookFor: 'Adresse expéditeur · Ton d\'urgence · Nature de la demande · Possibilité de vérification',
+    flags: [
+      { id: 'domain',  icon: '🌐', title: 'Faux domaine',           detail: '"acme-corp.io" ≠ "acme.com"',             color: '#ef4444', tip: 'Un caractère différent suffit pour cloner une identité. Vérifiez toujours l\'adresse expéditeur complète.' },
+      { id: 'urgency', icon: '⚡', title: 'Urgence artificielle',   detail: '"immédiatement"',                         color: '#f59e0b', tip: 'La pression temporelle est le premier levier d\'une attaque BEC. Prenez toujours le temps de vérifier.' },
+      { id: 'amount',  icon: '💸', title: 'Virement sans procédure',detail: '78 500€ sans double validation',           color: '#ef4444', tip: 'Aucune demande financière urgente ne devrait bypasser le processus de validation habituel.' },
+      { id: 'secret',  icon: '🤫', title: 'Demande de silence',     detail: '"N\'en parlez à personne"',               color: '#f59e0b', tip: 'L\'isolation est une tactique BEC classique. Au contraire — alertez immédiatement votre responsable.' },
+      { id: 'dnd',     icon: '📵', title: 'PDG injoignable',        detail: '"Ne Pas Déranger"',                       color: '#ef4444', tip: 'L\'attaquant se rend volontairement injoignable. Utilisez un numéro connu, jamais celui de l\'email.' },
+    ],
+    options: [
+      { id: 'a', text: 'Appeler le PDG sur sa ligne directe connue pour vérifier', correct: true },
+      { id: 'b', text: 'Effectuer le virement — le PDG en a besoin maintenant', correct: false },
+      { id: 'c', text: 'Répondre à l\'email pour demander plus d\'informations', correct: false },
+      { id: 'd', text: 'Alerter le responsable IT et le directeur financier', correct: true },
+    ],
+    result: {
+      correct: 'Bon réflexe. Règle d\'or : toujours vérifier par téléphone sur un numéro connu pour toute demande financière urgente, même si elle semble venir d\'un supérieur.',
+      wrong: '95% des PME françaises ont été ciblées par une attaque BEC. Un virement sans vérification orale peut coûter des dizaines de milliers d\'euros en quelques heures.',
+    },
+  },
+  {
+    id: 'ransomware', icon: '🖥️', name: 'Infection Ransomware', tag: 'Ransomware', difficulty: 'Intermédiaire', diffColor: '#f59e0b',
+    desc: 'Votre écran affiche ce message au démarrage. Identifiez les indices et décidez quoi faire.',
+    context: 'Il est 8h47. Vous allumez votre poste au bureau. Tous vos fichiers semblent inaccessibles. Cet écran s\'affiche à la place de votre bureau Windows.',
+    mission: 'Ne paniquez pas. Lisez attentivement ce message de rançon et identifiez les éléments qui révèlent la nature réelle de cette attaque.',
+    lookFor: 'Mode de paiement · Menaces utilisées · Coordonnées de contact · Instructions paradoxales',
+    flags: [
+      { id: 'bitcoin',  icon: '₿',  title: 'Paiement crypto anonyme', detail: '0.3 BTC (~13 200€)',                  color: '#ef4444', tip: 'Aucune entité légitime ne demande un paiement en Bitcoin. C\'est conçu pour être intraçable et irrécupérable.' },
+      { id: 'timer',    icon: '⏰', title: 'Compte à rebours 48h',    detail: 'Pression temporelle extrême',          color: '#f59e0b', tip: 'Ce délai empêche de consulter votre DSI ou les autorités. Ne décidez jamais sous pression en cas d\'attaque.' },
+      { id: 'noreport', icon: '🚫', title: 'Interdit d\'alerter',     detail: '"Ne contactez pas la police"',        color: '#ef4444', tip: 'Au contraire — alertez immédiatement votre DSI et signalez à l\'ANSSI (anssi.fr). Ne payez jamais la rançon.' },
+      { id: 'email',    icon: '📧', title: 'Adresse .onion (dark web)',detail: 'ransom@darkmail.onion',               color: '#ef4444', tip: 'Une adresse .onion appartient au dark web. Aucune autorité ni entreprise légitime n\'utilise ce type d\'adresse.' },
+      { id: 'backup',   icon: '💾', title: 'Sauvegardes compromises', detail: '"Vos backups ont été chiffrés"',      color: '#f59e0b', tip: 'Les attaquants ciblent aussi les sauvegardes. La règle 3-2-1 (3 copies, 2 supports, 1 hors-ligne) protège contre ça.' },
+    ],
+    options: [
+      { id: 'a', text: 'Payer la rançon rapidement pour récupérer les fichiers', correct: false },
+      { id: 'b', text: 'Débrancher immédiatement le réseau et alerter le DSI', correct: true },
+      { id: 'c', text: 'Attendre et voir si le virus se supprime seul', correct: false },
+      { id: 'd', text: 'Signaler à l\'ANSSI et activer le plan de reprise d\'activité', correct: true },
+    ],
+    result: {
+      correct: 'Excellent. Isoler la machine (câble réseau débranché, Wi-Fi coupé) limite la propagation. Payer n\'est jamais conseillé — ça finance les attaquants et ne garantit pas la récupération.',
+      wrong: 'Les ransomwares coûtent en moyenne 620 000€ aux PME (rançon + reprise). Payer encourage les attaquants et ne garantit pas la récupération des fichiers.',
+    },
+  },
+  {
+    id: 'smishing', icon: '📱', name: 'Phishing par SMS', tag: 'Smishing', difficulty: 'Débutant', diffColor: '#22c55e',
+    desc: 'Vous recevez ce SMS sur votre téléphone professionnel. Repérez les signaux d\'alerte.',
+    context: 'Vous venez d\'arriver au bureau. Ce SMS arrive sur votre téléphone professionnel. Vous attendez effectivement un colis commandé la semaine dernière.',
+    mission: 'Analysez ce SMS avant de faire quoi que ce soit. Cliquez sur les éléments suspects pour les identifier — même quand le contexte semble plausible.',
+    lookFor: 'Numéro expéditeur · Lien fourni · Nature de la demande · Pression temporelle',
+    flags: [
+      { id: 'sender',  icon: '📱', title: 'Numéro mobile inconnu',   detail: '+33 7 XX — pas un numéro court officiel', color: '#ef4444', tip: 'La Poste utilise des numéros courts officiels (36 31). Un mobile inconnu en +33 7 est systématiquement une usurpation.' },
+      { id: 'amount',  icon: '💳', title: 'Micro-paiement par lien', detail: '2€90 à payer via un lien SMS',           color: '#f59e0b', tip: 'Les frais de douane réels arrivent par courrier officiel, jamais par SMS avec un lien de paiement direct.' },
+      { id: 'urgency', icon: '⚡', title: 'Délai court ("24h")',     detail: '"Sinon retour à l\'expéditeur"',         color: '#f59e0b', tip: 'La pression temporelle sur un micro-paiement est le signal classique du smishing. Prenez le temps de vérifier.' },
+      { id: 'domain',  icon: '🔗', title: 'URL frauduleuse',         detail: '"laposte-livraison.net"',               color: '#ef4444', tip: 'La Poste utilise uniquement laposte.fr. Tout autre domaine est une page de vol de coordonnées bancaires.' },
+    ],
+    options: [
+      { id: 'a', text: 'Cliquer sur le lien et payer 2€90 pour recevoir mon colis', correct: false },
+      { id: 'b', text: 'Vérifier l\'état du colis directement sur laposte.fr (jamais via le lien)', correct: true },
+      { id: 'c', text: 'Répondre au SMS pour contester la demande', correct: false },
+      { id: 'd', text: 'Signaler le SMS à 33700 et bloquer le numéro', correct: true },
+    ],
+    result: {
+      correct: 'Bonne réaction. Ces SMS capturent vos coordonnées bancaires sur une fausse page. Toujours vérifier sur le site officiel, jamais via un lien reçu par message.',
+      wrong: 'Ce smishing vole les coordonnées bancaires. En France, 3,5 millions de personnes ont été ciblées en 2023. La Poste ne demande jamais un paiement par SMS avec un lien externe.',
+    },
+  },
 ]
 
 function FlagSpan({ flagId, children, found, activeHint, onFind, setActiveHint }) {
@@ -747,72 +813,183 @@ function FlagSpan({ flagId, children, found, activeHint, onFind, setActiveHint }
   return (
     <mark
       onClick={() => { onFind(flagId); setActiveHint(flagId) }}
+      title="Investiguer cet élément"
       style={{
         cursor: 'pointer',
-        background: found ? 'rgba(235,40,40,0.18)' : isActive ? 'rgba(245,158,11,0.15)' : 'transparent',
-        color: 'inherit',
-        borderBottom: found ? '2px solid #eb2828' : '2px dashed rgba(235,40,40,0.5)',
+        background: found ? 'rgba(235,40,40,0.18)' : isActive ? 'rgba(245,158,11,0.12)' : 'transparent',
+        color: found ? 'inherit' : 'inherit',
+        borderBottom: found ? '2px solid #eb2828' : '1px dashed rgba(160,160,160,0.2)',
         borderRadius: '2px',
         padding: '0 2px',
         fontWeight: found ? '600' : 'inherit',
         transition: 'all 0.2s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(235,40,40,0.12)' }}
+      onMouseEnter={e => { if (!found) e.currentTarget.style.background = 'rgba(160,160,160,0.08)' }}
       onMouseLeave={e => { e.currentTarget.style.background = found ? 'rgba(235,40,40,0.18)' : 'transparent' }}
     >{children}</mark>
   )
 }
 
+function ScenarioEmail({ scenarioId, found, findFlag, activeHint, setActiveHint }) {
+  const FS = ({ id, children }) => (
+    <FlagSpan flagId={id} found={found.has(id)} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
+      {children}
+    </FlagSpan>
+  )
+  const emailBox = { background: '#fff', color: '#111', padding: '18px', borderRadius: '8px', fontFamily: 'Arial, sans-serif', fontSize: '13px', marginBottom: '14px', lineHeight: 1.7 }
+  const hdr = { borderBottom: '1px solid #e5e5e5', paddingBottom: '12px', marginBottom: '14px', fontSize: '12px' }
+  const grid = { display: 'grid', gridTemplateColumns: '80px 1fr', gap: '4px' }
+
+  if (scenarioId === 'bec') return (
+    <div style={emailBox}>
+      <div style={hdr}>
+        <div style={grid}>
+          <span style={{ color: '#666' }}>De :</span>
+          <span>Jean-Marc Dupont &lt;<FS id="domain">pdg@acme-corp.io</FS>&gt;</span>
+          <span style={{ color: '#666' }}>À :</span><span>marie.dupont@acme.com</span>
+          <span style={{ color: '#666' }}>Objet :</span><span style={{ fontWeight: 'bold', color: '#b00' }}>⚠️ URGENT — Virement confidentiel</span>
+          <span style={{ color: '#666' }}>Reçu :</span><span style={{ color: '#666' }}>Aujourd'hui 14:27</span>
+        </div>
+      </div>
+      <div style={{ marginBottom: '8px' }}>Bonjour Marie,</div>
+      <div style={{ margin: '10px 0' }}>
+        Je suis en réunion confidentielle avec nos avocats. J'ai besoin que vous effectuiez{' '}
+        <FS id="urgency"><strong>immédiatement</strong></FS>{' '}un virement de{' '}
+        <FS id="amount"><strong style={{ color: '#b00' }}>78 500 €</strong></FS>{' '}sur le compte suivant :
+      </div>
+      <div style={{ background: '#f8f8f8', padding: '10px 14px', margin: '10px 0', borderLeft: '3px solid #ccc', fontSize: '12px', fontFamily: 'monospace' }}>
+        <div>IBAN : FR76 1234 5678 9012 3456 7890 123</div>
+        <div>BIC : BNPAFRPP · Motif : Règlement prestataire confidentiel</div>
+      </div>
+      <div style={{ margin: '10px 0' }}>
+        <FS id="secret">N'en parlez à <strong>personne</strong></FS>. Je suis en mode "<FS id="dnd">Ne Pas Déranger</FS>". Confirmez uniquement par retour email.
+      </div>
+      <p style={{ marginTop: '14px', color: '#555' }}>Cordialement,<br /><strong>Jean-Marc Dupont</strong><br />PDG, ACME Corp</p>
+    </div>
+  )
+
+  if (scenarioId === 'ransomware') return (
+    <div style={{ background: '#0a0a0a', color: '#eee', padding: '20px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '13px', marginBottom: '14px', border: '2px solid #ef4444', lineHeight: 1.7 }}>
+      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+        <div style={{ fontSize: '40px', marginBottom: '6px' }}>💀</div>
+        <div style={{ fontSize: '16px', color: '#ef4444', fontWeight: 700, letterSpacing: '0.05em' }}>VOS FICHIERS ONT ÉTÉ CHIFFRÉS</div>
+        <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>YOUR FILES HAVE BEEN ENCRYPTED</div>
+      </div>
+      <div style={{ background: '#1a0000', border: '1px solid #ef444444', padding: '14px', borderRadius: '4px', marginBottom: '12px', fontSize: '12px' }}>
+        <div style={{ marginBottom: '8px' }}>Tous vos fichiers ont été chiffrés avec AES-256-CBC.</div>
+        <div style={{ marginBottom: '8px' }}>Pour récupérer vos données, envoyez :</div>
+        <div style={{ color: '#f59e0b', margin: '10px 0', fontSize: '13px' }}>
+          <FS id="bitcoin">▶ 0,3 BTC (~13 200€) vers : 1A2B3CXmX9f7kLpQzR...</FS>
+        </div>
+        <div>Délai : <FS id="timer"><strong style={{ color: '#ef4444' }}>48 HEURES</strong></FS> — passé ce délai le prix double.</div>
+        <div style={{ marginTop: '8px' }}><FS id="noreport">⚠ Ne contactez pas la police — nous le détecterons.</FS></div>
+        <div style={{ marginTop: '6px' }}>Contact : <FS id="email">support@darkmail.onion</FS></div>
+      </div>
+      <div style={{ fontSize: '11px', color: '#666', textAlign: 'center' }}>
+        <FS id="backup">⚠ Vos sauvegardes locales et cloud ont également été chiffrées.</FS>
+      </div>
+    </div>
+  )
+
+  // smishing
+  return (
+    <div style={{ background: '#f2f2f7', borderRadius: '12px', padding: '16px 16px 12px', marginBottom: '14px', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ fontSize: '11px', color: '#8e8e93', textAlign: 'center', marginBottom: '12px' }}>
+        <FS id="sender">+33 7 58 23 14 97</FS> · il y a 3 min
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '12px' }}>
+        <div style={{ background: '#e5e5ea', borderRadius: '18px 18px 18px 4px', padding: '10px 14px', maxWidth: '85%', fontSize: '13px', color: '#000', lineHeight: 1.5 }}>
+          <div style={{ marginBottom: '6px' }}>Bonjour, votre colis <strong>#FR847291</strong> est en attente.</div>
+          <div style={{ marginBottom: '6px' }}>Des frais de <FS id="amount"><strong>2€90</strong></FS> sont à régler <FS id="urgency"><strong>sous 24h</strong></FS>, sinon retour à l'expéditeur.</div>
+          <div style={{ color: '#007aff', textDecoration: 'underline' }}>
+            <FS id="domain">laposte-livraison.net/payer</FS>
+          </div>
+        </div>
+      </div>
+      <div style={{ fontSize: '11px', color: '#8e8e93', textAlign: 'center' }}>La Poste · Service client</div>
+    </div>
+  )
+}
+
 function DemoModal({ onClose }) {
   const navigate = useNavigate()
-  const [step, setStep] = useState(0)
+  const [scenario, setScenario] = useState(null)
+  const [step, setStep] = useState(0)   // 0=pick, 1=email, 2=decision, 3=result
   const [answer, setAnswer] = useState(null)
   const [found, setFound] = useState(new Set())
   const [activeHint, setActiveHint] = useState(null)
 
-  const total = HIDDEN_FLAGS.length
+  const flags = scenario?.flags ?? []
+  const total = flags.length
   const foundCount = found.size
 
-  const findFlag = (id) => {
-    if (!found.has(id)) setFound(prev => new Set([...prev, id]))
-  }
+  const findFlag = (id) => { if (!found.has(id)) setFound(prev => new Set([...prev, id])) }
+  const reset = () => { setScenario(null); setStep(0); setAnswer(null); setFound(new Set()); setActiveHint(null) }
 
-  const reset = () => { setStep(0); setAnswer(null); setFound(new Set()); setActiveHint(null) }
+  const score = answer ? Math.round((foundCount / (total || 1)) * 50) + (answer.correct ? 50 : 0) : 0
+  const percentile = score >= 80 ? 82 : score >= 60 ? 57 : score >= 40 ? 31 : 14
+  const profil = score >= 80 ? { label: 'Expert Cyber', color: '#22c55e' } : score >= 60 ? { label: 'Vigilant', color: '#f59e0b' } : { label: 'À Former', color: '#ef4444' }
 
   return (
     <div style={{ color: 'var(--text-primary)' }}>
 
-      {/* Step 0 — Intro */}
+      {/* Step 0 — Scenario picker */}
       {step === 0 && (
-        <div style={{ textAlign: 'center', padding: '12px 0' }}>
-          <div style={{ fontSize: '52px', marginBottom: '12px' }}>🕵️</div>
-          <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>Scénario : Attaque BEC</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '8px', fontSize: '14px', lineHeight: 1.6 }}>
-            Un email urgent arrive dans la boîte de votre collègue.<br />
-            <strong style={{ color: '#eb2828' }}>Votre mission : trouver les {total} indices cachés</strong> avant de décider quoi faire.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            {HIDDEN_FLAGS.map(f => (
-              <span key={f.id} style={{ padding: '4px 10px', background: 'rgba(235,40,40,0.08)', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                {f.icon} {f.title}
-              </span>
+        <div>
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🕵️</div>
+            <h3 style={{ fontSize: '17px', marginBottom: '4px' }}>Simulation d'attaque réelle</h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Choisissez un scénario et testez vos réflexes en conditions réelles.</p>
+          </div>
+
+          {/* How it works */}
+          <div style={{ display: 'flex', gap: '0', marginBottom: '18px', border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden' }}>
+            {[
+              { n: '1', icon: '🔍', label: 'Investiguer', desc: 'Analysez le document et cliquez sur les éléments suspects' },
+              { n: '2', icon: '🎯', label: 'Décider', desc: 'Choisissez la meilleure réaction face à la menace' },
+              { n: '3', icon: '📊', label: 'Résultat', desc: 'Obtenez votre score, profil et les conseils personnalisés' },
+            ].map((s, i) => (
+              <div key={s.n} style={{ flex: 1, padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRight: i < 2 ? '1px solid var(--border-subtle)' : 'none', textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', marginBottom: '3px' }}>{s.icon}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-light)', fontWeight: 600, marginBottom: '2px' }}>{s.label}</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{s.desc}</div>
+              </div>
             ))}
           </div>
-          <button onClick={() => setStep(1)} className="btn-primary" style={{ padding: '12px 36px' }}>
-            🔍 Lancer l'enquête
-          </button>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {SCENARIOS.map(s => (
+              <button key={s.id} onClick={() => { setScenario(s); setStep(1) }} style={{
+                display: 'flex', alignItems: 'center', gap: '14px', padding: '13px 16px',
+                background: 'var(--bg-black)', border: '1px solid var(--border-subtle)',
+                borderRadius: '8px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.background = 'rgba(235,40,40,0.04)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--bg-black)' }}
+              >
+                <span style={{ fontSize: '26px' }}>{s.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '13px', color: 'var(--text-light)', fontWeight: 600 }}>{s.name}</span>
+                    <span style={{ fontSize: '10px', padding: '1px 7px', background: `${s.diffColor}18`, color: s.diffColor, border: `1px solid ${s.diffColor}44`, borderRadius: '10px' }}>{s.difficulty}</span>
+                    <span style={{ fontSize: '10px', padding: '1px 7px', background: 'rgba(255,255,255,0.04)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', borderRadius: '10px' }}>{s.tag}</span>
+                    <span style={{ fontSize: '10px', padding: '1px 7px', background: 'rgba(235,40,40,0.06)', color: 'var(--red)', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '10px' }}>{s.flags.length} indices</span>
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{s.desc}</div>
+                </div>
+                <span style={{ color: 'var(--text-muted)', fontSize: '18px' }}>›</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Step 1 — Interactive email with hidden objects */}
-      {step === 1 && (
+      {/* Step 1 — Interactive email */}
+      {step === 1 && scenario && (
         <div>
-          {/* HUD */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', padding: '8px 12px', background: 'rgba(235,40,40,0.06)', border: '1px solid rgba(235,40,40,0.2)', borderRadius: '6px' }}>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: '#eb2828' }}>
-              🕵️ MODE INVESTIGATION
-            </span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: '12px' }}>
+            <span style={{ fontSize: '11px', color: '#eb2828' }}>🕵️ {scenario.name}</span>
+            <span style={{ fontSize: '12px' }}>
               {[...Array(total)].map((_, i) => (
                 <span key={i} style={{ marginLeft: '4px', fontSize: '14px', opacity: i < foundCount ? 1 : 0.25 }}>🔴</span>
               ))}
@@ -822,110 +999,68 @@ function DemoModal({ onClose }) {
             </span>
           </div>
 
-          {/* Active hint panel */}
+          {/* Mission briefing */}
+          <div style={{ marginBottom: '10px', padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', borderRadius: '6px' }}>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '8px' }}>
+              <span style={{ fontSize: '13px', flexShrink: 0 }}>📋</span>
+              <div>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>CONTEXTE</span>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: '1px' }}>{scenario.context}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '8px' }}>
+              <span style={{ fontSize: '13px', flexShrink: 0 }}>🎯</span>
+              <div>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>MISSION</span>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: '1px' }}>{scenario.mission}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: '13px', flexShrink: 0 }}>🔍</span>
+              <div>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>À SURVEILLER</span>
+                <div style={{ fontSize: '11px', color: 'var(--red)', marginTop: '2px', lineHeight: 1.5 }}>{scenario.lookFor}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Active hint / default tip */}
           {activeHint ? (
-            <div style={{ marginBottom: '8px', padding: '10px 14px', background: `${HIDDEN_FLAGS.find(f => f.id === activeHint)?.color}18`, border: `1px solid ${HIDDEN_FLAGS.find(f => f.id === activeHint)?.color}55`, borderRadius: '6px', fontSize: '12px', lineHeight: 1.5 }}>
-              <span style={{ color: HIDDEN_FLAGS.find(f => f.id === activeHint)?.color, fontWeight: 'bold' }}>
-                {HIDDEN_FLAGS.find(f => f.id === activeHint)?.icon} {HIDDEN_FLAGS.find(f => f.id === activeHint)?.title}
+            <div style={{ marginBottom: '8px', padding: '10px 14px', background: `${flags.find(f => f.id === activeHint)?.color}18`, border: `1px solid ${flags.find(f => f.id === activeHint)?.color}55`, borderRadius: '6px', fontSize: '12px', lineHeight: 1.5 }}>
+              <span style={{ color: flags.find(f => f.id === activeHint)?.color, fontWeight: 'bold' }}>
+                {flags.find(f => f.id === activeHint)?.icon} {flags.find(f => f.id === activeHint)?.title}
               </span>
-              <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>
-                — {HIDDEN_FLAGS.find(f => f.id === activeHint)?.detail}
-              </span>
+              <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>— {flags.find(f => f.id === activeHint)?.detail}</span>
             </div>
           ) : (
             <div style={{ marginBottom: '8px', fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-              💡 Cliquez sur les éléments soulignés pour révéler les indices cachés
+              💡 Cliquez sur les éléments du document pour révéler les {total} indices cachés
             </div>
           )}
 
-          {/* Email */}
-          <div style={{ background: '#ffffff', color: '#111', padding: '18px', borderRadius: '8px', fontFamily: 'Arial, sans-serif', fontSize: '13px', marginBottom: '14px', lineHeight: 1.7 }}>
-            {/* Header */}
-            <div style={{ borderBottom: '1px solid #e5e5e5', paddingBottom: '12px', marginBottom: '14px', fontSize: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '4px' }}>
-                <span style={{ color: '#666' }}>De :</span>
-                <span>
-                  Jean-Marc Dupont &lt;
-                  <FlagSpan flagId="domain" found={found.has('domain')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>pdg@acme-corp.io</FlagSpan>
-                  &gt;
-                </span>
-                <span style={{ color: '#666' }}>À :</span>
-                <span>marie.dupont@acme.com</span>
-                <span style={{ color: '#666' }}>Objet :</span>
-                <span style={{ fontWeight: 'bold', color: '#b00' }}>⚠️ URGENT — Virement confidentiel</span>
-                <span style={{ color: '#666' }}>Reçu :</span>
-                <span style={{ color: '#666' }}>Aujourd'hui 14:27</span>
-              </div>
-            </div>
+          <ScenarioEmail scenarioId={scenario.id} found={found} findFlag={findFlag} activeHint={activeHint} setActiveHint={setActiveHint} />
 
-            {/* Body — use div instead of p to allow absolute-positioned tooltip spans inside */}
-            <div style={{ marginBottom: '8px' }}>Bonjour Marie,</div>
-            <div style={{ margin: '10px 0' }}>
-              Je suis actuellement en réunion confidentielle avec nos avocats. J'ai besoin que vous effectuiez{' '}
-              <FlagSpan flagId="urgency" found={found.has('urgency')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
-                <strong>immédiatement</strong>
-              </FlagSpan>
-              {' '}un virement de{' '}
-              <FlagSpan flagId="amount" found={found.has('amount')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
-                <strong style={{ color: '#b00' }}>78 500 €</strong>
-              </FlagSpan>
-              {' '}sur le compte suivant :
-            </div>
-
-            <div style={{ background: '#f8f8f8', padding: '10px 14px', margin: '10px 0', borderLeft: '3px solid #ccc', fontSize: '12px', fontFamily: 'monospace' }}>
-              <div>IBAN : FR76 1234 5678 9012 3456 7890 123</div>
-              <div>BIC : BNPAFRPP</div>
-              <div>Motif : Règlement prestataire confidentiel</div>
-            </div>
-
-            <div style={{ margin: '10px 0' }}>
-              <FlagSpan flagId="secret" found={found.has('secret')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
-                N'en parlez à <strong>personne</strong>
-              </FlagSpan>
-              . Je suis en mode "{' '}
-              <FlagSpan flagId="dnd" found={found.has('dnd')} onFind={findFlag} activeHint={activeHint} setActiveHint={setActiveHint}>
-                Ne Pas Déranger
-              </FlagSpan>
-              ". Confirmez uniquement par retour email.
-            </div>
-
-            <p style={{ marginTop: '14px', color: '#555' }}>
-              Cordialement,<br />
-              <strong>Jean-Marc Dupont</strong><br />
-              PDG, ACME Corp
-            </p>
-          </div>
-
-          {/* Proceed button */}
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button
-              onClick={() => setStep(2)}
-              className={foundCount > 0 ? 'btn-primary' : 'btn-secondary'}
-              style={{ flex: 1, padding: '11px', justifyContent: 'center' }}
-            >
-              {foundCount === total ? '🏆 Tous trouvés — Décider maintenant →' : foundCount > 0 ? `Continuer avec ${foundCount} indice${foundCount > 1 ? 's' : ''} →` : 'Passer directement →'}
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={() => { setFound(new Set()); setActiveHint(null); setStep(0) }} style={{ padding: '10px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>← Changer</button>
+            <button onClick={() => setStep(2)} className={foundCount > 0 ? 'btn-primary' : 'btn-secondary'} style={{ flex: 1, padding: '11px', justifyContent: 'center' }}>
+              {foundCount === total ? '🏆 Tous trouvés — Décider →' : foundCount > 0 ? `Continuer avec ${foundCount}/${total} →` : 'Passer directement →'}
             </button>
           </div>
         </div>
       )}
 
       {/* Step 2 — Decision */}
-      {step === 2 && (
+      {step === 2 && scenario && (
         <div>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', padding: '10px 14px', background: foundCount >= 3 ? 'rgba(34,197,94,0.08)' : 'rgba(245,158,11,0.08)', border: `1px solid ${foundCount >= 3 ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: '6px', fontSize: '12px' }}>
-            <span>{foundCount >= 3 ? '🟢' : '🟡'}</span>
-            <span style={{ color: foundCount >= 3 ? '#22c55e' : '#f59e0b' }}>
-              {foundCount === total ? `${total}/${total} indices trouvés — Excellente analyse !` : `${foundCount}/${total} indices identifiés${foundCount < 3 ? ' — quelques-uns vous ont échappé' : ''}`}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', padding: '10px 14px', background: foundCount >= Math.ceil(total * 0.6) ? 'rgba(34,197,94,0.08)' : 'rgba(245,158,11,0.08)', border: `1px solid ${foundCount >= Math.ceil(total * 0.6) ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: '6px', fontSize: '12px' }}>
+            <span>{foundCount >= Math.ceil(total * 0.6) ? '🟢' : '🟡'}</span>
+            <span style={{ color: foundCount >= Math.ceil(total * 0.6) ? '#22c55e' : '#f59e0b' }}>
+              {foundCount}/{total} indices identifiés{foundCount === total ? ' — Analyse parfaite !' : foundCount < Math.ceil(total * 0.4) ? ' — Quelques-uns vous ont échappé' : ''}
             </span>
           </div>
           <h4 style={{ marginBottom: '6px' }}>Quelle est votre décision ?</h4>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>Choisissez la meilleure réponse face à cette situation.</p>
-          {[
-            { id: 'a', text: 'Appeler le PDG sur sa ligne directe connue pour vérifier', correct: true },
-            { id: 'b', text: 'Effectuer le virement — le PDG en a besoin maintenant', correct: false },
-            { id: 'c', text: 'Répondre à l\'email pour demander plus d\'informations', correct: false },
-            { id: 'd', text: 'Alerter le responsable IT et le directeur financier', correct: true },
-          ].map(opt => (
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>Plusieurs réponses peuvent être correctes.</p>
+          {scenario.options.map(opt => (
             <button key={opt.id} onClick={() => { setAnswer(opt); setStep(3) }} style={{
               display: 'block', width: '100%', padding: '13px 16px', marginBottom: '8px',
               background: 'var(--bg-black)', border: '1px solid var(--border-subtle)',
@@ -940,42 +1075,65 @@ function DemoModal({ onClose }) {
       )}
 
       {/* Step 3 — Result */}
-      {step === 3 && (
+      {step === 3 && scenario && answer && (
         <div>
-          <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-            <div style={{ fontSize: '52px', marginBottom: '10px' }}>{answer?.correct ? '🏆' : '😬'}</div>
-            <h3 style={{ fontSize: '20px', marginBottom: '8px', color: answer?.correct ? '#22c55e' : '#eb2828' }}>
-              {answer?.correct ? 'Bon réflexe !' : 'C\'était un piège !'}
-            </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: 1.7, marginBottom: '16px', maxWidth: '380px', margin: '0 auto 16px' }}>
-              {answer?.correct
-                ? 'Vous avez réagi correctement face à une attaque BEC. La règle d\'or : toujours vérifier par un canal indépendant pour toute demande financière urgente.'
-                : '95% des entreprises ont été victimes d\'une attaque BEC. Un virement sans vérification orale peut coûter des dizaines de milliers d\'euros.'}
-            </p>
+          {/* Score header */}
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '16px', marginBottom: '14px', background: answer.correct ? 'rgba(34,197,94,0.06)' : 'rgba(235,40,40,0.06)', border: `1px solid ${answer.correct ? 'rgba(34,197,94,0.3)' : 'rgba(235,40,40,0.3)'}`, borderRadius: '8px' }}>
+            <div style={{ textAlign: 'center', minWidth: '60px' }}>
+              <div style={{ fontSize: '32px', lineHeight: 1 }}>{score >= 80 ? '🏆' : score >= 50 ? '🎯' : '😬'}</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: answer.correct ? '#22c55e' : '#eb2828', lineHeight: 1.2 }}>{score}</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>/100</div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: answer.correct ? '#22c55e' : '#eb2828', marginBottom: '4px' }}>
+                {answer.correct ? 'Bon réflexe !' : 'C\'était un piège !'}
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+                {answer.correct ? scenario.result.correct : scenario.result.wrong}
+              </p>
+            </div>
           </div>
 
-          {/* Score + flags found */}
-          <div style={{ background: 'rgba(235,40,40,0.05)', border: '1px solid rgba(235,40,40,0.2)', padding: '14px', borderRadius: '8px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '12px' }}>
-              <span style={{ color: '#eb2828', fontWeight: 'bold' }}>🔍 Indices trouvés : {foundCount}/{total}</span>
-              <span style={{ color: answer?.correct ? '#22c55e' : '#f59e0b', fontWeight: 'bold' }}>
-                Score : {Math.round((foundCount / total * 50) + (answer?.correct ? 50 : 0))}/100
-              </span>
+          {/* Profil + benchmark */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+            <div style={{ flex: 1, padding: '10px', background: `${profil.color}10`, border: `1px solid ${profil.color}33`, borderRadius: '6px', textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '3px', letterSpacing: '0.1em' }}>PROFIL</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: profil.color }}>{profil.label}</div>
             </div>
-            {HIDDEN_FLAGS.map(f => (
-              <div key={f.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '6px', opacity: found.has(f.id) ? 1 : 0.4 }}>
-                <span style={{ fontSize: '14px', flexShrink: 0 }}>{found.has(f.id) ? '✅' : '❌'}</span>
-                <div>
+            <div style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', borderRadius: '6px', textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '3px', letterSpacing: '0.1em' }}>MEILLEUR QUE</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-light)' }}>{percentile}% des joueurs</div>
+            </div>
+            <div style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', borderRadius: '6px', textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '3px', letterSpacing: '0.1em' }}>SCÉNARIO</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-light)' }}>{scenario.tag}</div>
+            </div>
+          </div>
+
+          {/* Flags avec tips sur les manqués */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-subtle)', padding: '12px', borderRadius: '8px', marginBottom: '14px', maxHeight: '210px', overflowY: 'auto' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '10px' }}>ANALYSE DES INDICES</div>
+            {flags.map((f, i) => (
+              <div key={f.id} style={{ marginBottom: i < flags.length - 1 ? '10px' : 0, paddingBottom: i < flags.length - 1 ? '10px' : 0, borderBottom: i < flags.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: found.has(f.id) ? 0 : '4px' }}>
+                  <span style={{ fontSize: '13px' }}>{found.has(f.id) ? '✅' : '❌'}</span>
                   <span style={{ fontSize: '12px', color: f.color, fontWeight: 'bold' }}>{f.icon} {f.title}</span>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{f.detail}</div>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{f.detail}</span>
                 </div>
+                {!found.has(f.id) && (
+                  <div style={{ marginLeft: '22px', fontSize: '11px', color: '#f59e0b', lineHeight: 1.5, padding: '4px 8px', background: 'rgba(245,158,11,0.06)', borderRadius: '4px' }}>
+                    💡 {f.tip}
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-            <button onClick={reset} className="btn-secondary" style={{ padding: '10px 20px' }}>🔄 Rejouer</button>
-            <button onClick={() => { onClose(); navigate('/login') }} className="btn-primary" style={{ padding: '10px 24px' }}>Essai gratuit →</button>
+            <button onClick={reset} className="btn-secondary" style={{ padding: '10px 16px', fontSize: '13px' }}>🔄 Autre scénario</button>
+            <button onClick={() => { onClose(); navigate('/login') }} className="btn-primary" style={{ padding: '10px 24px', fontSize: '13px' }}>
+              Tester mes équipes gratuitement →
+            </button>
           </div>
         </div>
       )}
