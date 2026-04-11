@@ -29,7 +29,7 @@ export const adminOperations = {
     }
   },
 
-  bulkSendNotification(userIds, message) {
+  bulkSendNotification(userIds, _message) {
     return {
       success: true,
       sent: userIds.length,
@@ -38,12 +38,12 @@ export const adminOperations = {
   },
 
   // CSV Export
-  exportUsers(filters = {}) {
+  exportUsers(_filters = {}) {
     const csv = 'Email,Name,Department,Score,Status\nuser1@example.com,User 1,Finance,850,Active\nuser2@example.com,User 2,IT,920,Active'
     return { filename: 'users_export.csv', content: csv, size: csv.length }
   },
 
-  exportResults(campaignId, filters = {}) {
+  exportResults(campaignId, _filters = {}) {
     const csv = 'User,Email,Action,Timestamp,Accuracy\nUser1,user1@example.com,CLICKED,2026-04-08T10:00:00Z,0\nUser2,user2@example.com,REPORTED,2026-04-08T10:05:00Z,1'
     return { filename: `campaign_${campaignId}_results.csv`, content: csv }
   },

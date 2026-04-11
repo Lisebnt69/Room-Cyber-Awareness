@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLang } from '../context/LangContext'
-import { whitelabelConfig, ssoIntegration, twoFactorAuth } from '../services/multitenancy'
-import { auditLog, gdprCompliance, dataExport, complianceChecklist } from '../services/audit'
+import { twoFactorAuth } from '../services/multitenancy'
+import { gdprCompliance, dataExport, complianceChecklist } from '../services/audit'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
 import Modal from '../components/Modal'
@@ -12,10 +11,9 @@ import Toast from '../components/Toast'
 export default function Settings() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const { t } = useLang()
   const [activeTab, setActiveTab] = useState('security')
   const [show2FA, setShow2FA] = useState(false)
-  const [showExport, setShowExport] = useState(false)
+  const [, setShowExport] = useState(false)
   const [toast, setToast] = useState(null)
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
 
@@ -25,7 +23,7 @@ export default function Settings() {
   }
 
   const handleEnable2FA = async () => {
-    const result = await twoFactorAuth.generateSecret(user?.id)
+    await twoFactorAuth.generateSecret(user?.id)
     setShow2FA(true)
   }
 
@@ -37,21 +35,20 @@ export default function Settings() {
 
   const handleExportData = async (type) => {
     try {
-      let result
       switch (type) {
         case 'personal':
-          result = await gdprCompliance.exportUserData(user?.id)
+          await gdprCompliance.exportUserData(user?.id)
           break
         case 'scenarios':
-          result = await dataExport.exportScenarios('tenant_1')
+          await dataExport.exportScenarios('tenant_1')
           break
         case 'audit':
-          result = await dataExport.exportAuditLog('tenant_1')
+          await dataExport.exportAuditLog('tenant_1')
           break
       }
       setToast({ msg: `${type} data exported!`, type: 'success' })
       setShowExport(false)
-    } catch (error) {
+    } catch {
       setToast({ msg: 'Export failed', type: 'error' })
     }
   }

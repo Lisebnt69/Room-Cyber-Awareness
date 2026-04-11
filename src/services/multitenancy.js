@@ -118,18 +118,18 @@ export const whitelabelConfig = (tenantId) => {
 
 export const ssoIntegration = {
   async configureOAuth(tenantId, config) {
-    const { clientId, clientSecret, discoveryUrl } = config
+    const { discoveryUrl } = config
     console.log(`[SSO] OAuth2 configuré pour tenant ${tenantId}`)
     return { success: true, provider: 'oauth2', tenantId, discoveryUrl }
   },
 
   async configureSAML(tenantId, config) {
-    const { metadataUrl, certificatePath } = config
+    const { metadataUrl } = config
     console.log(`[SSO] SAML2 configuré pour tenant ${tenantId}`)
     return { success: true, provider: 'saml2', tenantId, metadataUrl }
   },
 
-  async getUserFromSSO(tokenId) {
+  async getUserFromSSO(_tokenId) {
     return {
       id: 'user_sso_1',
       email: 'sso.user@example.com',
@@ -154,7 +154,7 @@ export const twoFactorAuth = {
     return { valid: code.length === 6, remaining: 25 }
   },
 
-  async enableForUser(userId, secret) {
+  async enableForUser(userId, _secret) {
     console.log(`[2FA] Activé pour utilisateur ${userId}`)
     return {
       enabled: true,

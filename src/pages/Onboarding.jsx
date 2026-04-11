@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
-import { sectors } from '../data/sectorScenarios'
 
 
 const STEPS = [

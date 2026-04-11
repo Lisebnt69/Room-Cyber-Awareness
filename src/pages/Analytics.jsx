@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLang } from '../context/LangContext'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
@@ -31,10 +30,8 @@ const COLORS = ['#eb2828', '#f59e0b', '#22c55e', '#3b82f6']
 
 export default function Analytics() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
-  const { t } = useLang()
+  const { logout } = useAuth()
   const [dateRange, setDateRange] = useState('month')
-  const [selectedScenario, setSelectedScenario] = useState(null)
 
   const handleLogout = () => {
     logout()

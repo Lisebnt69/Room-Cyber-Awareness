@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
-import { useLang } from '../context/LangContext'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
 
@@ -636,7 +635,6 @@ function DemoModal({ onClose }) {
   const [answer, setAnswer] = useState(null)
   const [found, setFound] = useState(new Set())
   const [activeHint, setActiveHint] = useState(null)
-  const [shake, setShake] = useState(false)
 
   const total = HIDDEN_FLAGS.length
   const foundCount = found.size

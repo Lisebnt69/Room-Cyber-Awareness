@@ -2,7 +2,7 @@
 
 export const businessIntelligence = {
   // Cohort Analysis
-  cohortAnalysis(startDate, endDate) {
+  cohortAnalysis(_startDate, _endDate) {
     return {
       cohorts: [
         { cohort: 'Week 1', users: 50, active: 45, retention: 90, avgScore: 750 },

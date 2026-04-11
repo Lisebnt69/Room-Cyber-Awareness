@@ -66,7 +66,7 @@ function FakeLinkBlock({ data }) {
   )
 }
 
-function PhotoBlock({ data, blockId }) {
+function PhotoBlock({ data }) {
   const [hotspots, setHotspots] = useState(data.hotspots || [])
   const [dragging, setDragging] = useState(null)
   const imgRef = useRef(null)
@@ -133,7 +133,7 @@ function PhotoBlock({ data, blockId }) {
               const y = Math.round(Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100)))
               updateLocalHotspot(h.id, { x, y })
             }}
-            onPointerUp={async (e) => {
+            onPointerUp={async () => {
               if (dragging !== h.id) return
               setDragging(null)
               const current = hotspots.find(hs => hs.id === h.id)
@@ -350,7 +350,6 @@ export default function ScenarioPreview() {
   const [toast, setToast] = useState(null)
 
   const isSuperAdmin = user?.role === ROLES.SUPER_ADMIN
-  const isPlayer = user?.role === ROLES.PLAYER
   const isAdmin = user?.role === ROLES.ADMIN || isSuperAdmin
 
   const showToast = (msg, type = 'success') => {
@@ -359,6 +358,7 @@ export default function ScenarioPreview() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     fetch(`/api/scenarios/${id}`)
       .then(r => r.ok ? r.json() : Promise.reject('Not found'))
@@ -393,7 +393,7 @@ export default function ScenarioPreview() {
         const d = await res.json()
         showToast(d.error || 'Erreur', 'error')
       }
-    } catch (e) {
+    } catch {
       showToast('Erreur réseau', 'error')
     }
     setAssignLoading(false)
@@ -416,7 +416,7 @@ export default function ScenarioPreview() {
         const d = await res.json()
         showToast(d.error || 'Erreur', 'error')
       }
-    } catch (e) {
+    } catch {
       showToast('Erreur réseau', 'error')
     }
     setAssignLoading(false)

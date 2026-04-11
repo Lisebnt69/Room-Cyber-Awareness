@@ -179,7 +179,7 @@ async function seed() {
       for (const [key, sids] of DS) {
         const did = deptMap[key]
         if (!did) continue
-        const { rows: dept } = await client.query('SELECT company_id FROM departments WHERE id=$1', [did])
+        await client.query('SELECT company_id FROM departments WHERE id=$1', [did])
         for (const sid of sids) {
           await client.query('INSERT INTO department_scenarios (department_id,scenario_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [did, sid])
         }

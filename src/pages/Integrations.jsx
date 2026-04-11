@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLang } from '../context/LangContext'
 import { INTEGRATIONS, slackIntegration, teamsIntegration, emailIntegration, scimIntegration } from '../services/integrations'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
@@ -10,8 +9,7 @@ import Toast from '../components/Toast'
 
 export default function Integrations() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
-  const { t } = useLang()
+  const { logout } = useAuth()
   const [connectedIntegrations, setConnectedIntegrations] = useState(['email'])
   const [showConfig, setShowConfig] = useState(null)
   const [toast, setToast] = useState(null)
@@ -58,7 +56,7 @@ export default function Integrations() {
         setFormData({})
         setToast({ msg: `${INTEGRATIONS[integrationId.toUpperCase()].name} connected!`, type: 'success' })
       }
-    } catch (error) {
+    } catch {
       setToast({ msg: 'Configuration failed', type: 'error' })
     }
   }
@@ -102,7 +100,7 @@ export default function Integrations() {
 
         {/* Integrations Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
-          {Object.entries(INTEGRATIONS).map(([key, integration]) => {
+          {Object.entries(INTEGRATIONS).map(([_key, integration]) => {
             const isConnected = connectedIntegrations.includes(integration.id)
             return (
               <div

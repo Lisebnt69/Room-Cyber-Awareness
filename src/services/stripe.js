@@ -102,7 +102,7 @@ export const processPayment = async (paymentMethodId, paymentIntentId) => {
   }
 }
 
-export const getSubscriptionStatus = async (userId) => {
+export const getSubscriptionStatus = async (_userId) => {
   try {
     // In production: Fetch from actual backend
     return {

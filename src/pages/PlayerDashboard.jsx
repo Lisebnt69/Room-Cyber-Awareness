@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLang } from '../context/LangContext'
 import { db } from '../services/db'
 import Logo from '/roomca-logo.png'
 import LangToggle from '../components/LangToggle'
-import { visualScenarios } from '../data/visualScenarios'
 import { generateCertificatePDF } from '../services/pdfGenerator'
 
 const allBadges = [
@@ -62,7 +60,6 @@ async function downloadCertificate(cert, userName) {
 export default function PlayerDashboard() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const { t } = useLang()
   const [tab, setTab] = useState('overview')
   const [stats, setStats] = useState(null)
   const [badges, setBadges] = useState([])
@@ -79,6 +76,7 @@ export default function PlayerDashboard() {
     if (!user) return
     db.seedIfEmpty()
     const s = db.getUserStats(user.id)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStats(s)
     const b = db.getUserBadges(user.id)
     setBadges(b)
@@ -100,8 +98,8 @@ export default function PlayerDashboard() {
   const globalScore = stats?.avgScore || 78
   const scoreColor = globalScore >= 80 ? '#22c55e' : globalScore >= 60 ? '#f59e0b' : '#eb2828'
 
-  const heatMap = Array(12).fill(null).map((_, month) =>
-    Array(4).fill(null).map((_, week) => {
+  const heatMap = Array(12).fill(null).map(() =>
+    Array(4).fill(null).map(() => {
       const hasActivity = Math.random() > 0.6
       const intensity = hasActivity ? Math.floor(Math.random() * 4) + 1 : 0
       return intensity

@@ -315,7 +315,7 @@ function TabScenarios({ t, lang, onAssign, scenarioLibrary }) {
 }
 
 // ─── Tab: Reports ─────────────────────────────────────────────────
-function TabReports({ t, lang }) {
+function TabReports({ lang }) {
   const [downloading, setDownloading] = useState(null)
   const [sendingReport, setSendingReport] = useState(false)
   const [reportSent, setReportSent] = useState(false)
@@ -427,7 +427,7 @@ function TabReports({ t, lang }) {
 }
 
 // ─── Tab: Settings ────────────────────────────────────────────────
-function TabSettings({ t, lang, user }) {
+function TabSettings({ lang, user }) {
   const [saved, setSaved] = useState(false)
   const [form, setForm] = useState({ company: user?.company || 'ACME Corp', email: 'admin@acme-corp.com', notifications: true, twoFactor: false, weeklyReport: true })
   const save = (e) => { e.preventDefault(); setSaved(true); setTimeout(() => setSaved(false), 2500) }
