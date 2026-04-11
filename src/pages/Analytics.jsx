@@ -82,65 +82,118 @@ export default function Analytics({ embedded = false }) {
               {exporting ? '⏳ Génération...' : '📥 Export PDF'}
             </button>
           </div>
-        </div>
+        </nav>
 
-        {/* Grid Layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-          {/* Vulnerability Distribution */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '24px', borderRadius: '4px' }}>
-            <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '16px', marginBottom: '20px' }}>
-              🚨 Vulnerability Distribution
-            </h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={vulnerabilityData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percentage }) => `${name} ${percentage}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="percentage"
+        <div className="analytics-container">
+          <div className="analytics-header">
+            <div>
+              <h1>📊 Analytics</h1>
+              <p>Analysez les vulnérabilités et tendances de sécurité</p>
+            </div>
+            <div className="analytics-header-actions">
+              {['week', 'month', 'quarter'].map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setDateRange(range)}
+                  className={`range-btn ${dateRange === range ? 'active' : ''}`}
                 >
-                  {vulnerabilityData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {range === 'week' ? 'Week' : range === 'month' ? 'Month' : 'Quarter'}
+                </button>
+              ))}
+              <button onClick={handleExportPDF} className="btn-primary" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                📥 Export PDF
+              </button>
+            </div>
+          </div>
+
+          <div className="analytics-grid">
+            <div className="analytics-card">
+              <h3>🚨 Vulnerability Distribution</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={vulnerabilityData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percentage }) => `${name} ${percentage}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="percentage"
+                  >
+                    {vulnerabilityData.map((entry, index) => (
+                      <Cell key={`cell-${entry.type}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: '#0d0d0d', border: '1px solid #333' }}
+                    formatter={(value) => `${value}%`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="analytics-card">
+              <h3>⚠️ Top Vulnerabilities</h3>
+              <table className="analytics-table">
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left' }}>Type</th>
+                    <th>Occurrences</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vulnerabilityData.map((v) => (
+                    <tr key={v.type}>
+                      <td>{v.type}</td>
+                      <td style={{ fontWeight: 700 }}>{v.count}</td>
+                      <td className={`severity-${v.severity}`}>{v.severity.toUpperCase()}</td>
+                    </tr>
                   ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ background: '#0d0d0d', border: '1px solid #333' }}
-                  formatter={(value) => `${value}%`}
-                />
-              </PieChart>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="analytics-card" style={{ marginBottom: '24px' }}>
+            <h3>📈 Weekly Trends</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(84,84,84,0.2)" />
+                <XAxis dataKey="week" tick={{ fill: '#828080', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#828080', fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: '#0d0d0d', border: '1px solid #333' }} />
+                <Legend />
+                <Line type="monotone" dataKey="avg_score" stroke="#eb2828" strokeWidth={2} name="Avg Score" />
+                <Line type="monotone" dataKey="completion" stroke="#22c55e" strokeWidth={2} name="Completion %" />
+                <Line type="monotone" dataKey="accuracy" stroke="#3b82f6" strokeWidth={2} name="Accuracy %" />
+              </LineChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Top Vulnerabilities Table */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '24px', borderRadius: '4px' }}>
-            <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '16px', marginBottom: '20px' }}>
-              ⚠️ Top Vulnerabilities
-            </h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="analytics-card">
+            <h3>🔥 Success Rate by Difficulty</h3>
+            <table className="analytics-table analytics-heatmap">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '12px 0', textAlign: 'left', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>Type</th>
-                  <th style={{ padding: '12px 0', textAlign: 'right', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>Occurrences</th>
-                  <th style={{ padding: '12px 0', textAlign: 'right', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>Severity</th>
+                <tr>
+                  <th style={{ textAlign: 'left' }}>Scenario</th>
+                  <th>Easy</th>
+                  <th>Medium</th>
+                  <th>Hard</th>
                 </tr>
               </thead>
               <tbody>
-                {vulnerabilityData.map(v => (
-                  <tr key={v.type} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '12px 0', fontSize: '13px' }}>{v.type}</td>
-                    <td style={{ padding: '12px 0', textAlign: 'right', fontSize: '13px', fontWeight: 700 }}>{v.count}</td>
-                    <td style={{
-                      padding: '12px 0',
-                      textAlign: 'right',
-                      fontSize: '11px',
-                      color: v.severity === 'high' ? 'var(--red)' : v.severity === 'medium' ? '#f59e0b' : '#22c55e'
-                    }}>
-                      {v.severity.toUpperCase()}
-                    </td>
+                {heatmapData.map((row) => (
+                  <tr key={row.scenario}>
+                    <td>{row.scenario}</td>
+                    {['easy', 'medium', 'hard'].map((difficulty) => (
+                      <td key={difficulty}>
+                        <span className={`level-pill ${scoreClass(row[difficulty])}`}>
+                          {row[difficulty]}%
+                        </span>
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
