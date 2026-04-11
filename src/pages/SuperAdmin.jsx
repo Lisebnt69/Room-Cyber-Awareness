@@ -77,6 +77,7 @@ const withScenarioDefaults = (scenario = {}) => ({
   photoHotspots: Array.isArray(scenario?.photoHotspots) ? scenario.photoHotspots : [],
   quizQuestions: Array.isArray(scenario?.quizQuestions) ? scenario.quizQuestions : [],
   modules: Array.isArray(scenario?.modules) ? scenario.modules : [],
+  blocks: Array.isArray(scenario?.blocks) ? scenario.blocks : [],
 })
 
 const apiToState = (s) => withScenarioDefaults({ ...s })

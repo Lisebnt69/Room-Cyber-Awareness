@@ -391,12 +391,13 @@ function PhotoEditor({ block, onChange }) {
     const rect = imgRef.current.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
-    update('zones', [...block.zones, { id: Date.now(), x: x - 5, y: y - 5, w: 12, h: 12, label: 'Zone', correct: true }])
+    const zones = block.zones || []
+    update('zones', [...zones, { id: Date.now(), x: x - 5, y: y - 5, w: 12, h: 12, label: 'Zone', correct: true }])
     setAddingZone(false)
   }
 
-  const updateZone = (id, k, v) => update('zones', block.zones.map((z) => (z.id === id ? { ...z, [k]: v } : z)))
-  const removeZone = (id) => update('zones', block.zones.filter((z) => z.id !== id))
+  const updateZone = (id, k, v) => update('zones', (block.zones || []).map((z) => (z.id === id ? { ...z, [k]: v } : z)))
+  const removeZone = (id) => update('zones', (block.zones || []).filter((z) => z.id !== id))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -430,7 +431,7 @@ function PhotoEditor({ block, onChange }) {
       {!loading && block.src && (
         <div style={{ position: 'relative', border: `2px solid ${addingZone ? '#8b5cf6' : 'var(--border-subtle)'}`, borderRadius: '6px', overflow: 'hidden', cursor: addingZone ? 'crosshair' : 'default' }} onClick={handleImageClick}>
           <img ref={imgRef} src={block.src} alt="preview" style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'cover' }} />
-          {block.zones.map((z) => (
+          {(block.zones || []).map((z) => (
             <div key={z.id} style={{ position: 'absolute', left: `${z.x}%`, top: `${z.y}%`, width: `${z.w}%`, height: `${z.h}%`, border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, background: z.correct ? 'rgba(34,197,94,0.15)' : 'rgba(235,40,40,0.15)', borderRadius: '3px' }}>
               <span style={{ position: 'absolute', top: '-14px', left: 0, fontSize: '8px', background: z.correct ? '#22c55e' : 'var(--red)', color: '#fff', padding: '0 4px', borderRadius: '2px', whiteSpace: 'nowrap' }}>{z.label}</span>
             </div>
@@ -444,7 +445,7 @@ function PhotoEditor({ block, onChange }) {
         </div>
       )}
 
-      {block.zones.map((z) => (
+      {(block.zones || []).map((z) => (
         <div key={z.id} style={{ display: 'flex', gap: '4px', fontSize: '11px', alignItems: 'center' }}>
           <input value={z.label} onChange={(e) => updateZone(z.id, 'label', e.target.value)} style={{ flex: 1, padding: '4px 6px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '10px', borderRadius: '3px' }} />
           <button type="button" onClick={() => updateZone(z.id, 'correct', !z.correct)} style={{ padding: '4px 8px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.1)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '10px', borderRadius: '3px' }}>
@@ -778,6 +779,285 @@ export default function ScenarioBuilder({
   }
 
   const selectedBlock = blocks.find((b) => b.id === selectedId)
+  const [panelTab, setPanelTab] = useState('edit') // 'edit' | 'preview'
+
+  // ── Player preview components (inline) ──────────────────────────────────────
+
+  function BlockPlayerPreview({ block: b }) {
+    const [quizSel, setQuizSel] = useState(null)
+    const [quizDone, setQuizDone] = useState(false)
+    const [decChoice, setDecChoice] = useState(null)
+    const [emailHover, setEmailHover] = useState(false)
+    const [memFlipped, setMemFlipped] = useState([])
+    const [memMatched, setMemMatched] = useState([])
+
+    const previewBox = {
+      background: '#060606',
+      border: '1px solid #1a1a1a',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      fontSize: '13px',
+      color: 'var(--text-light)',
+    }
+    const label = (txt, color = '#555') => (
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color, letterSpacing: '0.1em', padding: '8px 14px', borderBottom: '1px solid #111', background: '#080808' }}>
+        {txt}
+      </div>
+    )
+
+    switch (b.type) {
+      case 'email': {
+        const link = typeof b.link === 'object' ? b.link : { text: b.link, hover: '', real: b.link }
+        return (
+          <div style={previewBox}>
+            {label('📧 APERÇU EMAIL JOUEUR')}
+            <div style={{ padding: '18px 20px' }}>
+              <div style={{ marginBottom: '4px', fontSize: '12px' }}>
+                <span style={{ color: '#555' }}>De : </span>
+                <span style={{ color: '#ddd' }}>{b.senderName}</span>
+                <span style={{ color: '#333', marginLeft: '6px' }}>&lt;{b.from}&gt;</span>
+              </div>
+              <div style={{ marginBottom: '14px', fontSize: '12px' }}>
+                <span style={{ color: '#555' }}>Objet : </span>
+                <span style={{ color: '#fff', fontWeight: 600 }}>{b.subject}</span>
+              </div>
+              <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: '14px', color: '#ccc', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{b.body}</div>
+              {link?.text && (
+                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #1a1a1a' }}>
+                  <span
+                    style={{ color: '#60a5fa', textDecoration: 'underline', cursor: 'pointer' }}
+                    onMouseEnter={() => setEmailHover(true)}
+                    onMouseLeave={() => setEmailHover(false)}
+                  >
+                    {link.text}
+                  </span>
+                  {emailHover && (
+                    <span style={{ marginLeft: '10px', background: '#1a1a1a', border: '1px solid #333', padding: '2px 8px', fontSize: '10px', color: '#22c55e', borderRadius: '3px' }}>
+                      🔗 {link.hover}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      }
+
+      case 'quiz': {
+        const opts = b.options || []
+        return (
+          <div style={previewBox}>
+            {label('❓ APERÇU QUIZ JOUEUR')}
+            <div style={{ padding: '18px 20px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '14px', lineHeight: 1.5 }}>{b.question}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {opts.map((o, i) => {
+                  const isSelected = quizSel === i
+                  const showResult = quizDone
+                  return (
+                    <button key={i} type="button"
+                      onClick={() => { if (!quizDone) { setQuizSel(i); setQuizDone(true) } }}
+                      style={{ padding: '10px 14px', textAlign: 'left', border: `1px solid ${showResult && o.correct ? '#22c55e' : showResult && isSelected && !o.correct ? 'var(--red)' : '#222'}`, background: showResult && o.correct ? 'rgba(34,197,94,0.12)' : showResult && isSelected && !o.correct ? 'rgba(235,40,40,0.1)' : isSelected ? '#111' : 'transparent', color: showResult && o.correct ? '#22c55e' : showResult && isSelected && !o.correct ? '#ef4444' : '#ddd', borderRadius: '5px', cursor: quizDone ? 'default' : 'pointer', fontSize: '13px' }}>
+                      {showResult && o.correct ? '✓ ' : showResult && isSelected && !o.correct ? '✕ ' : ''}{o.text}
+                    </button>
+                  )
+                })}
+              </div>
+              {quizDone && b.explanation && (
+                <div style={{ marginTop: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid #222', borderRadius: '5px', fontSize: '12px', color: '#aaa', lineHeight: 1.6 }}>
+                  💡 {b.explanation}
+                </div>
+              )}
+              {quizDone && (
+                <button type="button" onClick={() => { setQuizSel(null); setQuizDone(false) }}
+                  style={{ marginTop: '8px', padding: '4px 10px', background: 'transparent', border: '1px solid #333', color: '#666', cursor: 'pointer', fontSize: '10px', borderRadius: '4px' }}>
+                  ↺ Réessayer
+                </button>
+              )}
+            </div>
+          </div>
+        )
+      }
+
+      case 'decision': {
+        const choices = b.choices || []
+        return (
+          <div style={previewBox}>
+            {label('🔀 APERÇU DÉCISION JOUEUR')}
+            <div style={{ padding: '18px 20px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '14px', lineHeight: 1.5 }}>{b.question}</div>
+              {!decChoice ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {choices.map((c, i) => (
+                    <button key={i} type="button" onClick={() => setDecChoice(c)}
+                      style={{ padding: '10px 14px', textAlign: 'left', border: '1px solid #222', background: 'transparent', color: '#ddd', borderRadius: '5px', cursor: 'pointer', fontSize: '13px' }}>
+                      {c.text}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <div style={{ padding: '12px 14px', background: decChoice.correct ? 'rgba(34,197,94,0.1)' : 'rgba(235,40,40,0.08)', border: `1px solid ${decChoice.correct ? '#22c55e40' : 'rgba(235,40,40,0.3)'}`, borderRadius: '5px', marginBottom: '10px' }}>
+                    <div style={{ fontWeight: 600, color: decChoice.correct ? '#22c55e' : '#ef4444', marginBottom: '4px' }}>
+                      {decChoice.correct ? '✓ Bonne réaction' : '✕ Mauvais choix'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#aaa' }}>{decChoice.feedback}</div>
+                  </div>
+                  <button type="button" onClick={() => setDecChoice(null)}
+                    style={{ padding: '4px 10px', background: 'transparent', border: '1px solid #333', color: '#666', cursor: 'pointer', fontSize: '10px', borderRadius: '4px' }}>
+                    ↺ Réessayer
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      }
+
+      case 'puzzle': {
+        const pLabels = { reorder: '🔀 RÉORDONNER', memory: '🃏 MÉMORY', crossword: '📐 MOTS CROISÉS' }
+        if (b.puzzleType === 'memory') {
+          const pairs = b.pairs || []
+          const cards = [...pairs.map((p, i) => ({ id: `a${i}`, pairIdx: i, face: p.a })), ...pairs.map((p, i) => ({ id: `b${i}`, pairIdx: i, face: p.b }))]
+          const shuffled = [...cards].sort(() => Math.random() - 0.5)
+          return (
+            <div style={previewBox}>
+              {label(`🃏 APERÇU MÉMORY JOUEUR`)}
+              <div style={{ padding: '14px' }}>
+                <div style={{ fontSize: '11px', color: '#555', marginBottom: '10px' }}>{b.instruction}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  {shuffled.map((card) => {
+                    const isFlipped = memFlipped.includes(card.id) || memMatched.includes(card.pairIdx)
+                    return (
+                      <div key={card.id}
+                        onClick={() => {
+                          if (memMatched.includes(card.pairIdx) || memFlipped.includes(card.id)) return
+                          const newFlipped = [...memFlipped, card.id]
+                          if (newFlipped.length === 2) {
+                            const [a, bCard] = newFlipped.map(id => shuffled.find(c => c.id === id))
+                            if (a && bCard && a.pairIdx === bCard.pairIdx) {
+                              setMemMatched(prev => [...prev, a.pairIdx])
+                              setMemFlipped([])
+                            } else {
+                              setMemFlipped(newFlipped)
+                              setTimeout(() => setMemFlipped([]), 900)
+                            }
+                          } else {
+                            setMemFlipped(newFlipped)
+                          }
+                        }}
+                        style={{ height: '44px', borderRadius: '5px', cursor: 'pointer', border: `1px solid ${memMatched.includes(card.pairIdx) ? '#22c55e50' : '#222'}`, background: isFlipped ? (memMatched.includes(card.pairIdx) ? 'rgba(34,197,94,0.15)' : '#111') : '#0d0d0d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: isFlipped ? '#ddd' : 'transparent', textAlign: 'center', padding: '4px', transition: 'all 0.2s', userSelect: 'none' }}>
+                        {isFlipped ? card.face : '?'}
+                      </div>
+                    )
+                  })}
+                </div>
+                <button type="button" onClick={() => { setMemFlipped([]); setMemMatched([]) }}
+                  style={{ marginTop: '8px', padding: '4px 10px', background: 'transparent', border: '1px solid #333', color: '#666', cursor: 'pointer', fontSize: '10px', borderRadius: '4px' }}>
+                  ↺ Réinitialiser
+                </button>
+              </div>
+            </div>
+          )
+        }
+        if (b.puzzleType === 'crossword') {
+          const words = b.words || []
+          return (
+            <div style={previewBox}>
+              {label('📐 APERÇU MOTS CROISÉS JOUEUR')}
+              <div style={{ padding: '14px' }}>
+                <div style={{ fontSize: '11px', color: '#555', marginBottom: '10px' }}>{b.instruction}</div>
+                {words.map((w, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#555', minWidth: '18px' }}>{i + 1}.</span>
+                    <span style={{ fontSize: '12px', color: '#bbb', flex: 1 }}>{w.clue}</span>
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                      {(w.word || '').split('').map((_, ci) => (
+                        <div key={ci} style={{ width: '22px', height: '26px', border: '1px solid #333', borderRadius: '2px', background: '#0a0a0a' }} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        }
+        // reorder
+        const items = b.items || []
+        const shuffled = [...items].sort(() => Math.random() - 0.5)
+        return (
+          <div style={previewBox}>
+            {label('🔀 APERÇU RÉORDONNER JOUEUR')}
+            <div style={{ padding: '14px' }}>
+              <div style={{ fontSize: '11px', color: '#555', marginBottom: '10px' }}>{b.instruction}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {shuffled.map((item, i) => (
+                  <div key={i} style={{ padding: '8px 12px', background: '#0d0d0d', border: '1px solid #222', borderRadius: '5px', fontSize: '12px', color: '#ddd', cursor: 'grab', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#333', fontSize: '11px' }}>⠿</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: '8px', fontSize: '10px', color: '#444', fontStyle: 'italic' }}>
+                (les items sont mélangés pour le joueur)
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      case 'text':
+        return (
+          <div style={previewBox}>
+            {label('📝 APERÇU TEXTE JOUEUR')}
+            <div style={{ padding: '18px 20px' }}>
+              {b.heading && <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '10px', color: '#fff' }}>{b.heading}</h3>}
+              <div style={{ fontSize: '13px', color: '#ccc', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{b.content}</div>
+            </div>
+          </div>
+        )
+
+      case 'video':
+        return (
+          <div style={previewBox}>
+            {label('🎬 APERÇU VIDÉO JOUEUR')}
+            <div style={{ padding: '18px 20px' }}>
+              {b.url ? (
+                <div style={{ aspectRatio: '16/9', background: '#0a0a0a', border: '1px solid #222', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '28px' }}>▶</div>
+                  <div style={{ fontSize: '11px', color: '#555', maxWidth: '200px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.url}</div>
+                </div>
+              ) : (
+                <div style={{ color: '#444', fontSize: '12px', fontStyle: 'italic' }}>Aucune URL configurée</div>
+              )}
+              {b.caption && <div style={{ marginTop: '8px', fontSize: '12px', color: '#888', fontStyle: 'italic' }}>{b.caption}</div>}
+            </div>
+          </div>
+        )
+
+      case 'photo':
+        return (
+          <div style={previewBox}>
+            {label('🖼️ APERÇU PHOTO JOUEUR')}
+            <div style={{ padding: '14px' }}>
+              {b.src ? (
+                <div style={{ position: 'relative' }}>
+                  <img src={b.src} alt={b.alt} style={{ width: '100%', borderRadius: '5px', display: 'block' }} />
+                  {(b.zones || []).map((z) => (
+                    <div key={z.id} style={{ position: 'absolute', left: `${z.x}%`, top: `${z.y}%`, width: `${z.w}%`, height: `${z.h}%`, border: '2px dashed rgba(255,255,255,0.3)', borderRadius: '4px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)' }} title={z.label} />
+                  ))}
+                </div>
+              ) : (
+                <div style={{ color: '#444', fontSize: '12px', fontStyle: 'italic' }}>Aucune image configurée</div>
+              )}
+            </div>
+          </div>
+        )
+
+      default:
+        return <div style={{ padding: '20px', color: '#444', fontSize: '12px' }}>Aperçu non disponible</div>
+    }
+  }
 
   const renderEditor = () => {
     if (!selectedBlock) {
@@ -1005,9 +1285,43 @@ export default function ScenarioBuilder({
           )}
         </div>
 
-        {/* ── RIGHT: EDITOR ── */}
+        {/* ── RIGHT: EDITOR / PREVIEW ── */}
         <div style={{ width: '320px', flexShrink: 0, background: '#070707', borderLeft: '1px solid var(--border-subtle)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-          {renderEditor()}
+          {/* Tab toggle */}
+          {selectedBlock && (
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={() => setPanelTab('edit')}
+                style={{
+                  flex: 1, padding: '9px 0', background: 'transparent', border: 'none', cursor: 'pointer',
+                  fontSize: '10px', fontFamily: 'var(--mono)', letterSpacing: '0.08em',
+                  color: panelTab === 'edit' ? 'var(--text-light)' : 'var(--text-muted)',
+                  borderBottom: panelTab === 'edit' ? '2px solid var(--red)' : '2px solid transparent',
+                  transition: 'all 0.15s'
+                }}
+              >
+                ✏ ÉDITER
+              </button>
+              <button
+                type="button"
+                onClick={() => setPanelTab('preview')}
+                style={{
+                  flex: 1, padding: '9px 0', background: 'transparent', border: 'none', cursor: 'pointer',
+                  fontSize: '10px', fontFamily: 'var(--mono)', letterSpacing: '0.08em',
+                  color: panelTab === 'preview' ? 'var(--text-light)' : 'var(--text-muted)',
+                  borderBottom: panelTab === 'preview' ? '2px solid #3b82f6' : '2px solid transparent',
+                  transition: 'all 0.15s'
+                }}
+              >
+                👁 APERÇU JOUEUR
+              </button>
+            </div>
+          )}
+          {panelTab === 'preview' && selectedBlock
+            ? <BlockPlayerPreview block={selectedBlock} />
+            : renderEditor()
+          }
         </div>
 
       </div>
