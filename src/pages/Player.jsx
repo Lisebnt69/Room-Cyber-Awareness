@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LangContext'
 import { emails as emailsFr, emailsEn, logLines as logLinesFr, logLinesEn } from '../data/scenarioData'
@@ -19,9 +19,11 @@ function useTimer(initial, running) {
   return { display: `${mm}:${ss}`, seconds }
 }
 
-function PhaseIntro({ onStart }) {
+function PhaseIntro({ onStart, previewScenario }) {
   const { t } = useLang()
   const [step, setStep] = useState(0)
+  const [storyIndex, setStoryIndex] = useState(0)
+  const storyBlocks = previewScenario?.storyBlocks || []
   const lines = [
     { t: t('playerLine1'), c: 'var(--red)' },
     { t: t('playerLine2'), c: 'var(--text-muted)' },
@@ -47,8 +49,25 @@ function PhaseIntro({ onStart }) {
       <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '720px' }}>
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div className="tag" style={{ display: 'inline-flex', marginBottom: '16px' }}><span className="status-dot red" /> {t('playerIncidentTag')}</div>
-          <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '28px' }}>{t('playerOperation')} <span style={{ color: 'var(--red)' }}>INBOX ZERO</span></h1>
+          <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '28px' }}>{t('playerOperation')} <span style={{ color: 'var(--red)' }}>{previewScenario?.title || 'INBOX ZERO'}</span></h1>
+          {previewScenario && <div style={{ marginTop: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>Mode test créateur (vue joueur)</div>}
         </div>
+        {storyBlocks.length > 0 && (
+          <div style={{ marginBottom: '16px', border: '1px solid #1c1c1c', background: '#050505' }}>
+            <div style={{ height: '180px', background: storyBlocks[storyIndex]?.visual ? `url(${storyBlocks[storyIndex].visual}) center/cover no-repeat` : 'linear-gradient(135deg,#121212,#2a2a2a)' }} />
+            <div style={{ padding: '14px 18px' }}>
+              <div style={{ fontFamily: 'var(--font-title)', color: 'var(--text-light)' }}>{storyBlocks[storyIndex]?.title || 'Bloc narratif'}</div>
+              <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>{storyBlocks[storyIndex]?.text || ''}</div>
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{storyIndex + 1}/{storyBlocks.length}</span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={() => setStoryIndex(s => Math.max(0, s - 1))} className="btn-secondary" style={{ padding: '6px 10px', fontSize: '11px' }}>◀</button>
+                  <button onClick={() => setStoryIndex(s => Math.min(storyBlocks.length - 1, s + 1))} className="btn-secondary" style={{ padding: '6px 10px', fontSize: '11px' }}>▶</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div style={{ background: '#050505', border: '1px solid #1c1c1c', borderTop: '2px solid var(--red)', padding: '32px', fontFamily: 'var(--mono)', fontSize: '13px', lineHeight: 2.4, minHeight: '300px' }}>
           {lines.slice(0, step).map((line, i) => <div key={i} style={{ color: line.c, animation: 'fadeIn 0.3s ease' }}>&gt; {line.t}</div>)}
           {step < lines.length && <span className="animate-blink" style={{ color: 'var(--red)' }}>█</span>}
@@ -63,9 +82,28 @@ function PhaseIntro({ onStart }) {
   )
 }
 
-function PhaseInbox({ onComplete, score, setScore }) {
+function PhaseInbox({ onComplete, score, setScore, previewScenario }) {
   const { t, lang } = useLang()
-  const emails = lang === 'en' ? emailsEn : emailsFr
+  const defaultEmails = lang === 'en' ? emailsEn : emailsFr
+  const previewEmail = previewScenario ? {
+    id: 999,
+    fromName: previewScenario.fakeEmailSender || 'Preview Sender',
+    from: previewScenario.fakeEmailSender || 'preview@scenario.local',
+    subject: previewScenario.fakeEmailSubject || (lang === 'en' ? 'Preview Scenario Email' : 'Email de scénario (preview)'),
+    preview: previewScenario.fakeEmailBody || (lang === 'en' ? 'Scenario preview body' : 'Corps du scénario en aperçu'),
+    body: `${previewScenario.fakeEmailBody || ''}\n\n${previewScenario.fakeLinkUrl || ''}`,
+    time: '09:12',
+    read: false,
+    safe: false,
+    suspiciousLink: previewScenario.fakeLinkUrl || '',
+    hasAttachment: false,
+    clues: [
+      { id: 'p-domain', type: 'domain', points: 120, label: lang === 'en' ? 'Suspicious sender' : 'Expéditeur suspect', description: lang === 'en' ? 'Domain mismatch with company sender.' : 'Le domaine ne correspond pas au domaine attendu.' },
+      { id: 'p-link', type: 'link', points: 160, label: lang === 'en' ? 'Suspicious link' : 'Lien suspect', description: lang === 'en' ? 'Link points outside trusted perimeter.' : 'Le lien pointe hors périmètre de confiance.' },
+      { id: 'p-urgency', type: 'urgency', points: 110, label: lang === 'en' ? 'Urgency pressure' : 'Pression d’urgence', description: lang === 'en' ? 'Urgent wording to bypass controls.' : 'Le message force une action rapide pour contourner les contrôles.' },
+    ],
+  } : null
+  const emails = previewEmail ? [previewEmail] : defaultEmails
   // logLines resolved via import below
   const [selected, setSelected] = useState(null)
   const [found, setFound] = useState([])
@@ -98,7 +136,7 @@ function PhaseInbox({ onComplete, score, setScore }) {
   style={{ height: '32px', width: 'auto', display: 'block' }}
 />
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-          {[[t('playerScenarioLabel'), 'INBOX ZERO', 'var(--text-light)'], [t('playerCluesLabel'), `${found.length}/6`, 'var(--red)'], [t('playerScoreLabel'), score, '#22c55e'], [t('playerTimeLabel'), timer.display, timer.seconds < 120 ? 'var(--red)' : 'var(--text-light)']].map(([lbl, val, col]) => (
+          {[[t('playerScenarioLabel'), (previewScenario?.title || 'INBOX ZERO').toUpperCase(), 'var(--text-light)'], [t('playerCluesLabel'), `${found.length}/6`, 'var(--red)'], [t('playerScoreLabel'), score, '#22c55e'], [t('playerTimeLabel'), timer.display, timer.seconds < 120 ? 'var(--red)' : 'var(--text-light)']].map(([lbl, val, col]) => (
             <div key={lbl} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em' }}>{lbl}</div>
               <div style={{ fontFamily: 'var(--font-title)', fontSize: '18px', color: col }}>{val}</div>
@@ -311,11 +349,23 @@ function PhaseDebrief({ score, onRetry, onExit, onDashboard }) {
 }
 
 export default function Player() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [phase, setPhase] = useState('intro')
   const [score, setScore] = useState(0)
   const [startTime, setStartTime] = useState(null)
+  const previewScenario = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    if (params.get('preview') !== '1') return null
+    const raw = localStorage.getItem('roomca_preview_scenario')
+    if (!raw) return null
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return null
+    }
+  }, [location.search])
 
   const handleExit = () => navigate('/dashboard')
 
@@ -337,7 +387,7 @@ export default function Player() {
     }
   }
 
-  if (phase === 'intro') return <PhaseIntro onStart={() => { setPhase('inbox'); setStartTime(Date.now()) }} />
-  if (phase === 'inbox') return <PhaseInbox onComplete={handleComplete} score={score} setScore={setScore} />
+  if (phase === 'intro') return <PhaseIntro previewScenario={previewScenario} onStart={() => { setPhase('inbox'); setStartTime(Date.now()) }} />
+  if (phase === 'inbox') return <PhaseInbox previewScenario={previewScenario} onComplete={handleComplete} score={score} setScore={setScore} />
   return <PhaseDebrief score={score} onRetry={() => { setScore(0); setPhase('intro') }} onExit={handleExit} onDashboard={() => navigate('/dashboard')} />
 }

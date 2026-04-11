@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 export default function Modal({ isOpen, onClose, title, children, closeButton = true }) {
+  const isCompact = typeof window !== 'undefined' ? window.innerWidth < 768 : false
   useEffect(() => {
     if (!isOpen) return
 
@@ -38,11 +39,11 @@ export default function Modal({ isOpen, onClose, title, children, closeButton = 
           background: 'var(--bg-card)',
           border: '1px solid var(--border)',
           borderRadius: '4px',
-          maxWidth: '600px',
-          width: '90%',
-          maxHeight: '80vh',
+          maxWidth: isCompact ? '96vw' : '600px',
+          width: isCompact ? '96vw' : '90%',
+          maxHeight: isCompact ? '92vh' : '80vh',
           overflow: 'auto',
-          padding: '32px',
+          padding: isCompact ? '16px' : '32px',
           position: 'relative',
           animation: 'fadeIn 0.2s ease'
         }}
