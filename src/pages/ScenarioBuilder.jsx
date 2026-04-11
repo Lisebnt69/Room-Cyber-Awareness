@@ -258,21 +258,24 @@ function BlockCard({ block, index, selected, total, onClick, onMoveUp, onMoveDow
 const labelStyle = {
   display: 'block',
   fontFamily: 'var(--mono)',
-  fontSize: '9px',
-  color: 'var(--text-muted)',
-  letterSpacing: '0.1em',
-  marginBottom: '4px',
+  fontSize: '11px',
+  color: 'var(--text-secondary)',
+  letterSpacing: '0.08em',
+  marginBottom: '8px',
+  fontWeight: 500,
 }
 
 const inputBase = {
   width: '100%',
-  padding: '6px 8px',
+  padding: '11px 14px',
   background: '#0d0d0d',
   border: '1px solid var(--border)',
   color: 'var(--text-light)',
-  fontSize: '11px',
-  borderRadius: '3px',
+  fontSize: '14px',
+  borderRadius: '6px',
   boxSizing: 'border-box',
+  outline: 'none',
+  transition: 'border-color 0.15s, box-shadow 0.15s',
 }
 
 const metaModalLabelStyle = {
@@ -297,15 +300,14 @@ const metaModalSelectStyle = {
 
 function Field({ label, value, onChange, placeholder, type = 'text' }) {
   return (
-    <div style={{ marginBottom: '8px' }}>
+    <div>
       <label style={labelStyle}>{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="input-dark"
-        style={{ fontSize: '12px', padding: '6px 8px', width: '100%', boxSizing: 'border-box' }}
+        style={inputBase}
       />
     </div>
   )
@@ -319,8 +321,8 @@ function EmailEditor({ block, onChange }) {
   const updateLink = (k, v) => onChange({ ...block, link: { ...block.link, [k]: v } })
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
         <Field label="NOM EXPÉDITEUR" value={block.senderName} onChange={(v) => update('senderName', v)} />
         <Field label="EMAIL EXPÉDITEUR" value={block.from} onChange={(v) => update('from', v)} />
       </div>
@@ -332,21 +334,21 @@ function EmailEditor({ block, onChange }) {
         <textarea
           value={block.body}
           onChange={(e) => update('body', e.target.value)}
-          rows={4}
-          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)' }}
+          rows={5}
+          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.6, minHeight: '120px' }}
         />
       </div>
 
-      <div style={{ padding: '10px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '6px' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#3b82f6', marginBottom: '8px', letterSpacing: '0.1em' }}>🔗 LIEN PIÉGÉ</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '6px' }}>
+      <div style={{ padding: '18px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '8px' }}>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: '#3b82f6', marginBottom: '14px', letterSpacing: '0.08em', fontWeight: 500 }}>🔗 LIEN PIÉGÉ</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '14px' }}>
           <Field label="TEXTE DU LIEN" value={block.link.text} onChange={(v) => updateLink('text', v)} />
           <Field label="URL AFFICHÉE (hover)" value={block.link.hover} onChange={(v) => updateLink('hover', v)} />
         </div>
         <Field label="URL RÉELLE (destination)" value={block.link.real} onChange={(v) => updateLink('real', v)} />
 
-        <div style={{ marginTop: '6px', padding: '8px', background: '#0a0a0a', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '12px' }}>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', marginRight: '8px' }}>Aperçu :</span>
+        <div style={{ marginTop: '14px', padding: '14px', background: '#0a0a0a', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px' }}>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', marginRight: '10px', letterSpacing: '0.08em' }}>APERÇU :</span>
           <span
             style={{ color: '#60a5fa', textDecoration: 'underline', cursor: 'pointer' }}
             onMouseEnter={() => setLinkHovered(true)}
@@ -355,7 +357,7 @@ function EmailEditor({ block, onChange }) {
             {block.link.text}
           </span>
           {linkHovered && (
-            <div style={{ display: 'inline-block', marginLeft: '8px', background: '#1a1a1a', padding: '2px 8px', fontSize: '9px', color: '#22c55e', borderRadius: '3px' }}>
+            <div style={{ display: 'inline-block', marginLeft: '10px', background: '#1a1a1a', padding: '3px 10px', fontSize: '10px', color: '#22c55e', borderRadius: '4px', fontFamily: 'var(--mono)' }}>
               🔗 {block.link.hover}
             </div>
           )}
@@ -421,60 +423,70 @@ function PhotoEditor({ block, onChange }) {
   const removeZone = (id) => update('zones', (block.zones || []).filter((z) => z.id !== id))
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
         <button type="button" onClick={() => !loading && fileRef.current?.click()}
-          style={{ padding: '6px 14px', background: loading ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.35)', color: '#8b5cf6', cursor: loading ? 'default' : 'pointer', fontSize: '11px', borderRadius: '4px', opacity: loading ? 0.7 : 1 }}>
+          style={{ padding: '10px 18px', background: loading ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.35)', color: '#8b5cf6', cursor: loading ? 'default' : 'pointer', fontSize: '13px', borderRadius: '6px', opacity: loading ? 0.7 : 1, fontWeight: 500 }}>
           {loading ? '⏳ Compression...' : '📂 Choisir une image'}
         </button>
         {block.src && !loading && (
           <button type="button" onClick={() => setAddingZone(!addingZone)}
-            style={{ padding: '6px 14px', background: addingZone ? 'rgba(139,92,246,0.2)' : 'transparent', border: `1px solid ${addingZone ? '#8b5cf6' : 'var(--border-subtle)'}`, color: addingZone ? '#8b5cf6' : 'var(--text-muted)', cursor: 'pointer', fontSize: '11px', borderRadius: '4px' }}>
+            style={{ padding: '10px 18px', background: addingZone ? 'rgba(139,92,246,0.2)' : 'transparent', border: `1px solid ${addingZone ? '#8b5cf6' : 'var(--border-subtle)'}`, color: addingZone ? '#8b5cf6' : 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px' }}>
             {addingZone ? '✕ Annuler' : '+ Ajouter zone'}
           </button>
         )}
         {block.src && !loading && (
           <button type="button" onClick={() => update('src', '')}
-            style={{ padding: '6px 10px', background: 'transparent', border: '1px solid rgba(235,40,40,0.3)', color: 'var(--red)', cursor: 'pointer', fontSize: '11px', borderRadius: '4px' }}>
+            style={{ padding: '10px 14px', background: 'transparent', border: '1px solid rgba(235,40,40,0.3)', color: 'var(--red)', cursor: 'pointer', fontSize: '13px', borderRadius: '6px' }}>
             ✕ Retirer
           </button>
         )}
-        {addingZone && <span style={{ fontSize: '10px', color: '#8b5cf6', fontStyle: 'italic' }}>Cliquez sur l'image pour poser une zone</span>}
+        {addingZone && <span style={{ fontSize: '12px', color: '#8b5cf6', fontStyle: 'italic' }}>Cliquez sur l'image pour poser une zone</span>}
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
       </div>
 
       {loading && (
-        <div style={{ padding: '16px', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '6px', textAlign: 'center', fontSize: '11px', color: '#8b5cf6', background: 'rgba(139,92,246,0.05)' }}>
+        <div style={{ padding: '20px', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '8px', textAlign: 'center', fontSize: '13px', color: '#8b5cf6', background: 'rgba(139,92,246,0.05)' }}>
           ⏳ Compression de l'image en cours...
         </div>
       )}
 
       {!loading && block.src && (
-        <div style={{ position: 'relative', border: `2px solid ${addingZone ? '#8b5cf6' : 'var(--border-subtle)'}`, borderRadius: '6px', overflow: 'hidden', cursor: addingZone ? 'crosshair' : 'default' }} onClick={handleImageClick}>
-          <img ref={imgRef} src={block.src} alt="preview" style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'cover' }} />
+        <div style={{ position: 'relative', border: `2px solid ${addingZone ? '#8b5cf6' : 'var(--border-subtle)'}`, borderRadius: '8px', overflow: 'hidden', cursor: addingZone ? 'crosshair' : 'default' }} onClick={handleImageClick}>
+          <img ref={imgRef} src={block.src} alt="preview" style={{ width: '100%', display: 'block', maxHeight: '360px', objectFit: 'cover' }} />
           {(block.zones || []).map((z) => (
-            <div key={z.id} style={{ position: 'absolute', left: `${z.x}%`, top: `${z.y}%`, width: `${z.w}%`, height: `${z.h}%`, border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, background: z.correct ? 'rgba(34,197,94,0.15)' : 'rgba(235,40,40,0.15)', borderRadius: '3px' }}>
-              <span style={{ position: 'absolute', top: '-14px', left: 0, fontSize: '8px', background: z.correct ? '#22c55e' : 'var(--red)', color: '#fff', padding: '0 4px', borderRadius: '2px', whiteSpace: 'nowrap' }}>{z.label}</span>
+            <div key={z.id} style={{ position: 'absolute', left: `${z.x}%`, top: `${z.y}%`, width: `${z.w}%`, height: `${z.h}%`, border: `2px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, background: z.correct ? 'rgba(34,197,94,0.18)' : 'rgba(235,40,40,0.18)', borderRadius: '4px' }}>
+              <span style={{ position: 'absolute', top: '-18px', left: 0, fontSize: '10px', background: z.correct ? '#22c55e' : 'var(--red)', color: '#fff', padding: '2px 6px', borderRadius: '3px', whiteSpace: 'nowrap', fontWeight: 500 }}>{z.label}</span>
             </div>
           ))}
         </div>
       )}
 
       {!loading && !block.src && (
-        <div onClick={() => fileRef.current?.click()} style={{ padding: '30px', border: '1px dashed var(--border-subtle)', borderRadius: '6px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer' }}>
-          🖼️ Cliquez pour choisir une image
+        <div onClick={() => fileRef.current?.click()} style={{ padding: '50px 20px', border: '2px dashed var(--border-subtle)', borderRadius: '8px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', cursor: 'pointer', transition: 'all 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.background = 'rgba(139,92,246,0.03)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'transparent' }}
+        >
+          <div style={{ fontSize: '36px', marginBottom: '10px', opacity: 0.5 }}>🖼️</div>
+          <div style={{ fontWeight: 500 }}>Cliquez pour choisir une image</div>
+          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '6px' }}>JPG, PNG, WebP — compressée automatiquement</div>
         </div>
       )}
 
-      {(block.zones || []).map((z) => (
-        <div key={z.id} style={{ display: 'flex', gap: '4px', fontSize: '11px', alignItems: 'center' }}>
-          <input value={z.label} onChange={(e) => updateZone(z.id, 'label', e.target.value)} style={{ flex: 1, padding: '4px 6px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '10px', borderRadius: '3px' }} />
-          <button type="button" onClick={() => updateZone(z.id, 'correct', !z.correct)} style={{ padding: '4px 8px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.1)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '10px', borderRadius: '3px' }}>
-            {z.correct ? '✓ Correct' : '✕ Faux'}
-          </button>
-          <button type="button" onClick={() => removeZone(z.id)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', borderRadius: '3px' }}>✕</button>
+      {(block.zones || []).length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={labelStyle}>ZONES DÉFINIES ({(block.zones || []).length})</div>
+          {(block.zones || []).map((z) => (
+            <div key={z.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input value={z.label} onChange={(e) => updateZone(z.id, 'label', e.target.value)} style={{ ...inputBase, flex: 1, padding: '9px 12px', fontSize: '13px' }} />
+              <button type="button" onClick={() => updateZone(z.id, 'correct', !z.correct)} style={{ padding: '9px 14px', background: z.correct ? 'rgba(34,197,94,0.12)' : 'rgba(235,40,40,0.1)', border: `1px solid ${z.correct ? '#22c55e' : 'var(--red)'}`, color: z.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                {z.correct ? '✓ Correct' : '✕ Faux'}
+              </button>
+              <button type="button" onClick={() => removeZone(z.id)} style={{ width: '36px', height: '36px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '14px', borderRadius: '6px', flexShrink: 0 }}>✕</button>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   )
 }
@@ -484,11 +496,11 @@ function PhotoEditor({ block, onChange }) {
 function VideoEditor({ block, onChange }) {
   const update = (k, v) => onChange({ ...block, [k]: v })
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <Field label="URL VIDÉO (YouTube, Vimeo...)" value={block.url} onChange={(v) => update('url', v)} placeholder="https://youtube.com/watch?v=..." />
       <Field label="LÉGENDE" value={block.caption} onChange={(v) => update('caption', v)} placeholder="Description affichée sous la vidéo" />
       {block.url && (
-        <div style={{ padding: '8px', background: 'rgba(236,72,153,0.06)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: '4px', fontSize: '10px', color: '#ec4899' }}>
+        <div style={{ padding: '14px 18px', background: 'rgba(236,72,153,0.06)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: '6px', fontSize: '13px', color: '#ec4899', fontWeight: 500 }}>
           🎬 Vidéo configurée
         </div>
       )}
@@ -506,39 +518,42 @@ function QuizEditor({ block, onChange }) {
   const removeOption = (i) => { if (block.options.length > 2) update('options', block.options.filter((_, idx) => idx !== i)) }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <div>
         <label style={labelStyle}>QUESTION</label>
         <textarea value={block.question} onChange={(e) => update('question', e.target.value)} rows={2}
-          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)' }} />
+          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.5, minHeight: '72px' }} />
       </div>
 
       <div>
-        <div style={{ ...labelStyle, marginBottom: '6px' }}>OPTIONS — cocher les réponses correctes</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={labelStyle}>OPTIONS — cocher les réponses correctes</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {block.options.map((o, i) => (
-            <div key={i} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-              <button type="button" onClick={() => toggleCorrect(i)} style={{ width: '26px', height: '26px', background: o.correct ? 'rgba(34,197,94,0.18)' : '#0d0d0d', border: `2px solid ${o.correct ? '#22c55e' : 'var(--border)'}`, color: o.correct ? '#22c55e' : 'transparent', cursor: 'pointer', borderRadius: '50%', fontSize: '12px', flexShrink: 0 }}>
+            <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <button type="button" onClick={() => toggleCorrect(i)} style={{ width: '36px', height: '36px', background: o.correct ? 'rgba(34,197,94,0.18)' : '#0d0d0d', border: `2px solid ${o.correct ? '#22c55e' : 'var(--border)'}`, color: o.correct ? '#22c55e' : 'transparent', cursor: 'pointer', borderRadius: '50%', fontSize: '16px', flexShrink: 0, fontWeight: 600 }}>
                 {o.correct ? '✓' : ''}
               </button>
               <input value={o.text} onChange={(e) => updateOption(i, 'text', e.target.value)} placeholder={`Option ${i + 1}`}
-                style={{ flex: 1, padding: '6px 8px', background: o.correct ? 'rgba(34,197,94,0.05)' : '#0d0d0d', border: `1px solid ${o.correct ? '#22c55e50' : 'var(--border)'}`, color: 'var(--text-light)', fontSize: '11px', borderRadius: '4px' }} />
+                style={{ ...inputBase, background: o.correct ? 'rgba(34,197,94,0.05)' : '#0d0d0d', border: `1px solid ${o.correct ? '#22c55e50' : 'var(--border)'}` }} />
               <button type="button" onClick={() => removeOption(i)} disabled={block.options.length <= 2}
-                style={{ width: '22px', height: '22px', background: 'transparent', border: '1px solid var(--border-subtle)', color: block.options.length <= 2 ? 'var(--border)' : 'var(--red)', cursor: block.options.length <= 2 ? 'default' : 'pointer', borderRadius: '3px', fontSize: '12px', flexShrink: 0 }}>
+                style={{ width: '36px', height: '36px', background: 'transparent', border: '1px solid var(--border)', color: block.options.length <= 2 ? 'var(--border)' : 'var(--red)', cursor: block.options.length <= 2 ? 'default' : 'pointer', borderRadius: '6px', fontSize: '14px', flexShrink: 0 }}>
                 ×
               </button>
             </div>
           ))}
         </div>
-        <button type="button" onClick={addOption} style={{ marginTop: '6px', padding: '5px 12px', background: 'transparent', border: '1px dashed var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', borderRadius: '4px', width: '100%' }}>
+        <button type="button" onClick={addOption} style={{ marginTop: '12px', padding: '10px 16px', background: 'transparent', border: '1px dashed var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', width: '100%', transition: 'all 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#f59e0b'; e.currentTarget.style.color = '#f59e0b' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+        >
           + Ajouter une option
         </button>
       </div>
 
       <div>
         <label style={labelStyle}>EXPLICATION (affichée après réponse)</label>
-        <textarea value={block.explanation} onChange={(e) => update('explanation', e.target.value)} rows={2} placeholder="Pourquoi cette réponse ?"
-          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)' }} />
+        <textarea value={block.explanation} onChange={(e) => update('explanation', e.target.value)} rows={3} placeholder="Pourquoi cette réponse ?"
+          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.5, minHeight: '90px' }} />
       </div>
     </div>
   )
@@ -572,22 +587,29 @@ function PuzzleEditor({
   const addWord = () => update('words', [...words, { word: '', clue: '' }])
   const removeWord = (i) => { if (words.length > 1) update('words', words.filter((_, idx) => idx !== i)) }
 
-  const iStyle = { flex: 1, padding: '6px 8px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '11px', borderRadius: '4px' }
+  const iStyle = { ...inputBase, padding: '10px 12px', fontSize: '13px' }
   const rmBtn = (dis, fn) => (
-    <button type="button" onClick={fn} disabled={dis} style={{ width: '22px', height: '22px', background: 'transparent', border: '1px solid var(--border-subtle)', color: dis ? 'var(--border)' : 'var(--red)', cursor: dis ? 'default' : 'pointer', borderRadius: '3px', fontSize: '12px', flexShrink: 0 }}>×</button>
+    <button type="button" onClick={fn} disabled={dis} style={{ width: '36px', height: '36px', background: 'transparent', border: '1px solid var(--border)', color: dis ? 'var(--border)' : 'var(--red)', cursor: dis ? 'default' : 'pointer', borderRadius: '6px', fontSize: '14px', flexShrink: 0 }}>×</button>
   )
-  const addBtn = (label, fn) => (
-    <button type="button" onClick={fn} style={{ marginTop: '4px', padding: '5px', background: 'transparent', border: '1px dashed var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', borderRadius: '4px', width: '100%' }}>{label}</button>
+  const moveBtn = (arrow, dis, fn) => (
+    <button type="button" onClick={fn} disabled={dis} style={{ background: 'transparent', border: '1px solid var(--border)', color: dis ? 'var(--border)' : 'var(--text-muted)', width: '36px', height: '36px', cursor: dis ? 'default' : 'pointer', fontSize: '13px', borderRadius: '6px', flexShrink: 0 }}>{arrow}</button>
+  )
+  const addBtn = (label, fn, color = '#10b981') => (
+    <button type="button" onClick={fn} style={{ marginTop: '12px', padding: '10px 16px', background: 'transparent', border: '1px dashed var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', width: '100%', transition: 'all 0.15s' }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.color = color }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+    >{label}</button>
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <div>
         <label style={labelStyle}>TYPE DE PUZZLE</label>
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
           {PUZZLE_TYPES.map((pt) => (
-            <button key={pt.value} type="button" onClick={() => update('puzzleType', pt.value)} style={{ flex: 1, padding: '8px 4px', background: block.puzzleType === pt.value ? 'rgba(16,185,129,0.12)' : 'transparent', border: `1px solid ${block.puzzleType === pt.value ? '#10b981' : 'var(--border)'}`, color: block.puzzleType === pt.value ? '#10b981' : 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', borderRadius: '5px', textAlign: 'center' }}>
-              {pt.label}
+            <button key={pt.value} type="button" onClick={() => update('puzzleType', pt.value)} style={{ flex: 1, padding: '14px 10px', background: block.puzzleType === pt.value ? 'rgba(16,185,129,0.12)' : 'transparent', border: `1px solid ${block.puzzleType === pt.value ? '#10b981' : 'var(--border)'}`, color: block.puzzleType === pt.value ? '#10b981' : 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', borderRadius: '8px', textAlign: 'center', fontWeight: 500, transition: 'all 0.15s' }}>
+              <div style={{ fontSize: '15px', marginBottom: '4px' }}>{pt.label}</div>
+              <div style={{ fontSize: '10px', opacity: 0.7, fontFamily: 'var(--font-body)', fontWeight: 400 }}>{pt.desc}</div>
             </button>
           ))}
         </div>
@@ -598,13 +620,13 @@ function PuzzleEditor({
       {block.puzzleType === 'reorder' && (
         <div>
           <label style={labelStyle}>ÉLÉMENTS À RÉORDONNER (dans le bon ordre)</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {items.map((item, i) => (
-              <div key={i} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', width: '18px', textAlign: 'center', flexShrink: 0 }}>{i + 1}</span>
+              <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)', width: '24px', textAlign: 'center', flexShrink: 0, fontWeight: 500 }}>{i + 1}</span>
                 <input value={item} onChange={(e) => updateItem(i, e.target.value)} style={iStyle} />
-                <button type="button" onClick={() => moveItem(i, -1)} disabled={i === 0} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: i === 0 ? 'var(--border)' : 'var(--text-muted)', width: '22px', height: '22px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '11px', borderRadius: '3px' }}>↑</button>
-                <button type="button" onClick={() => moveItem(i, 1)} disabled={i === items.length - 1} style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: i === items.length - 1 ? 'var(--border)' : 'var(--text-muted)', width: '22px', height: '22px', cursor: i === items.length - 1 ? 'default' : 'pointer', fontSize: '11px', borderRadius: '3px' }}>↓</button>
+                {moveBtn('↑', i === 0, () => moveItem(i, -1))}
+                {moveBtn('↓', i === items.length - 1, () => moveItem(i, 1))}
                 {rmBtn(items.length <= 2, () => removeItem(i))}
               </div>
             ))}
@@ -616,12 +638,12 @@ function PuzzleEditor({
       {block.puzzleType === 'memory' && (
         <div>
           <label style={labelStyle}>PAIRES DE CARTES — Carte A ↔ Carte B</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {pairs.map((p, i) => (
-              <div key={i} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', width: '18px', textAlign: 'center', flexShrink: 0 }}>{i + 1}</span>
+              <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)', width: '24px', textAlign: 'center', flexShrink: 0, fontWeight: 500 }}>{i + 1}</span>
                 <input value={p.a} onChange={(e) => updatePair(i, 'a', e.target.value)} placeholder="Carte A" style={{ ...iStyle, borderColor: 'rgba(99,102,241,0.4)' }} />
-                <span style={{ color: 'var(--text-muted)', fontSize: '12px', flexShrink: 0 }}>↔</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '16px', flexShrink: 0 }}>↔</span>
                 <input value={p.b} onChange={(e) => updatePair(i, 'b', e.target.value)} placeholder="Carte B" style={{ ...iStyle, borderColor: 'rgba(99,102,241,0.25)' }} />
                 {rmBtn(pairs.length <= 1, () => removePair(i))}
               </div>
@@ -634,11 +656,11 @@ function PuzzleEditor({
       {block.puzzleType === 'crossword' && (
         <div>
           <label style={labelStyle}>MOTS — Réponse (majuscules) / Définition / Indice</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {words.map((w, i) => (
-              <div key={i} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', width: '18px', textAlign: 'center', flexShrink: 0 }}>{i + 1}</span>
-                <input value={w.word} onChange={(e) => updateWord(i, 'word', e.target.value)} placeholder="MOT" style={{ ...iStyle, flex: '0 0 100px', textTransform: 'uppercase', fontFamily: 'var(--mono)', letterSpacing: '0.1em' }} />
+              <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text-muted)', width: '24px', textAlign: 'center', flexShrink: 0, fontWeight: 500 }}>{i + 1}</span>
+                <input value={w.word} onChange={(e) => updateWord(i, 'word', e.target.value)} placeholder="MOT" style={{ ...iStyle, flex: '0 0 140px', textTransform: 'uppercase', fontFamily: 'var(--mono)', letterSpacing: '0.1em', fontWeight: 500 }} />
                 <input value={w.clue} onChange={(e) => updateWord(i, 'clue', e.target.value)} placeholder="Définition / indice" style={iStyle} />
                 {rmBtn(words.length <= 1, () => removeWord(i))}
               </div>
@@ -656,12 +678,12 @@ function PuzzleEditor({
 function TextEditor({ block, onChange }) {
   const update = (k, v) => onChange({ ...block, [k]: v })
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <Field label="TITRE (optionnel)" value={block.heading} onChange={(v) => update('heading', v)} placeholder="Titre de la section" />
       <div>
         <label style={labelStyle}>CONTENU</label>
-        <textarea value={block.content} onChange={(e) => update('content', e.target.value)} rows={6} placeholder="Rédigez votre contenu ici..."
-          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.6 }} />
+        <textarea value={block.content} onChange={(e) => update('content', e.target.value)} rows={8} placeholder="Rédigez votre contenu ici..."
+          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.7, minHeight: '200px' }} />
       </div>
     </div>
   )
@@ -676,36 +698,39 @@ function DecisionEditor({ block, onChange }) {
   const removeChoice = (i) => { if (block.choices.length > 2) update('choices', block.choices.filter((_, idx) => idx !== i)) }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <div>
         <label style={labelStyle}>QUESTION / SITUATION</label>
-        <textarea value={block.question} onChange={(e) => update('question', e.target.value)} rows={2}
-          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)' }} />
+        <textarea value={block.question} onChange={(e) => update('question', e.target.value)} rows={3}
+          style={{ ...inputBase, resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: 1.5, minHeight: '90px' }} />
       </div>
 
       <div>
         <label style={labelStyle}>CHOIX — cocher le/les bons choix</label>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {block.choices.map((c, i) => (
-            <div key={i} style={{ padding: '8px', background: c.correct ? 'rgba(34,197,94,0.04)' : 'rgba(235,40,40,0.04)', border: `1px solid ${c.correct ? 'rgba(34,197,94,0.25)' : 'rgba(235,40,40,0.15)'}`, borderRadius: '5px' }}>
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '5px', alignItems: 'center' }}>
+            <div key={i} style={{ padding: '14px', background: c.correct ? 'rgba(34,197,94,0.04)' : 'rgba(235,40,40,0.04)', border: `1px solid ${c.correct ? 'rgba(34,197,94,0.25)' : 'rgba(235,40,40,0.15)'}`, borderRadius: '8px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
                 <button type="button" onClick={() => updateChoice(i, 'correct', !c.correct)}
-                  style={{ width: '24px', height: '24px', background: c.correct ? 'rgba(34,197,94,0.18)' : 'rgba(235,40,40,0.1)', border: `2px solid ${c.correct ? '#22c55e' : 'var(--red)'}`, color: c.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', borderRadius: '4px', fontSize: '11px', flexShrink: 0 }}>
+                  style={{ width: '36px', height: '36px', background: c.correct ? 'rgba(34,197,94,0.18)' : 'rgba(235,40,40,0.1)', border: `2px solid ${c.correct ? '#22c55e' : 'var(--red)'}`, color: c.correct ? '#22c55e' : 'var(--red)', cursor: 'pointer', borderRadius: '6px', fontSize: '15px', flexShrink: 0, fontWeight: 600 }}>
                   {c.correct ? '✓' : '✕'}
                 </button>
                 <input value={c.text} onChange={(e) => updateChoice(i, 'text', e.target.value)} placeholder={`Choix ${i + 1}`}
-                  style={{ flex: 1, padding: '5px 8px', background: '#0d0d0d', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '11px', borderRadius: '3px' }} />
+                  style={inputBase} />
                 <button type="button" onClick={() => removeChoice(i)} disabled={block.choices.length <= 2}
-                  style={{ width: '22px', height: '22px', background: 'transparent', border: '1px solid var(--border-subtle)', color: block.choices.length <= 2 ? 'var(--border)' : 'var(--red)', cursor: block.choices.length <= 2 ? 'default' : 'pointer', borderRadius: '3px', fontSize: '12px', flexShrink: 0 }}>
+                  style={{ width: '36px', height: '36px', background: 'transparent', border: '1px solid var(--border)', color: block.choices.length <= 2 ? 'var(--border)' : 'var(--red)', cursor: block.choices.length <= 2 ? 'default' : 'pointer', borderRadius: '6px', fontSize: '14px', flexShrink: 0 }}>
                   ×
                 </button>
               </div>
               <input value={c.feedback} onChange={(e) => updateChoice(i, 'feedback', e.target.value)} placeholder="Feedback affiché après ce choix..."
-                style={{ width: '100%', padding: '4px 8px', background: '#0a0a0a', border: '1px solid var(--border)', color: 'var(--text-light)', fontSize: '10px', borderRadius: '3px', boxSizing: 'border-box' }} />
+                style={{ ...inputBase, padding: '10px 14px', fontSize: '13px', background: '#0a0a0a' }} />
             </div>
           ))}
         </div>
-        <button type="button" onClick={addChoice} style={{ marginTop: '6px', padding: '5px', background: 'transparent', border: '1px dashed var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', borderRadius: '4px', width: '100%' }}>
+        <button type="button" onClick={addChoice} style={{ marginTop: '12px', padding: '10px 16px', background: 'transparent', border: '1px dashed var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', width: '100%', transition: 'all 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+        >
           + Ajouter un choix
         </button>
       </div>
@@ -1082,9 +1107,12 @@ export default function ScenarioBuilder({
   const renderEditor = () => {
     if (!selectedBlock) {
       return (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: '8px', padding: '20px', textAlign: 'center' }}>
-          <div style={{ fontSize: '28px', opacity: 0.3 }}>←</div>
-          <div style={{ fontSize: '11px' }}>Sélectionnez un bloc<br /><span style={{ fontSize: '10px', opacity: 0.6 }}>ou ajoutez-en un depuis la palette</span></div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: '14px', padding: '40px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '56px', opacity: 0.2 }}>✏️</div>
+          <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-secondary)' }}>Aucun bloc sélectionné</div>
+          <div style={{ fontSize: '13px', lineHeight: 1.6, maxWidth: '320px', opacity: 0.7 }}>
+            Cliquez sur un bloc dans le flux pour l'éditer, ou ajoutez-en un nouveau depuis la palette à gauche.
+          </div>
         </div>
       )
     }
@@ -1092,6 +1120,7 @@ export default function ScenarioBuilder({
     const props = { block: selectedBlock, onChange: (u) => updateBlock(selectedBlock.id, u) }
     const color = TYPE_COLORS[selectedBlock.type] || '#888'
     const bt = BLOCK_TYPES.find(b => b.type === selectedBlock.type)
+    const blockIndex = blocks.findIndex(b => b.id === selectedId) + 1
 
     let specificEditor = null
     switch (selectedBlock.type) {
@@ -1106,27 +1135,34 @@ export default function ScenarioBuilder({
     }
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         {/* Editor header */}
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)', background: color + '08', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '16px' }}>{bt?.icon}</span>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{bt?.label}</span>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-muted)', marginLeft: 'auto' }}>
-            Bloc #{blocks.findIndex(b => b.id === selectedId) + 1}
-          </span>
+        <div style={{ padding: '20px 28px', borderBottom: '1px solid var(--border-subtle)', background: `linear-gradient(135deg, ${color}10, transparent)`, display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: color + '18', border: `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>
+            {bt?.icon}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '2px' }}>
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '17px', color: 'var(--text-light)', fontWeight: 600 }}>{bt?.label}</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
+                BLOC #{blockIndex}
+              </span>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{bt?.desc}</div>
+          </div>
         </div>
 
-        <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ padding: '24px 28px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {specificEditor}
 
           {/* Audio */}
-          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
+          <div style={{ marginTop: '8px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
             <label style={labelStyle}>🎵 AUDIO DE FOND (URL .mp3 / .ogg)</label>
             <input
               value={selectedBlock.audioUrl || ''}
               onChange={(e) => updateBlock(selectedBlock.id, { ...selectedBlock, audioUrl: e.target.value })}
               placeholder="https://exemple.com/audio.mp3"
-              style={{ ...inputBase }}
+              style={inputBase}
             />
           </div>
         </div>
@@ -1176,14 +1212,14 @@ export default function ScenarioBuilder({
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
         {/* ── LEFT: META + PALETTE ── */}
-        <div style={{ width: '220px', flexShrink: 0, background: '#070707', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ width: '280px', flexShrink: 0, background: '#070707', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-          {/* Meta summary + open modal button */}
-          <div style={{ flexShrink: 0, borderBottom: '1px solid var(--border-subtle)' }}>
-            <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>⚙ INFOS SCÉNARIO</span>
+          {/* Meta summary card */}
+          <div style={{ flexShrink: 0, padding: '18px 18px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em' }}>⚙ INFOS SCÉNARIO</span>
               <button type="button" onClick={() => setMetaModalOpen(true)}
-                style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-light)', cursor: 'pointer', fontSize: '10px', fontFamily: 'var(--mono)', padding: '3px 8px', borderRadius: '3px', letterSpacing: '0.05em' }}
+                style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-light)', cursor: 'pointer', fontSize: '10px', fontFamily: 'var(--mono)', padding: '4px 10px', borderRadius: '4px', letterSpacing: '0.05em', transition: 'all 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-light)' }}
               >
@@ -1191,39 +1227,41 @@ export default function ScenarioBuilder({
               </button>
             </div>
             <button type="button" onClick={() => setMetaModalOpen(true)}
-              style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'left', padding: '0 14px 14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '6px' }}
+              style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'left', padding: 0, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
-              <div style={{ fontSize: '13px', color: meta.titleFr ? 'var(--text-light)' : 'var(--text-muted)', fontWeight: 500, lineHeight: 1.3, wordBreak: 'break-word' }}>
+              <div style={{ fontSize: '15px', color: meta.titleFr ? 'var(--text-light)' : 'var(--text-muted)', fontWeight: 600, lineHeight: 1.3, wordBreak: 'break-word', fontFamily: 'var(--font-title)' }}>
                 {meta.titleFr || 'Titre non défini'}
               </div>
               {meta.description && (
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {meta.description}
                 </div>
               )}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '3px' }}>{meta.category}</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '3px' }}>{DIFFICULTIES.find(d => d.v === meta.difficulty)?.l || meta.difficulty}</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '3px' }}>{meta.duration} min</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '4px' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{meta.category}</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{DIFFICULTIES.find(d => d.v === meta.difficulty)?.l || meta.difficulty}</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.02em' }}>{meta.duration} min</span>
               </div>
             </button>
           </div>
 
           {/* Block palette */}
-          <div style={{ flex: 1, overflow: 'auto', padding: '10px 12px' }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: '8px' }}>+ AJOUTER UN BLOC</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+          <div style={{ flex: 1, overflow: 'auto', padding: '18px' }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: '12px' }}>+ AJOUTER UN BLOC</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {BLOCK_TYPES.map((bt) => {
                 const color = TYPE_COLORS[bt.type]
                 return (
                   <button key={bt.type} type="button" onClick={() => addBlock(bt.type)}
-                    style={{ padding: '8px 6px', background: 'transparent', border: `1px solid #1a1a1a`, color: 'var(--text-muted)', cursor: 'pointer', fontSize: '10px', borderRadius: '5px', textAlign: 'center', transition: 'all 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = color + '60'; e.currentTarget.style.background = color + '0a'; e.currentTarget.style.color = 'var(--text-light)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a1a'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                    style={{ padding: '12px 14px', background: 'transparent', border: `1px solid #181818`, color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '8px', textAlign: 'left', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '12px' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = color + '60'; e.currentTarget.style.background = color + '08'; e.currentTarget.style.color = 'var(--text-light)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#181818'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
                   >
-                    <div style={{ fontSize: '18px', marginBottom: '3px' }}>{bt.icon}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 500 }}>{bt.label}</div>
-                    <div style={{ fontSize: '8px', opacity: 0.6, marginTop: '2px', lineHeight: 1.3 }}>{bt.desc}</div>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: color + '15', border: `1px solid ${color}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>{bt.icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'inherit', marginBottom: '2px' }}>{bt.label}</div>
+                      <div style={{ fontSize: '11px', opacity: 0.65, lineHeight: 1.3 }}>{bt.desc}</div>
+                    </div>
                   </button>
                 )
               })}
@@ -1292,16 +1330,16 @@ export default function ScenarioBuilder({
         </div>
 
         {/* ── RIGHT: EDITOR / PREVIEW ── */}
-        <div style={{ width: '320px', flexShrink: 0, background: '#070707', borderLeft: '1px solid var(--border-subtle)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: 'min(640px, 45vw)', minWidth: '480px', flexShrink: 0, background: '#070707', borderLeft: '1px solid var(--border-subtle)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
           {/* Tab toggle */}
           {selectedBlock && (
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0, background: '#060606' }}>
               <button
                 type="button"
                 onClick={() => setPanelTab('edit')}
                 style={{
-                  flex: 1, padding: '9px 0', background: 'transparent', border: 'none', cursor: 'pointer',
-                  fontSize: '10px', fontFamily: 'var(--mono)', letterSpacing: '0.08em',
+                  flex: 1, padding: '16px 0', background: 'transparent', border: 'none', cursor: 'pointer',
+                  fontSize: '12px', fontFamily: 'var(--mono)', letterSpacing: '0.1em', fontWeight: 500,
                   color: panelTab === 'edit' ? 'var(--text-light)' : 'var(--text-muted)',
                   borderBottom: panelTab === 'edit' ? '2px solid var(--red)' : '2px solid transparent',
                   transition: 'all 0.15s'
@@ -1313,8 +1351,8 @@ export default function ScenarioBuilder({
                 type="button"
                 onClick={() => setPanelTab('preview')}
                 style={{
-                  flex: 1, padding: '9px 0', background: 'transparent', border: 'none', cursor: 'pointer',
-                  fontSize: '10px', fontFamily: 'var(--mono)', letterSpacing: '0.08em',
+                  flex: 1, padding: '16px 0', background: 'transparent', border: 'none', cursor: 'pointer',
+                  fontSize: '12px', fontFamily: 'var(--mono)', letterSpacing: '0.1em', fontWeight: 500,
                   color: panelTab === 'preview' ? 'var(--text-light)' : 'var(--text-muted)',
                   borderBottom: panelTab === 'preview' ? '2px solid #3b82f6' : '2px solid transparent',
                   transition: 'all 0.15s'
