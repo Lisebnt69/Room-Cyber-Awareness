@@ -1549,23 +1549,52 @@ function QuizBlock({ data, t, onBlockDone }) {
   const question = data.question || data.text || ''
   const options = data.options || []
   const explanation = data.explanation || ''
-  const [picked, setPicked] = useState(null)
+  const [pickedSet, setPickedSet] = useState(() => new Set())
+  const [attempted, setAttempted] = useState(false)
+  const [validated, setValidated] = useState(false)
+  const [attemptCorrect, setAttemptCorrect] = useState(false)
 
-  const handlePick = (oi) => {
-    if (picked !== null) return
-    setPicked(oi)
-    if (options[oi]?.correct) playSuccess()
-    else errorFX()
-    onBlockDone && onBlockDone()
+  const correctIndices = options
+    .map((opt, oi) => (opt?.correct ? oi : -1))
+    .filter(oi => oi >= 0)
+  const correctSet = new Set(correctIndices)
+
+  const resetAttemptState = () => {
+    setAttempted(false)
+    setAttemptCorrect(false)
+  }
+
+  const togglePick = (oi) => {
+    if (validated) return
+    setPickedSet(prev => {
+      const next = new Set(prev)
+      if (next.has(oi)) next.delete(oi)
+      else next.add(oi)
+      return next
+    })
+    resetAttemptState()
+  }
+
+  const handleValidate = () => {
+    if (validated || pickedSet.size === 0) return
+    const isExactMatch = pickedSet.size === correctSet.size && [...pickedSet].every(i => correctSet.has(i))
+    setAttempted(true)
+    setAttemptCorrect(isExactMatch)
+    if (isExactMatch) {
+      setValidated(true)
+      playSuccess()
+      onBlockDone && onBlockDone()
+      return
+    }
+    errorFX()
   }
 
   if (!question || options.length === 0) return (
     <div style={{ background: 'var(--bg-card)', border: `1px dashed var(--border)`, padding: '24px', color: 'var(--text-muted)', fontFamily: 'var(--mono)', fontSize: '12px', textAlign: 'center', borderRadius: 'var(--r-xl)' }}>[QUIZ NON CONFIGURÉ]</div>
   )
 
-  const pickedIsCorrect = picked !== null && options[picked]?.correct
-  const correctIndex = options.findIndex(o => o.correct)
-  const correctOption = correctIndex >= 0 ? options[correctIndex] : null
+  const hasSelection = pickedSet.size > 0
+  const shouldShowFeedback = attempted || validated
 
   return (
     <div className="card-glass" style={{
@@ -1599,75 +1628,120 @@ function QuizBlock({ data, t, onBlockDone }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {options.map((opt, oi) => {
-            const sel = picked !== null, chosen = picked === oi
+            const isPicked = pickedSet.has(oi)
             let bg = 'var(--bg-elevated)', border = '1px solid var(--border)', color = 'var(--text)'
-            if (sel && chosen && opt.correct) { bg = 'color-mix(in srgb, #22c55e 14%, var(--bg-card))'; border = '1px solid #22c55e'; color = '#22c55e' }
-            else if (sel && chosen)            { bg = 'color-mix(in srgb, var(--red) 14%, var(--bg-card))'; border = '1px solid var(--red)'; color = 'var(--red)' }
-            else if (sel && opt.correct)       { bg = 'color-mix(in srgb, #22c55e 8%, var(--bg-card))';  border = '1px solid rgba(34,197,94,0.45)'; color = '#22c55e' }
+            if (validated && opt.correct) {
+              bg = 'color-mix(in srgb, #22c55e 14%, var(--bg-card))'
+              border = '1px solid #22c55e'
+              color = '#22c55e'
+            } else if (attempted && isPicked && !opt.correct) {
+              bg = 'color-mix(in srgb, var(--red) 14%, var(--bg-card))'
+              border = '1px solid var(--red)'
+              color = 'var(--red)'
+            } else if (isPicked) {
+              bg = 'color-mix(in srgb, var(--accent) 12%, var(--bg-card))'
+              border = `1px solid ${t.accentBorder}`
+              color = t.accent
+            }
             return (
               <button
                 key={oi}
-                onClick={() => handlePick(oi)}
-                disabled={sel}
+                onClick={() => togglePick(oi)}
+                disabled={validated}
                 style={{
                   background: bg, border, color,
                   padding: '14px 18px', textAlign: 'left',
                   fontSize: '14px', fontWeight: 500,
-                  cursor: sel ? 'default' : 'pointer',
+                  cursor: validated ? 'default' : 'pointer',
                   fontFamily: 'inherit',
                   borderRadius: 'var(--r-md)',
                   transition: 'all 0.2s var(--ease)',
                   lineHeight: 1.5,
                   display: 'flex', alignItems: 'center', gap: '14px',
                 }}
-                onMouseEnter={e => { if (!sel) { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.transform = 'translateX(4px)' } }}
-                onMouseLeave={e => { if (!sel) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'translateX(0)' } }}
+                onMouseEnter={e => { if (!validated) { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.transform = 'translateX(4px)' } }}
+                onMouseLeave={e => { if (!validated) { e.currentTarget.style.borderColor = isPicked ? t.accentBorder : 'var(--border)'; e.currentTarget.style.transform = 'translateX(0)' } }}
               >
                 <div style={{
                   width: '30px', height: '30px', flexShrink: 0,
                   borderRadius: 'var(--r-full)',
-                  background: sel && chosen ? (opt.correct ? '#22c55e' : 'var(--red)') : 'var(--bg-muted)',
-                  color: sel && chosen ? 'var(--white)' : 'var(--text-secondary)',
+                  background: validated && opt.correct
+                    ? '#22c55e'
+                    : attempted && isPicked && !opt.correct
+                      ? 'var(--red)'
+                      : isPicked
+                        ? t.accent
+                        : 'var(--bg-muted)',
+                  color: isPicked || (validated && opt.correct) ? 'var(--white)' : 'var(--text-secondary)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: 700,
                 }}>
-                  {sel && chosen ? (opt.correct ? '✓' : '✗') : String.fromCharCode(65 + oi)}
+                  {validated && opt.correct
+                    ? '✓'
+                    : attempted && isPicked && !opt.correct
+                      ? '✗'
+                      : isPicked
+                        ? '●'
+                        : String.fromCharCode(65 + oi)}
                 </div>
                 <span style={{ flex: 1 }}>{opt.text}</span>
-                {sel && chosen && opt.correct && <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em' }}>BONNE RÉPONSE</span>}
-                {sel && chosen && !opt.correct && <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em' }}>MAUVAISE RÉPONSE</span>}
-                {sel && !chosen && opt.correct && <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', opacity: 0.8 }}>← réponse attendue</span>}
+                {validated && opt.correct && <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em' }}>BONNE RÉPONSE</span>}
+                {attempted && isPicked && !opt.correct && <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em' }}>MAUVAISE RÉPONSE</span>}
               </button>
             )
           })}
         </div>
 
+        {!validated && (
+          <div style={{ marginTop: '16px', display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+              {hasSelection
+                ? `${pickedSet.size} réponse${pickedSet.size > 1 ? 's' : ''} sélectionnée${pickedSet.size > 1 ? 's' : ''}`
+                : 'Sélectionnez toutes les bonnes réponses'}
+            </div>
+            <button
+              onClick={handleValidate}
+              disabled={!hasSelection}
+              className="btn-primary"
+              style={{
+                padding: '10px 18px',
+                fontSize: '11px',
+                letterSpacing: '0.1em',
+                opacity: hasSelection ? 1 : 0.45,
+                cursor: hasSelection ? 'pointer' : 'not-allowed',
+              }}
+            >
+              ✓ Valider mes réponses
+            </button>
+          </div>
+        )}
+
         {/* Rich feedback card */}
-        {picked !== null && (
+        {shouldShowFeedback && (
           <div className="card-glass" style={{
             marginTop: '24px', padding: '22px',
             borderRadius: 'var(--r-xl)',
-            borderLeft: `4px solid ${pickedIsCorrect ? '#22c55e' : 'var(--red)'}`,
+            borderLeft: `4px solid ${attemptCorrect ? '#22c55e' : 'var(--red)'}`,
             animation: 'fadeInUp 0.35s ease',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
               <div style={{
                 width: '32px', height: '32px', borderRadius: 'var(--r-full)',
-                background: pickedIsCorrect ? '#22c55e' : 'var(--red)',
+                background: attemptCorrect ? '#22c55e' : 'var(--red)',
                 color: 'var(--white)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '16px', fontWeight: 800,
-              }}>{pickedIsCorrect ? '✓' : '✗'}</div>
+              }}>{attemptCorrect ? '✓' : '✗'}</div>
               <span style={{
                 fontFamily: 'var(--mono)', fontSize: '11px',
-                color: pickedIsCorrect ? '#22c55e' : 'var(--red)',
+                color: attemptCorrect ? '#22c55e' : 'var(--red)',
                 letterSpacing: '0.14em', fontWeight: 800,
                 textTransform: 'uppercase',
               }}>
-                {pickedIsCorrect ? 'Bonne réponse' : 'Mauvaise réponse'}
+                {attemptCorrect ? 'Toutes les bonnes réponses trouvées' : 'Réponses incomplètes ou incorrectes'}
               </span>
             </div>
-            {!pickedIsCorrect && correctOption && (
+            {!attemptCorrect && correctIndices.length > 0 && (
               <div style={{
                 marginBottom: '14px', padding: '12px 14px',
                 background: 'color-mix(in srgb, #22c55e 6%, var(--bg-card))',
@@ -1677,9 +1751,9 @@ function QuizBlock({ data, t, onBlockDone }) {
                 <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#22c55e', letterSpacing: '0.12em', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
                   ✓ Réponse attendue
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5 }}>
-                  {correctOption.text}
-                </div>
+                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: 'var(--text)', lineHeight: 1.5 }}>
+                  {correctIndices.map(idx => <li key={idx}>{options[idx]?.text}</li>)}
+                </ul>
               </div>
             )}
             {explanation ? (
@@ -1693,14 +1767,14 @@ function QuizBlock({ data, t, onBlockDone }) {
               </div>
             ) : (
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                {pickedIsCorrect
-                  ? 'Vous avez choisi la bonne réponse. Passez au chapitre suivant.'
-                  : 'Relisez attentivement la réponse attendue avant de continuer.'}
+                {attemptCorrect
+                  ? 'Toutes les bonnes réponses sont cochées. Passez au chapitre suivant.'
+                  : 'Sélectionnez toutes les bonnes réponses pour débloquer la suite.'}
               </div>
             )}
 
             <RichExplanation
-              kind={pickedIsCorrect ? 'success' : 'failure'}
+              kind={attemptCorrect ? 'success' : 'failure'}
               success={data.successExplanation}
               failure={data.failureExplanation}
               t={t}
@@ -3151,7 +3225,7 @@ function ChapterCard({ t, index, total, meta }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)',
       animation: 'fade-in 0.35s ease',
-      pointerEvents: 'none',
+      pointerEvents: 'auto',
     }}>
       <div style={{ textAlign: 'center', animation: 'chapter-zoom 0.9s cubic-bezier(0.22,1,0.36,1)' }}>
         <div style={{
